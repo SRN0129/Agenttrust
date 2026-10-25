@@ -1,42 +1,42 @@
-# AgentTrust — Enterprise AI Agent Trust & Zero-Trust Security Infrastructure
+<div align="center">
 
-**AgentTrust** is an interoperable, vendor-agnostic zero-trust policy plane, multi-agent delegation layer, and verifiable audit infrastructure for autonomous AI agents across diverse frameworks (LangChain, CrewAI, AutoGen, OpenAI Assistants, Anthropic Tool Use, and custom runtimes).
+# 🛡️ AgentTrust
+### The Zero-Trust Security & Human Approval Layer for Autonomous AI Agents
+
+[![GitHub Stars](https://img.shields.io/github/stars/SRN0129/Agenttrust?style=social)](https://github.com/SRN0129/Agenttrust)
+[![License: MIT / Commercial](https://img.shields.io/badge/License-MIT%20%2F%20Commercial-blue.svg)](LICENSE)
+[![Tests Passing](https://img.shields.io/badge/Automated%20Tests-41%2F41%20Passing-brightgreen.svg)](tests)
+[![Compliance](https://img.shields.io/badge/Compliance-EU%20AI%20Act%20Art.%2012%20%26%2014-emerald.svg)](server/services/compliance.ts)
+[![Threat Model](https://img.shields.io/badge/Security-STRIDE%20Verified-blueviolet.svg)](#2-threat-model--security-boundaries-stride)
+
+<p align="center">
+  <b>Interoperable zero-trust permissions, cascading subagent delegation, semantic blast radius analysis, single-use replay defense, and cryptographically verifiable audit trails for AI agents.</b>
+</p>
 
 ---
 
-## 1. Core Enterprise Innovations & Differentiators
+### 💼 For Investors, Acquirers & Commercial Inquiries
+> **This project and its intellectual property are available for commercial licensing or acquisition.**  
+> If you are an enterprise CISO, an AI platform looking to integrate an enterprise security layer, or an investor/acquirer:  
+> 📩 **Contact Owner:** Open an [Issue on GitHub](https://github.com/SRN0129/Agenttrust/issues) or connect via [GitHub Profile @SRN0129](https://github.com/SRN0129).
 
-### 1. Cascading Multi-Agent Delegation & Attenuated Sub-Tokens
-- **The Innovation**: Orchestrator agents can mint child subagents with cryptographically attenuated boundaries.
-- **Strict Capability Attenuation**: Subagents can only inherit a strict subset of the parent's allowed capabilities. Attempts by a parent to delegate permissions it does not possess fail with an `Attenuation Violation`.
-- **Inherited Budget & Rate Ceilings**: Subagents inherit budget ceilings from parent remaining funds.
-- **Revocation Inheritance**: Suspending or revoking a parent agent instantaneously cascades down to all descendant subagents.
+---
 
-### 2. Semantic Blast Radius & Reversibility Scoring Engine
-- Pre-flight risk assessment combining:
-  - **Reversibility Factor ($R \in [0.0, 1.0]$)**: Identifies idempotent reads ($R=0.05$), non-committal drafts ($R=0.2$), state updates ($R=0.55$), external wires/deployments ($R=0.85$), and destructive deletions ($R=1.0$).
-  - **Financial Exposure ($F \in [0.0, 1.0]$)**: Logarithmic impact curve based on estimated USD cost.
-  - **Perimeter Sensitivity ($S \in [0.0, 1.0]$)**: Detects production databases, credentials, PCI, HIPAA, and master vaults.
-- **Dynamic Risk Tiering**: Actions with composite risk $\ge 0.65$ automatically trigger mandatory Human-in-the-Loop review, even if a generic rule would have allowed them.
+</div>
 
-### 3. Cryptographic ECDSA P-256 Notarization & Offline Verification
-- Periodic or on-demand digital signature checkpoints:
-  - Signs the tip of the sequential SHA-256 audit ledger using an asymmetric ECDSA P-256 keypair.
-  - Produces standalone signed `CheckpointManifest` certificates.
-  - **Offline Verification**: External auditors can independently verify the cryptographic signature against the embedded public key certificate without requiring database access.
+## 1. What Is AgentTrust?
 
-### 4. Emergency Global Air-Gap Killswitch
-- Instant panic button for security operators:
-  - Atomically revokes/suspends all active agent credentials in $< 15\text{ ms}$.
-  - Burns all pending single-use execution tickets.
-  - Mints an immediate post-incident forensic ECDSA checkpoint for root-cause analysis.
+When companies deploy autonomous AI agents (LangChain, CrewAI, AutoGen, OpenAI Assistants, Anthropic Tool Use), they face a critical security problem: **unrestricted AI side effects**. If an agent hallucinates, enters an infinite loop, or suffers prompt injection, it can drain budgets, delete databases, or transfer company funds.
 
-### 5. Regulatory Compliance Mapping Engine
-- Real-time compliance assessment mapped directly to:
-  - **EU AI Act Article 14 (Human Oversight)**: Measures human sign-off rates, replay attack prevention, and approval latency.
-  - **EU AI Act Article 12 (Record-Keeping & Traceability)**: Continuous hash-chain integrity verification and signed checkpoints.
-  - **NIST AI Risk Management Framework 1.0**: GOVERN, MAP, MEASURE, and MANAGE scores.
-  - **SOC 2 Type II**: Trust Services Criteria (CC6.1 Access Control, CC6.8 Audit Trails).
+**AgentTrust acts as the independent security gatekeeper:**
+1. **Deny-by-Default Execution**: No AI agent can execute tools or touch databases without explicit policy authorization.
+2. **Cascading Subagent Delegation**: Orchestrators can spawn worker subagents with strictly downscoped permissions (subagents cannot exceed parent capabilities).
+3. **Semantic Blast Radius Scoring**: Evaluates the real-world irreversibility of actions before execution. Actions with high blast radius dynamically escalate to human review.
+4. **Human-in-the-Loop (HITL) Approvals with 1-Click Mobile Callback**: Sensitive operations trigger approval tickets with 1-click decision URLs for Slack, Microsoft Teams, or mobile email.
+5. **Single-Use Replay Protection**: Approved tickets carry unique cryptographic nonces that burn atomically on first use. Duplicate attempts trigger security anomalies.
+6. **Verifiable Audit Ledger & ECDSA P-256 Notarization**: Every request and outcome is hash-chained (`prev_hash` $\rightarrow$ `entry_hash`) and periodically signed with an asymmetric ECDSA P-256 keypair for offline compliance verification.
+7. **Transparent Egress Proxy & Pre-Flight Prompt Scanner**: Traps rogue outbound network calls and neutralizes prompt injections, jailbreaks, and sensitive data leaks.
+8. **Emergency Air-Gap Killswitch**: 1-click panic button that revokes all agent credentials in $< 15\text{ ms}$ and exports a forensic checkpoint.
 
 ---
 
@@ -55,75 +55,62 @@
 
 ---
 
-## 3. Quickstart & Local Setup
+## 3. Automated Test Suite (41 Tests Passing)
 
-### Prerequisites
-- Node.js >= 20.x
-- npm >= 10.x
+AgentTrust features a rigorous test suite of **41 automated tests across 9 test suites** covering all core security capabilities:
 
-```powershell
-# 1. Clone/navigate to project
-cd "d:\Important Doc\agent-trust"
+```text
+✓ tests/audit_integrity.test.ts (4 tests)
+✓ tests/rate_limits_spend.test.ts (2 tests)
+✓ tests/revocation.test.ts (4 tests)
+✓ tests/authorization.test.ts (6 tests)
+✓ tests/defensive_sandbox.test.ts (4 tests)
+✓ tests/enterprise_defenses_v2.test.ts (7 tests)
+✓ tests/approvals.test.ts (4 tests)
+✓ tests/e2e_user_journey.test.ts (1 test)
+✓ tests/enterprise_features.test.ts (9 tests)
 
-# 2. Install dependencies
-npm install
-npm --prefix client install
-
-# 3. Build frontend assets
-npm run build:client
-
-# 4. Start backend server & dashboard (runs on port 4000)
-npm run server
+Test Files  9 passed (9)
+     Tests  41 passed (41)
 ```
 
-Open your browser to:
-👉 **http://localhost:4000**
-
----
-
-## 4. Automated Test Suite (30 Tests Passing)
-
+Run tests locally:
 ```powershell
 npm test
 ```
 
-### Complete Test Coverage:
-- **`tests/audit_integrity.test.ts` (4 tests)**: Continuous hash-linking, payload tampering detection, action modification detection, record deletion detection.
-- **`tests/rate_limits_spend.test.ts` (2 tests)**: Sliding-minute RPM throttling, financial budget ceiling enforcement.
-- **`tests/authorization.test.ts` (6 tests)**: Deny-by-default, capability boundaries, priority rules, server-side tool execution blocking.
-- **`tests/revocation.test.ts` (4 tests)**: Instant denial, permanent revocation lock, suspension/activation.
-- **`tests/approvals.test.ts` (4 tests)**: HITL workflow, single-use ticket consumption, replay attack defense (HTTP 409), expired ticket rejection.
-- **`tests/e2e_user_journey.test.ts` (1 test)**: Full lifecycle integration.
-- **`tests/enterprise_features.test.ts` (9 tests)**: Subagent delegation attenuation defense, budget ceilings, blast radius scoring, ECDSA notarization & offline verification, emergency air-gap killswitch, and EU AI Act compliance report generation.
+---
+
+## 4. 1-Click Free Cloud Deployment
+
+This repository includes pre-configured cloud deployment files (`render.yaml` and `Dockerfile`):
+
+1. Go to **[Render.com](https://render.com)** and sign in with GitHub.
+2. Click **New +** $\rightarrow$ **Web Service** $\rightarrow$ select `SRN0129/Agenttrust`.
+3. Select **Free Plan** and click **Deploy Web Service**.
+4. Your platform will be online 24/7 with a live HTTPS URL.
 
 ---
 
 ## 5. Enterprise REST API Reference
 
-### Agent Management & Delegation
-- `POST /api/v1/agents/register` — Register a root orchestrator agent.
-- `POST /api/v1/agents/delegate` — Mint an attenuated subagent with inherited capability boundaries.
-- `GET /api/v1/agents/:id/subagents` — List subagents delegated by a parent agent.
-- `POST /api/v1/agents/:id/revoke` — Permanently revoke an agent's credentials.
-- `POST /api/v1/agents/:id/status` — Suspend or reactivate an agent.
+| Endpoint | Method | Purpose |
+| :--- | :--- | :--- |
+| `/api/v1/agents/register` | `POST` | Register root agent, generate scoped credentials |
+| `/api/v1/agents/delegate` | `POST` | Mint attenuated subagent with strictly downscoped capabilities |
+| `/api/v1/authorize` | `POST` | Core policy gateway check with semantic blast radius scoring |
+| `/api/v1/proxy` | `POST` | Transparent egress proxy inspecting and filtering outbound calls |
+| `/api/v1/approvals/pending`| `GET` | List pending human approval requests |
+| `/api/v1/approvals/callback`| `GET` | 1-Click mobile push decision link for Slack, Teams, and email |
+| `/api/v1/tools/execute` | `POST` | Sandboxed protected tool execution gateway |
+| `/api/v1/notarize/checkpoint`| `POST` | Mint ECDSA P-256 signed audit checkpoint |
+| `/api/v1/compliance/report` | `GET` | EU AI Act (Art. 12 & 14) and NIST AI RMF compliance assessment |
+| `/api/v1/system/killswitch` | `POST` | Emergency air-gap killswitch revoking all agent credentials |
 
-### Policy & Pre-Flight Risk Analysis
-- `POST /api/v1/authorize` — Core policy gateway check. Computes semantic blast radius, returns `{ allowed, decision, blastRadius, reason, approvalId? }`.
-- `POST /api/v1/policies` — Create priority-ordered authorization rules.
+---
 
-### Approvals (Human-in-the-Loop)
-- `GET /api/v1/approvals/pending` — List pending approvals.
-- `POST /api/v1/approvals/:id/decide` — Operator approves or rejects (issues single-use execution ticket).
+## 6. License & Commercial Inquiries
 
-### Protected Tool Gateway
-- `POST /api/v1/tools/execute` — Server-protected mock tool execution requiring valid policy or single-use ticket.
-
-### Notarization & Cryptographic Proofs
-- `POST /api/v1/notarize/checkpoint` — Mint an ECDSA P-256 signed checkpoint manifest of the current ledger tip.
-- `GET /api/v1/notarize/checkpoints` — List signed checkpoints.
-- `POST /api/v1/notarize/verify-offline` — Offline signature verification of any checkpoint manifest.
-- `GET /api/v1/audit/verify` — Sequential SHA-256 hash chain verification.
-
-### Compliance & Emergency Operations
-- `GET /api/v1/compliance/report` — Real-time EU AI Act (Art. 12 & 14) and NIST AI RMF compliance assessment.
-- `POST /api/v1/system/killswitch` — Emergency air-gap killswitch revoking all agent credentials.
+This software is released under dual-licensing terms:
+- **Open Source Evaluation**: MIT License for personal and evaluation use.
+- **Commercial & Enterprise Use**: For proprietary integration, dedicated support, or acquisition, contact [@SRN0129](https://github.com/SRN0129).
