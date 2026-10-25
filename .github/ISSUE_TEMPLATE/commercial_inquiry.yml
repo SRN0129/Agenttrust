@@ -1,0 +1,41 @@
+name: 💼 Commercial Licensing or Acquisition Inquiry
+description: For enterprises, platforms, or investors interested in licensing or acquiring AgentTrust.
+title: "[COMMERCIAL INQUIRY] "
+labels: ["commercial", "enterprise"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for your interest in **AgentTrust**. Please provide brief details below so we can assist with your enterprise security or acquisition requirements.
+  - type: input
+    id: organization
+    attributes:
+      label: Company / Organization Name
+      placeholder: e.g. Acme Fintech Corp
+    validations:
+      required: true
+  - type: dropdown
+    id: inquiry_type
+    attributes:
+      label: Inquiry Type
+      options:
+        - "Enterprise Self-Hosted License"
+        - "Full Project & IP Acquisition"
+        - "Custom Deployment & Integration"
+        - "Partnership"
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Requirements / Message
+      placeholder: Tell us about your use case, timeline, or acquisition proposal...
+    validations:
+      required: true
+  - type: input
+    id: contact
+    attributes:
+      label: Preferred Contact Email / LinkedIn
+      placeholder: your.email@company.com
+    validations:
+      required: true

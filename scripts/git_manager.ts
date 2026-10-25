@@ -25,7 +25,9 @@ export async function initAndCommitRepo(authorName = "AgentTrust Architect", aut
         relativePath.startsWith("dist") ||
         relativePath.startsWith("client/dist") ||
         relativePath.startsWith("data") ||
-        relativePath.startsWith(".git") ||
+        relativePath === ".git" ||
+        relativePath.startsWith(".git/") ||
+        relativePath.startsWith(".git\\") ||
         entry.name.endsWith(".db") ||
         entry.name.endsWith(".log")
       ) {

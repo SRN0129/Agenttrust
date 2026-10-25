@@ -1,0 +1,40 @@
+name: AgentTrust CI & Automated Security Verification
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run every Monday at 00:00 UTC to verify health and keep repository active
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+jobs:
+  test-and-verify:
+    name: Run 41 Automated Security Tests & Cryptographic Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Backend & Client Dependencies
+        run: |
+          npm ci
+          npm --prefix client ci
+
+      - name: Compile & Typecheck Frontend
+        run: npm run build:client
+
+      - name: Execute Full Automated Test Suite (41 Tests)
+        run: npm test
+
+      - name: Run Cryptographic Integrity Benchmark
+        run: npx tsx simulator/run_demo.ts

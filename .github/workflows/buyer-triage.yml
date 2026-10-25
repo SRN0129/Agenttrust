@@ -1,0 +1,36 @@
+name: Automated Community & Buyer Triage
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  auto-triage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto-respond to commercial inquiries and issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const isCommercial = issue.title.toLowerCase().includes('commercial') || 
+                               issue.title.toLowerCase().includes('acquisition') || 
+                               issue.title.toLowerCase().includes('license') ||
+                               issue.title.toLowerCase().includes('enterprise');
+
+            let message = '';
+            if (isCommercial) {
+              message = `👋 Thank you for your commercial inquiry regarding **AgentTrust**!\n\nThe maintainer (@SRN0129) has been notified and will reply shortly to discuss commercial licensing, enterprise integration, or acquisition terms.\n\nFor confidential or priority communications, please feel free to reference your organization's timeline and deployment requirements.`;
+            } else {
+              message = `👋 Thank you for opening an issue on **AgentTrust**!\n\nOur automated test suite runs on every commit. The maintainers will review your submission shortly. If reporting a security vulnerability, thank you for responsible disclosure!`;
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: message
+            });

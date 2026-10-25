@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+client/node_modules/
+
+# Production build outputs
+dist/
+client/dist/
+
+# Local databases & keys
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# Logs & temp
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local
