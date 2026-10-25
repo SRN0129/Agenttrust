@@ -20,7 +20,7 @@
   "dependencies": {
     "better-sqlite3": "^11.8.1",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
+    "dotenv": "^18.0.9",
     "express": "^4.21.2",
     "isomorphic-git": "^1.44.4",
     "zod": "^3.24.2"
