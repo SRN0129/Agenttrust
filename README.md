@@ -5,6 +5,7 @@
 [![CI](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml/badge.svg)](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/SRN0129/Agenttrust)](https://github.com/SRN0129/Agenttrust/releases)
 [![Package](https://img.shields.io/badge/Package-GitHub%20Packages-blue.svg)](https://github.com/SRN0129/Agenttrust/packages)
+[![Roadmap](https://img.shields.io/badge/Roadmap-Active%20Milestones-blue.svg)](ROADMAP.md)
 [![Tests Passing](https://img.shields.io/badge/Automated%20Tests-70%2F70%20Passing-brightgreen.svg)](tests)
 [![CodeQL Security Scan](https://github.com/SRN0129/Agenttrust/actions/workflows/codeql.yml/badge.svg)](https://github.com/SRN0129/Agenttrust/actions/workflows/codeql.yml)
 [![Security Policy](https://img.shields.io/badge/Security-STRIDE%20Verified-blueviolet.svg)](SECURITY.md)
