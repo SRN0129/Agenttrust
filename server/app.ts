@@ -106,8 +106,42 @@ export function createApp(customDb?: Database.Database) {
     next();
   };
 
+  // Authentication Middleware for Human Admin & Security Operators
+  const authenticateAdminOrOperator = (req: Request, res: Response, next: NextFunction) => {
+    const configuredAdminKey = process.env.ADMIN_KEY;
+    // In dev / test mode without ADMIN_KEY explicitly configured, allow with notice
+    if (!configuredAdminKey) {
+      res.setHeader("x-admin-mode", "unauthenticated-dev");
+      next();
+      return;
+    }
+
+    const authHeader = req.headers.authorization;
+    const adminKeyHeader = req.headers["x-admin-key"] as string | undefined;
+    const cookieHeader = req.headers.cookie;
+
+    let providedToken = adminKeyHeader || "";
+    if (!providedToken && authHeader && authHeader.startsWith("Bearer ")) {
+      providedToken = authHeader.substring(7).trim();
+    }
+    if (!providedToken && cookieHeader && cookieHeader.includes("agenttrust_admin=")) {
+      const match = cookieHeader.match(/agenttrust_admin=([^;]+)/);
+      if (match) providedToken = match[1];
+    }
+
+    if (providedToken === configuredAdminKey) {
+      next();
+      return;
+    }
+
+    res.status(401).json({
+      success: false,
+      error: "UNAUTHORIZED_ADMIN: Valid administrative credentials required. Pass 'x-admin-key' or 'Authorization: Bearer <ADMIN_KEY>' header.",
+    });
+  };
+
   // ----------------------------------------------------
-  // Health & Info
+  // Health & System Info
   // ----------------------------------------------------
   app.get("/health", (req, res) => {
     res.json({
@@ -116,6 +150,60 @@ export function createApp(customDb?: Database.Database) {
       service: "AgentTrust Security Gateway",
       version: "1.0.0",
     });
+  });
+
+  app.get("/api/v1/system/database-info", (req, res) => {
+    const driver = process.env.DB_DRIVER || (process.env.DATABASE_URL ? "postgres" : "sqlite");
+    res.json({
+      success: true,
+      dialect: driver,
+      clusterCapable: driver === "postgres",
+      walEnabled: driver === "sqlite",
+      timestamp: Date.now(),
+    });
+  });
+
+  // ----------------------------------------------------
+  // Admin & Human Operator Authentication
+  // ----------------------------------------------------
+  app.post("/api/v1/auth/admin-login", (req, res) => {
+    const { adminKey } = req.body || {};
+    const configuredKey = process.env.ADMIN_KEY || "agenttrust-admin-dev";
+
+    if (adminKey !== configuredKey) {
+      res.status(401).json({ success: false, error: "Invalid administrative key." });
+      return;
+    }
+
+    res.setHeader("Set-Cookie", `agenttrust_admin=${configuredKey}; Path=/; HttpOnly; SameSite=Strict`);
+    res.json({
+      success: true,
+      role: "SECURITY_OPERATOR",
+      token: configuredKey,
+      message: "Admin session authenticated successfully.",
+    });
+  });
+
+  app.get("/api/v1/auth/session", (req, res) => {
+    const configuredKey = process.env.ADMIN_KEY;
+    if (!configuredKey) {
+      res.json({ authenticated: true, role: "SECURITY_OPERATOR", mode: "UNLOCKED_DEV" });
+      return;
+    }
+
+    const adminKeyHeader = req.headers["x-admin-key"] as string | undefined;
+    const authHeader = req.headers.authorization;
+    let token = adminKeyHeader || (authHeader?.startsWith("Bearer ") ? authHeader.substring(7).trim() : "");
+    if (!token && req.headers.cookie?.includes("agenttrust_admin=")) {
+      const match = req.headers.cookie.match(/agenttrust_admin=([^;]+)/);
+      if (match) token = match[1];
+    }
+
+    if (token === configuredKey) {
+      res.json({ authenticated: true, role: "SECURITY_OPERATOR", mode: "PROTECTED_PRODUCTION" });
+    } else {
+      res.json({ authenticated: false, role: "ANONYMOUS", mode: "PROTECTED_PRODUCTION" });
+    }
   });
 
   // ----------------------------------------------------
@@ -516,7 +604,7 @@ export function createApp(customDb?: Database.Database) {
     reason: z.string().optional(),
   });
 
-  app.post("/api/v1/approvals/:id/decide", (req, res) => {
+  app.post("/api/v1/approvals/:id/decide", authenticateAdminOrOperator, (req, res) => {
     try {
       const parsed = decideSchema.parse(req.body);
       const updated = approvalService.decide(
@@ -798,7 +886,7 @@ export function createApp(customDb?: Database.Database) {
     operatorEmail: z.string().email(),
   });
 
-  app.post("/api/v1/system/killswitch", (req, res) => {
+  app.post("/api/v1/system/killswitch", authenticateAdminOrOperator, (req, res) => {
     try {
       const parsed = killswitchSchema.parse(req.body);
       const result = killswitchService.trigger(parsed.reason, parsed.operatorEmail);

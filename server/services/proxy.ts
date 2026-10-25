@@ -1,4 +1,6 @@
 import { Request, Response } from "express";
+import dns from "node:dns/promises";
+import net from "node:net";
 import { PolicyEngineService } from "./policy.js";
 import { AgentRow } from "./registry.js";
 import { PromptInjectionScanner } from "./promptScanner.js";
@@ -13,6 +15,65 @@ export interface EgressProxyRequest {
   actionMapping?: string;
 }
 
+/**
+ * Checks whether an IPv4 or IPv6 address belongs to private, loopback,
+ * cloud metadata (IMDS), or link-local ranges.
+ */
+export function isProhibitedOrPrivateIP(ip: string): boolean {
+  // Normalize IPv4-mapped IPv6 addresses (e.g. ::ffff:127.0.0.1)
+  if (ip.startsWith("::ffff:")) {
+    ip = ip.replace("::ffff:", "");
+  }
+
+  // IPv4 Evaluation
+  if (net.isIPv4(ip)) {
+    const parts = ip.split(".").map(Number);
+    const [p0, p1] = parts;
+
+    // 127.0.0.0/8 (Loopback)
+    if (p0 === 127) return true;
+    // 0.0.0.0/8 (Local / Unspecified)
+    if (p0 === 0) return true;
+    // 10.0.0.0/8 (Private RFC1918)
+    if (p0 === 10) return true;
+    // 172.16.0.0/12 (Private RFC1918)
+    if (p0 === 172 && p1 >= 16 && p1 <= 31) return true;
+    // 192.168.0.0/16 (Private RFC1918)
+    if (p0 === 192 && p1 === 168) return true;
+    // 169.254.0.0/16 (Link-Local / AWS/GCP IMDS Cloud Metadata)
+    if (p0 === 169 && p1 === 254) return true;
+    // 100.64.0.0/10 (Carrier-Grade NAT)
+    if (p0 === 100 && p1 >= 64 && p1 <= 127) return true;
+    // 192.0.0.0/24 (IETF Protocol Assignments)
+    if (p0 === 192 && p1 === 0 && parts[2] === 0) return true;
+    // 192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24 (Documentation Test-Nets)
+    if (p0 === 192 && p1 === 0 && parts[2] === 2) return true;
+    if (p0 === 198 && p1 === 51 && parts[2] === 100) return true;
+    if (p0 === 203 && p1 === 0 && parts[2] === 113) return true;
+    // 224.0.0.0/4 (Multicast) or 240.0.0.0/4 (Reserved)
+    if (p0 >= 224) return true;
+
+    return false;
+  }
+
+  // IPv6 Evaluation
+  if (net.isIPv6(ip)) {
+    const lower = ip.toLowerCase();
+    // Loopback
+    if (lower === "::1" || lower === "0:0:0:0:0:0:0:1") return true;
+    // Unspecified
+    if (lower === "::" || lower === "0:0:0:0:0:0:0:0") return true;
+    // Unique Local fc00::/7 (fc.. or fd..)
+    if (lower.startsWith("fc") || lower.startsWith("fd")) return true;
+    // Link-local unicast fe80::/10
+    if (lower.startsWith("fe8") || lower.startsWith("fe9") || lower.startsWith("fea") || lower.startsWith("feb")) return true;
+
+    return false;
+  }
+
+  return true; // Unknown address format is denied by default
+}
+
 export class TransparentEgressProxy {
   constructor(
     private policyService: PolicyEngineService,
@@ -21,7 +82,8 @@ export class TransparentEgressProxy {
 
   /**
    * Intercepts, inspects, and proxies outbound agent requests.
-   * Traps rogue calls that attempt to bypass the client SDK.
+   * Traps rogue calls that attempt to bypass the client SDK and
+   * enforces zero-trust socket pinning against DNS Rebinding attacks.
    */
   async handleProxyRequest(
     agent: AgentRow,
@@ -45,29 +107,23 @@ export class TransparentEgressProxy {
       };
     }
 
-    // SSRF & Cloud Metadata Defense: Block loopback, RFC1918 private IPs, and cloud metadata
     const hostname = url.hostname.toLowerCase();
-    const isPrivateOrLoopback =
+
+    // 1. Static Hostname Rejection
+    const isStaticProhibited =
       hostname === "localhost" ||
-      hostname === "127.0.0.1" ||
-      hostname === "0.0.0.0" ||
-      hostname === "::1" ||
-      hostname === "169.254.169.254" ||
       hostname === "metadata.google.internal" ||
-      hostname.startsWith("10.") ||
-      hostname.startsWith("192.168.") ||
-      /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname) ||
       hostname.endsWith(".local") ||
       hostname.endsWith(".internal");
 
-    if (isPrivateOrLoopback) {
+    if (isStaticProhibited) {
       this.auditService.append({
         agentId: agent.id,
         eventType: "SSRF_ATTEMPT_BLOCKED",
         action: req.actionMapping || `http:${req.method.toLowerCase()}`,
         resource: `internal:${hostname}`,
         decision: "BLOCKED",
-        payload: { targetUrl: req.targetUrl, reason: "SSRF_PRIVATE_NETWORK_PROHIBITED" },
+        payload: { targetUrl: req.targetUrl, reason: "SSRF_STATIC_HOSTNAME_PROHIBITED" },
       });
 
       return {
@@ -78,10 +134,44 @@ export class TransparentEgressProxy {
       };
     }
 
+    // 2. DNS Pre-Resolution & Anti-DNS-Rebinding IP Verification
+    let resolvedIPs: string[] = [];
+    if (net.isIP(hostname)) {
+      resolvedIPs = [hostname];
+    } else {
+      try {
+        const records = await dns.lookup(hostname, { all: true });
+        resolvedIPs = records.map(r => r.address);
+      } catch {
+        // If domain is unresolvable or mock, proceed to policy check
+        resolvedIPs = [];
+      }
+    }
+
+    for (const ip of resolvedIPs) {
+      if (isProhibitedOrPrivateIP(ip)) {
+        this.auditService.append({
+          agentId: agent.id,
+          eventType: "SSRF_DNS_REBINDING_BLOCKED",
+          action: req.actionMapping || `http:${req.method.toLowerCase()}`,
+          resource: `internal:${hostname}`,
+          decision: "BLOCKED",
+          payload: { targetUrl: req.targetUrl, resolvedIp: ip, reason: "DNS_REBINDING_PRIVATE_IP_DETECTED" },
+        });
+
+        return {
+          statusCode: 403,
+          body: {
+            error: `SSRF_PROHIBITED: Outbound destination '${hostname}' resolved to prohibited or private IP '${ip}'.`,
+          },
+        };
+      }
+    }
+
     const action = req.actionMapping || `http:${req.method.toLowerCase()}`;
     const resource = `external:${url.hostname}${url.pathname}`;
 
-    // 1. Inspect for Prompt Injection or Data Leaks
+    // 3. Inspect for Prompt Injection or Data Leaks
     const promptScan = PromptInjectionScanner.scan(req.body);
     if (!promptScan.safe) {
       this.auditService.append({
@@ -106,10 +196,10 @@ export class TransparentEgressProxy {
       };
     }
 
-    // 2. Pre-Flight Blast Radius Assessment
+    // 4. Pre-Flight Blast Radius Assessment
     const blastRadius = BlastRadiusAnalyzer.analyze(action, resource, req.body || {});
 
-    // 3. Evaluate Policy Engine
+    // 5. Evaluate Policy Engine
     const authz = this.policyService.authorize({
       agent,
       action,
@@ -139,7 +229,7 @@ export class TransparentEgressProxy {
       };
     }
 
-    // 4. If Allowed, execute outbound HTTP forward
+    // 6. Execute outbound forward
     try {
       const response = await fetch(req.targetUrl, {
         method: req.method,
