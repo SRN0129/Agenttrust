@@ -23,9 +23,9 @@ jobs:
 
             let message = '';
             if (isCommercial) {
-              message = `👋 Thank you for your commercial inquiry regarding **AgentTrust**!\n\nThe maintainer (@SRN0129) has been notified and will reply shortly to discuss commercial licensing, enterprise integration, or acquisition terms.\n\nFor confidential or priority communications, please feel free to reference your organization's timeline and deployment requirements.`;
+              message = `Thank you for your commercial inquiry regarding **AgentTrust**.\n\nThe maintainers (@SRN0129) have been notified and will follow up shortly to discuss enterprise licensing, integration requirements, or pilot deployments.\n\nPlease include any technical architecture constraints or deployment timelines relevant to your organization.`;
             } else {
-              message = `👋 Thank you for opening an issue on **AgentTrust**!\n\nOur automated test suite runs on every commit. The maintainers will review your submission shortly. If reporting a security vulnerability, thank you for responsible disclosure!`;
+              message = `Thank you for opening an issue.\n\nMaintainers will review your submission shortly. If reporting a sensitive security issue, please ensure confidential handling per [SECURITY.md](SECURITY.md).`;
             }
 
             await github.rest.issues.createComment({

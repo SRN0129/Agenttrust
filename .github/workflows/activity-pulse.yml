@@ -41,8 +41,8 @@ jobs:
 
       - name: Commit Health Pulse Heartbeat
         run: |
-          git config user.name "AgentTrust Keepalive Bot"
-          git config user.email "bot@agenttrust.security"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .pulse.log
-          git commit -m "chore(keepalive): automated repository health check verified [skip ci]" || echo "No changes to commit"
+          git commit -m "chore: update verification health check [skip ci]" || echo "No changes to commit"
           git push || echo "Push skipped or branch protected"

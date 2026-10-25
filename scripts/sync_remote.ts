@@ -8,7 +8,7 @@ async function main() {
 
   console.log("📦 Staging & Committing repository updates...");
   await commitChanges(
-    "feat(repo-management): add automated continuous keepalive pulse, buyer triage, security policy, and community standards"
+    "docs: refine architecture specification, remove legacy cloud guide, and harden pipeline"
   );
 
   console.log("🚀 Pushing all updates to remote repository...");

@@ -41,8 +41,8 @@ jobs:
 
       - name: Commit Hardening Audit Log
         run: |
-          git config user.name "AgentTrust Hardening Bot"
-          git config user.email "security-bot@agenttrust.security"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .fuzzing.log
-          git commit -m "chore(fuzzing): automated continuous security fuzzing verified [skip ci]" || echo "No changes to commit"
+          git commit -m "chore: record automated verification pulse [skip ci]" || echo "No changes to commit"
           git push || echo "Push skipped"

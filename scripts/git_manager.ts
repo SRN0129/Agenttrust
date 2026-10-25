@@ -48,13 +48,27 @@ export async function stageAllFiles(baseDir = projectDir) {
   }
 
   await stageDirectory(baseDir);
+
+  // Check for deleted files in git index and stage their removal
+  try {
+    const matrix = await git.statusMatrix({ fs, dir: baseDir });
+    for (const [filepath, head, workdir, stage] of matrix) {
+      if (head === 1 && workdir === 0) {
+        await git.remove({ fs, dir: baseDir, filepath });
+        console.log(`  [-] Staged removal: ${filepath}`);
+      }
+    }
+  } catch (err: any) {
+    console.warn("Could not check statusMatrix:", err.message);
+  }
+
   console.log(`✅ Staged total of ${count} files.`);
 }
 
 export async function commitChanges(
-  message = "feat(automation): add automated repo keepalive pulse, community standards, security policies, and buyer triage",
+  message = "refactor: clean documentation and remove obsolete deployment guides",
   authorName = "SRN0129",
-  authorEmail = "architect@agenttrust.security"
+  authorEmail = "SRN0129@users.noreply.github.com"
 ) {
   await stageAllFiles(projectDir);
 
