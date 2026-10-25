@@ -1,0 +1,9 @@
+tests/
+simulator/
+wiki_staging/
+temp_wiki/
+.git/
+.github/
+client/
+*.db
+*.log

@@ -581,10 +581,7 @@ export function createApp(customDb?: Database.Database) {
         return;
       }
 
-      res.json({
-        success: true,
-        ...result,
-      });
+      res.json(result);
     } catch (err: any) {
       res.status(400).json({ success: false, error: err?.errors || err.message });
     }

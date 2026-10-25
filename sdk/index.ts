@@ -327,7 +327,7 @@ export function wrapAgent<T extends Record<string, any>>(agent: T, options: Wrap
           let executionStatus: "SUCCESS" | "FAILED" = "SUCCESS";
 
           try {
-            result = await orig.apply(target, args);
+            result = await (orig as Function).apply(target, args);
             return result;
           } catch (err: any) {
             executionStatus = "FAILED";
