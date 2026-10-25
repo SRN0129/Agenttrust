@@ -23,6 +23,7 @@ import { MicroBudgetService } from "./services/microBudget.js";
 import { AuditAttestationService } from "./services/tamperAttestation.js";
 import { AgentChaosMonkey } from "./services/chaosMonkey.js";
 import { AutonomousSelfHealingService } from "./services/selfHealing.js";
+import { QuantumTrustService } from "./services/quantumTrust.js";
 
 export function createApp(customDb?: Database.Database) {
   const app = express();
@@ -60,6 +61,7 @@ export function createApp(customDb?: Database.Database) {
   const attestationService = new AuditAttestationService(db, auditService, notarizationService);
   const chaosMonkeyService = new AgentChaosMonkey(policyService, delegationService);
   const selfHealingService = new AutonomousSelfHealingService(db, auditService);
+  const quantumTrustService = new QuantumTrustService(auditService);
 
   app.use(cors());
   app.use(express.json());
@@ -1000,6 +1002,46 @@ export function createApp(customDb?: Database.Database) {
     }
   });
 
+  // ----------------------------------------------------
+  // Strategic Enterprise Innovation 6: Quantum AI & Post-Quantum Cryptography (PQC)
+  // ----------------------------------------------------
+  app.post("/api/v1/quantum/inspect-circuit", (req, res) => {
+    try {
+      const result = quantumTrustService.inspectCircuit(req.body);
+      res.json({ success: true, result });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/quantum/pqc-attestation", (req, res) => {
+    try {
+      const verification = auditService.verifyIntegrity();
+      const tipHash = verification.latestHash || "0000000000000000000000000000000000000000000000000000000000000000";
+      const classicalSig = notarizationService.signPayload(tipHash);
+      const pubKey = notarizationService.getPublicKey();
+
+      const manifest = quantumTrustService.generatePqcAttestation(tipHash, classicalSig, pubKey);
+      res.json({ success: true, manifest });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/quantum/pqc-verify", (req, res) => {
+    try {
+      const { manifest } = req.body;
+      if (!manifest) {
+        res.status(400).json({ success: false, error: "Provide manifest in body." });
+        return;
+      }
+      const valid = QuantumTrustService.verifyPqcManifest(manifest);
+      res.json({ success: true, valid });
+    } catch (err: any) {
+      res.status(400).json({ success: false, error: err.message });
+    }
+  });
+
   // Serve static UI in production if built
   const clientDistPath = path.resolve(process.cwd(), "client", "dist");
   if (fs.existsSync(clientDistPath)) {
@@ -1025,6 +1067,7 @@ export function createApp(customDb?: Database.Database) {
       chaosMonkeyService,
       microBudgetService,
       selfHealingService,
+      quantumTrustService,
     },
   };
 }

@@ -8,9 +8,11 @@
 [![Dependabot](https://img.shields.io/badge/Dependabot-active-brightgreen.svg)](.github/dependabot.yml)
 [![GitHub Stars](https://img.shields.io/github/stars/SRN0129/Agenttrust?style=social)](https://github.com/SRN0129/Agenttrust)
 [![License: MIT / Commercial](https://img.shields.io/badge/License-MIT%20%2F%20Commercial-blue.svg)](LICENSE)
-[![Tests Passing](https://img.shields.io/badge/Automated%20Tests-62%2F62%20Passing-brightgreen.svg)](tests)
+[![Tests Passing](https://img.shields.io/badge/Automated%20Tests-70%2F70%20Passing-brightgreen.svg)](tests)
 [![CodeQL Security Scan](https://github.com/SRN0129/Agenttrust/actions/workflows/codeql.yml/badge.svg)](https://github.com/SRN0129/Agenttrust/actions/workflows/codeql.yml)
 [![Self-Healing](https://img.shields.io/badge/Autonomous%20System-Self--Healing%20Active-brightgreen.svg)](server/services/selfHealing.ts)
+[![Post-Quantum Security](https://img.shields.io/badge/Post--Quantum-NIST%20PQC%20Ready-purple.svg)](#7-quantum-ai-trust--post-quantum-cryptography-pqc)
+[![Quantum Governance](https://img.shields.io/badge/Quantum%20AI-QPU%20Circuit%20Inspected-blueviolet.svg)](#7-quantum-ai-trust--post-quantum-cryptography-pqc)
 [![Compliance](https://img.shields.io/badge/Compliance-EU%20AI%20Act%20Art.%2012%20%26%2014-emerald.svg)](server/services/compliance.ts)
 [![Threat Model](https://img.shields.io/badge/Security-STRIDE%20Verified-blueviolet.svg)](#2-threat-model--security-boundaries-stride)
 [![Chaos Monkey](https://img.shields.io/badge/Red--Teaming-Chaos%20Monkey%20Certified-orange.svg)](server/services/chaosMonkey.ts)
@@ -48,6 +50,8 @@ When companies deploy autonomous AI agents (LangChain, CrewAI, AutoGen, OpenAI A
 11. **"Agent Chaos Monkey" Red-Team Simulator**: Built-in adversarial penetration test battery issuing an **Enterprise AI Trust Certificate (0-100%)** with EU AI Act & SOC 2 compliance readiness metrics.
 12. **Zero-Knowledge Merkle Attestation Receipts**: Generates self-contained cryptographic Merkle inclusion proofs that external auditors can verify offline without database access.
 13. **Micro-Budgeting & Velocity Circuit Breakers**: Bounded credit allocations per run with automatic emergency throttling on rapid infinite loops ($> 30\text{ RPM}$) or spending spikes.
+14. **Quantum Circuit Blast Radius & QPU Gate Inspection**: Pre-flight validation of OpenQASM / quantum circuits, enforcing hardware qubit boundaries ($< 127$ qubits), coherence depth limits ($< 500$ depth), and entangling gate constraints before QPU dispatch.
+15. **Post-Quantum Cryptography (PQC) Attestation**: Hybrid digital notarization combining classical ECDSA with **NIST FIPS 204 (ML-DSA / Dilithium)** quantum-resistant lattice digests, defending audit logs against future "Harvest Now, Decrypt Later" quantum threats.
 
 ---
 
@@ -56,19 +60,20 @@ When companies deploy autonomous AI agents (LangChain, CrewAI, AutoGen, OpenAI A
 | Threat Category | Attack Vector | Countermeasure |
 | :--- | :--- | :--- |
 | **Spoofing** | Attacker impersonates a privileged agent. | Scoped API keys (hashed with SHA-256 at rest); instant revocation; delegation lineage tracking. |
-| **Tampering** | Rogue actor alters audit events to conceal unauthorized operations. | Hash chaining (`prev_hash` + SHA-256 entry hash) + ECDSA P-256 signed checkpoints. |
+| **Tampering** | Rogue actor alters audit events to conceal unauthorized operations. | Hash chaining (`prev_hash` + SHA-256 entry hash) + ECDSA P-256 and NIST PQC signed checkpoints. |
 | **Repudiation** | Operator denies authorizing autonomous transactions. | Complete audit trail capturing agent ID, operator email, payload hash, and approval records. |
 | **Information Disclosure** | Secrets leaked via frontend code or plaintext logs. | API keys returned once at registration. Parameter payloads hashed at rest. |
 | **Elevation of Privilege** | Subagent attempts to obtain permissions outside parent scope. | Strict capability attenuation boundary check rejects unauthorized delegation. |
 | **Denial of Service** | Agent enters infinite loop, exhausting quotas. | Sliding-minute rate limiters (RPM) and cumulative budget ceilings ($ USD). |
 | **Replay Attacks** | Attacker intercepts an approved human execution ticket. | Single-use nonces atomically burned (`CONSUMED`) on first use. Duplicate attempts return HTTP 409. |
 | **Air-Gap Containment** | Widespread autonomous prompt injection compromise. | Global emergency killswitch revoking all credentials across all agents in $< 15\text{ ms}$. |
+| **Quantum Decryption** | Quantum adversaries decrypt historical audit archives. | NIST ML-DSA / Dilithium Level-5 hybrid post-quantum cryptographic envelopes. |
 
 ---
 
-## 3. Automated Test Suite (41 Tests Passing)
+## 3. Automated Test Suite (70 Tests Passing)
 
-AgentTrust features a rigorous test suite of **41 automated tests across 9 test suites** covering all core security capabilities:
+AgentTrust features a rigorous test suite of **70 automated tests across 12 test suites** covering all core security, enterprise, and quantum capabilities:
 
 ```text
 ✓ tests/audit_integrity.test.ts (4 tests)
@@ -80,9 +85,12 @@ AgentTrust features a rigorous test suite of **41 automated tests across 9 test 
 ✓ tests/approvals.test.ts (4 tests)
 ✓ tests/e2e_user_journey.test.ts (1 test)
 ✓ tests/enterprise_features.test.ts (9 tests)
+✓ tests/most_powerful_innovations.test.ts (12 tests)
+✓ tests/bugfixes_and_self_healing.test.ts (9 tests)
+✓ tests/quantum_trust.test.ts (8 tests)
 
-Test Files  9 passed (9)
-     Tests  41 passed (41)
+Test Files  12 passed (12)
+     Tests  70 passed (70)
 ```
 
 Run tests locally:
@@ -103,24 +111,55 @@ This repository includes pre-configured cloud deployment files (`render.yaml` an
 
 ---
 
-## 5. Enterprise REST API Reference
+## 5. Enterprise & Quantum REST API Reference
 
 | Endpoint | Method | Purpose |
 | :--- | :--- | :--- |
 | `/api/v1/agents/register` | `POST` | Register root agent, generate scoped credentials |
 | `/api/v1/agents/delegate` | `POST` | Mint attenuated subagent with strictly downscoped capabilities |
 | `/api/v1/authorize` | `POST` | Core policy gateway check with semantic blast radius scoring |
-| `/api/v1/proxy` | `POST` | Transparent egress proxy inspecting and filtering outbound calls |
+| `/api/v1/proxy` | `POST` | Transparent egress proxy with SSRF & cloud metadata shield |
 | `/api/v1/approvals/pending`| `GET` | List pending human approval requests |
 | `/api/v1/approvals/callback`| `GET` | 1-Click mobile push decision link for Slack, Teams, and email |
 | `/api/v1/tools/execute` | `POST` | Sandboxed protected tool execution gateway |
 | `/api/v1/notarize/checkpoint`| `POST` | Mint ECDSA P-256 signed audit checkpoint |
 | `/api/v1/compliance/report` | `GET` | EU AI Act (Art. 12 & 14) and NIST AI RMF compliance assessment |
 | `/api/v1/system/killswitch` | `POST` | Emergency air-gap killswitch revoking all agent credentials |
+| `/api/v1/governance/drift-check` | `POST` | Real-time goal hijack and semantic drift detector |
+| `/api/v1/chaos/audit` | `POST` | "Agent Chaos Monkey" adversarial red-team penetration test |
+| `/api/v1/audit/attestation/:id` | `GET` | Zero-knowledge Merkle inclusion proof for offline audit receipt |
+| `/api/v1/health/diagnostics` | `GET` | Autonomous health diagnostics and memory telemetry |
+| `/api/v1/health/self-heal` | `POST` | Run self-healing cycle (expires stale approvals, compacts WAL) |
+| `/api/v1/quantum/inspect-circuit` | `POST` | Quantum circuit blast radius & QPU gate depth pre-flight inspection |
+| `/api/v1/quantum/pqc-attestation` | `POST` | NIST ML-DSA / Dilithium Post-Quantum cryptographic attestation |
+| `/api/v1/quantum/pqc-verify` | `POST` | Offline verification of Post-Quantum cryptographic manifests |
 
 ---
 
-## 6. License & Commercial Inquiries
+## 6. Quantum AI Trust & Post-Quantum Cryptography (PQC)
+
+As autonomous agents transition to **Hybrid Classical-Quantum Computing** (interfacing with IBM Quantum, AWS Braket, and Google Quantum AI via Qiskit and Cirq), AgentTrust provides the industry's first dedicated **Quantum Trust Layer**:
+
+```
+                       ┌───────────────────────────────────────────────┐
+                       │        AgentTrust Quantum Control Plane       │
+                       └───────────────────────┬───────────────────────┘
+                                               │
+       ┌───────────────────────────────────────┼───────────────────────────────────────┐
+       ▼                                       ▼                                       ▼
+┌───────────────────────────────┐   ┌───────────────────────────────┐   ┌───────────────────────────────┐
+│ Post-Quantum Cryptography     │   │ QPU Circuit Gate Inspection   │   │ Quantum Shot-Budget Guard     │
+│ (NIST PQC: ML-DSA / Dilithium)│   │ & Decoherence Depth Limits    │   │ & Hardware Multi-Tenancy Shield│
+└───────────────────────────────┘   └───────────────────────────────┘   └───────────────────────────────┘
+```
+
+1. **NIST Post-Quantum Cryptography (PQC) Level-5 Envelope**: Protects audit archives against future quantum decryption using hybrid classical-lattice digital signatures (ML-DSA / Dilithium & SHA3-512 domain separation).
+2. **Quantum Circuit Blast Radius**: Parses OpenQASM code pre-dispatch to prevent runaway two-qubit gate entanglement ($> 500\text{ depth}$) and hardware qubit over-allocation ($> 127\text{ qubits}$).
+3. **Quantum Shot Budgeting**: Prevents runaway quantum loops (VQE / QNN iterations) from draining multi-thousand-dollar cloud QPU balances.
+
+---
+
+## 7. License & Commercial Inquiries
 
 This software is released under dual-licensing terms:
 - **Open Source Evaluation**: MIT License for personal and evaluation use.
