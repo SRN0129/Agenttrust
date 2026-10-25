@@ -22,6 +22,7 @@ import { GoalDriftDetector } from "./services/driftDetector.js";
 import { MicroBudgetService } from "./services/microBudget.js";
 import { AuditAttestationService } from "./services/tamperAttestation.js";
 import { AgentChaosMonkey } from "./services/chaosMonkey.js";
+import { AutonomousSelfHealingService } from "./services/selfHealing.js";
 
 export function createApp(customDb?: Database.Database) {
   const app = express();
@@ -58,6 +59,7 @@ export function createApp(customDb?: Database.Database) {
   const microBudgetService = new MicroBudgetService(db, auditService);
   const attestationService = new AuditAttestationService(db, auditService, notarizationService);
   const chaosMonkeyService = new AgentChaosMonkey(policyService, delegationService);
+  const selfHealingService = new AutonomousSelfHealingService(db, auditService);
 
   app.use(cors());
   app.use(express.json());
@@ -973,7 +975,27 @@ export function createApp(customDb?: Database.Database) {
       const reset = microBudgetService.resetCircuit(runId);
       res.json({ success: reset });
     } catch (err: any) {
-      console.error("Chaos Monkey Error:", err);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // ----------------------------------------------------
+  // Strategic Enterprise Innovation 5: Autonomous Self-Healing & Diagnostics
+  // ----------------------------------------------------
+  app.get("/api/v1/health/diagnostics", (req, res) => {
+    try {
+      const report = selfHealingService.diagnose();
+      res.json({ success: true, diagnostics: report });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/health/self-heal", (req, res) => {
+    try {
+      const result = selfHealingService.executeSelfHealing();
+      res.json({ success: true, result });
+    } catch (err: any) {
       res.status(500).json({ success: false, error: err.message });
     }
   });
@@ -1002,6 +1024,7 @@ export function createApp(customDb?: Database.Database) {
       attestationService,
       chaosMonkeyService,
       microBudgetService,
+      selfHealingService,
     },
   };
 }

@@ -150,13 +150,17 @@ export class ApprovalWorkflowService {
       newStatus = "REJECTED";
     }
 
-    this.db
+    const updateRes = this.db
       .prepare(`
         UPDATE approvals 
         SET status = ?, execution_nonce = ?, decided_at = ?, decided_by = ?, decision_reason = ?
-        WHERE id = ?
+        WHERE id = ? AND status = 'PENDING'
       `)
       .run(newStatus, nonce, now, reviewerEmail, reason || "", id);
+
+    if (updateRes.changes === 0) {
+      throw new Error(`Approval request ${id} is no longer pending or was already decided by another reviewer.`);
+    }
 
     this.auditService.append({
       agentId: approval.agent_id,

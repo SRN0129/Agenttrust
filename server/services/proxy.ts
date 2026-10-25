@@ -27,7 +27,57 @@ export class TransparentEgressProxy {
     agent: AgentRow,
     req: EgressProxyRequest
   ): Promise<{ statusCode: number; body: any }> {
-    const url = new URL(req.targetUrl);
+    let url: URL;
+    try {
+      url = new URL(req.targetUrl);
+    } catch {
+      return {
+        statusCode: 400,
+        body: { error: `MALFORMED_URL: '${req.targetUrl}' is not a valid URL.` },
+      };
+    }
+
+    // Enforce HTTP/HTTPS protocols only
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      return {
+        statusCode: 400,
+        body: { error: `PROTOCOL_DISALLOWED: Only 'http:' and 'https:' protocols are permitted. Blocked: '${url.protocol}'` },
+      };
+    }
+
+    // SSRF & Cloud Metadata Defense: Block loopback, RFC1918 private IPs, and cloud metadata
+    const hostname = url.hostname.toLowerCase();
+    const isPrivateOrLoopback =
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "0.0.0.0" ||
+      hostname === "::1" ||
+      hostname === "169.254.169.254" ||
+      hostname === "metadata.google.internal" ||
+      hostname.startsWith("10.") ||
+      hostname.startsWith("192.168.") ||
+      /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname) ||
+      hostname.endsWith(".local") ||
+      hostname.endsWith(".internal");
+
+    if (isPrivateOrLoopback) {
+      this.auditService.append({
+        agentId: agent.id,
+        eventType: "SSRF_ATTEMPT_BLOCKED",
+        action: req.actionMapping || `http:${req.method.toLowerCase()}`,
+        resource: `internal:${hostname}`,
+        decision: "BLOCKED",
+        payload: { targetUrl: req.targetUrl, reason: "SSRF_PRIVATE_NETWORK_PROHIBITED" },
+      });
+
+      return {
+        statusCode: 403,
+        body: {
+          error: `SSRF_PROHIBITED: Outbound requests to private networks, loopback, or cloud instance metadata ('${hostname}') are strictly blocked.`,
+        },
+      };
+    }
+
     const action = req.actionMapping || `http:${req.method.toLowerCase()}`;
     const resource = `external:${url.hostname}${url.pathname}`;
 

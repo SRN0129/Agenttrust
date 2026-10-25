@@ -43,14 +43,13 @@ export class PolicyEngineService {
   ) {}
 
   /**
-   * Helper to match wildcard patterns (e.g. "finance:*" matches "finance:transfer")
+   * Helper to match wildcard patterns (e.g. "finance:*" matches "finance:transfer", "*:read" matches "docs:read")
    */
-  private matchPattern(pattern: string, value: string): boolean {
-    if (pattern === "*") return true;
-    if (pattern === value) return true;
-    if (pattern.endsWith("*")) {
-      const prefix = pattern.slice(0, -1);
-      return value.startsWith(prefix);
+  public matchPattern(pattern: string, value: string): boolean {
+    if (pattern === "*" || pattern === value) return true;
+    if (pattern.includes("*")) {
+      const regexPattern = "^" + pattern.split("*").map(s => s.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&")).join(".*") + "$";
+      return new RegExp(regexPattern).test(value);
     }
     return false;
   }
@@ -61,6 +60,17 @@ export class PolicyEngineService {
    */
   private checkRateLimit(agent: AgentRow): { allowed: boolean; currentCount: number } {
     const currentMinute = Math.floor(Date.now() / 60000);
+
+    // Periodically prune stale window buckets (older than 60 minutes) to prevent table bloat
+    if (Math.random() < 0.1) {
+      try {
+        this.db
+          .prepare("DELETE FROM rate_limit_buckets WHERE window_minute < ?")
+          .run(currentMinute - 60);
+      } catch {
+        // Non-blocking cleanup
+      }
+    }
 
     const row = this.db
       .prepare("SELECT request_count FROM rate_limit_buckets WHERE agent_id = ? AND window_minute = ?")

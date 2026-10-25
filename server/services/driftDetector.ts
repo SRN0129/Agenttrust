@@ -44,7 +44,13 @@ export class GoalDriftDetector {
     const normalizedGoal = (systemGoal || "").toLowerCase();
     const normalizedAction = (action || "").toLowerCase();
     const normalizedResource = (resource || "").toLowerCase();
-    const stringifiedParams = JSON.stringify(parameters || {}).toLowerCase();
+    
+    let stringifiedParams = "";
+    try {
+      stringifiedParams = JSON.stringify(parameters || {}).toLowerCase();
+    } catch {
+      stringifiedParams = String(parameters || "").toLowerCase();
+    }
 
     // 1. Check for Embedded Indirect Prompt Injections in parameters
     for (const trigger of this.PROMPT_INJECTION_TRIGGERS) {

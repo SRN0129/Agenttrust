@@ -50,6 +50,10 @@ export class MicroBudgetService {
    * Pre-check action before execution to ensure budget and velocity limits are not breached.
    */
   public checkAndRecord(runId: string, estimatedCostUsd: number = 0): VelocityCheckResult {
+    if (estimatedCostUsd < 0 || !Number.isFinite(estimatedCostUsd)) {
+      throw new Error(`INVALID_COST: estimatedCostUsd must be a non-negative finite number. Received: ${estimatedCostUsd}`);
+    }
+
     const run = this.runs.get(runId);
     if (!run) {
       // Default permissive if no specific run isolation is active, but still track
