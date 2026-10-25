@@ -3,6 +3,8 @@
 ### Zero-Trust Policy Enforcement, Cryptographic Audit Ledger, and Human-in-the-Loop Governance for Autonomous Agent Runtimes
 
 [![CI](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml/badge.svg)](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/SRN0129/Agenttrust)](https://github.com/SRN0129/Agenttrust/releases)
+[![Package](https://img.shields.io/badge/Package-GitHub%20Packages-blue.svg)](https://github.com/SRN0129/Agenttrust/packages)
 [![Tests Passing](https://img.shields.io/badge/Automated%20Tests-70%2F70%20Passing-brightgreen.svg)](tests)
 [![CodeQL Security Scan](https://github.com/SRN0129/Agenttrust/actions/workflows/codeql.yml/badge.svg)](https://github.com/SRN0129/Agenttrust/actions/workflows/codeql.yml)
 [![Security Policy](https://img.shields.io/badge/Security-STRIDE%20Verified-blueviolet.svg)](SECURITY.md)
@@ -142,6 +144,19 @@ Build client interface:
 ```bash
 npm run build:client
 ```
+
+---
+
+## Technical Documentation & Wiki
+
+Comprehensive architecture guides and reference manuals are maintained under [`docs/`](docs/):
+
+- [`Architecture-Overview.md`](docs/Architecture-Overview.md) - Control plane and gateway security perimeter design
+- [`Zero-Trust-Policy-Engine.md`](docs/Zero-Trust-Policy-Engine.md) - Capability rules, wildcard globbing, and syntax
+- [`Human-in-the-Loop-Approvals.md`](docs/Human-in-the-Loop-Approvals.md) - 1-Click callbacks, execution nonces, and replay attack defense
+- [`Verifiable-Audit-Ledger.md`](docs/Verifiable-Audit-Ledger.md) - Sequential SHA-256 hash chaining, Merkle tree inclusion proofs, and attestation
+- [`Quantum-AI-and-PQC.md`](docs/Quantum-AI-and-PQC.md) - QPU circuit inspection, OpenQASM validation, and NIST FIPS 204 (ML-DSA) attestation
+- [`Client-SDK-Guide.md`](docs/Client-SDK-Guide.md) - Universal `wrapAgent()` and TypeScript/Node integration
 
 ---
 
