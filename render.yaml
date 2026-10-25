@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: agent-trust
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm --prefix client install && npm run build:client
+    startCommand: npm run server
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_PATH
+        value: ./data/agent_trust.db

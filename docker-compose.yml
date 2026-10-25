@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  agent-trust:
+    build: .
+    container_name: agent-trust-platform
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - DATABASE_PATH=/app/data/agent_trust.db
+    volumes:
+      - agent-trust-data:/app/data
+
+volumes:
+  agent-trust-data:
