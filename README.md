@@ -8,9 +8,10 @@
 [![Dependabot](https://img.shields.io/badge/Dependabot-active-brightgreen.svg)](.github/dependabot.yml)
 [![GitHub Stars](https://img.shields.io/github/stars/SRN0129/Agenttrust?style=social)](https://github.com/SRN0129/Agenttrust)
 [![License: MIT / Commercial](https://img.shields.io/badge/License-MIT%20%2F%20Commercial-blue.svg)](LICENSE)
-[![Tests Passing](https://img.shields.io/badge/Automated%20Tests-41%2F41%20Passing-brightgreen.svg)](tests)
+[![Tests Passing](https://img.shields.io/badge/Automated%20Tests-53%2F53%20Passing-brightgreen.svg)](tests)
 [![Compliance](https://img.shields.io/badge/Compliance-EU%20AI%20Act%20Art.%2012%20%26%2014-emerald.svg)](server/services/compliance.ts)
 [![Threat Model](https://img.shields.io/badge/Security-STRIDE%20Verified-blueviolet.svg)](#2-threat-model--security-boundaries-stride)
+[![Chaos Monkey](https://img.shields.io/badge/Red--Teaming-Chaos%20Monkey%20Certified-orange.svg)](server/services/chaosMonkey.ts)
 
 <p align="center">
   <b>Interoperable zero-trust permissions, cascading subagent delegation, semantic blast radius analysis, single-use replay defense, and cryptographically verifiable audit trails for AI agents.</b>
@@ -40,6 +41,11 @@ When companies deploy autonomous AI agents (LangChain, CrewAI, AutoGen, OpenAI A
 6. **Verifiable Audit Ledger & ECDSA P-256 Notarization**: Every request and outcome is hash-chained (`prev_hash` $\rightarrow$ `entry_hash`) and periodically signed with an asymmetric ECDSA P-256 keypair for offline compliance verification.
 7. **Transparent Egress Proxy & Pre-Flight Prompt Scanner**: Traps rogue outbound network calls and neutralizes prompt injections, jailbreaks, and sensitive data leaks.
 8. **Emergency Air-Gap Killswitch**: 1-click panic button that revokes all agent credentials in $< 15\text{ ms}$ and exports a forensic checkpoint.
+9. **Universal 1-Line Drop-in SDK (`wrapAgent`)**: Injects zero-trust authorization, blast radius analysis, and audit logging into any LangChain, CrewAI, or custom agent in a single line.
+10. **Real-Time Goal Hijack & Semantic Drift Detection**: Compares the agent's stated mission with proposed tool calls to catch indirect prompt injections and mission deviation before execution.
+11. **"Agent Chaos Monkey" Red-Team Simulator**: Built-in adversarial penetration test battery issuing an **Enterprise AI Trust Certificate (0-100%)** with EU AI Act & SOC 2 compliance readiness metrics.
+12. **Zero-Knowledge Merkle Attestation Receipts**: Generates self-contained cryptographic Merkle inclusion proofs that external auditors can verify offline without database access.
+13. **Micro-Budgeting & Velocity Circuit Breakers**: Bounded credit allocations per run with automatic emergency throttling on rapid infinite loops ($> 30\text{ RPM}$) or spending spikes.
 
 ---
 

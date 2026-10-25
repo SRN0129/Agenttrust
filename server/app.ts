@@ -18,6 +18,10 @@ import { ComplianceService } from "./services/compliance.js";
 import { GlobalKillswitchService } from "./services/killswitch.js";
 import { PromptInjectionScanner } from "./services/promptScanner.js";
 import { TransparentEgressProxy } from "./services/proxy.js";
+import { GoalDriftDetector } from "./services/driftDetector.js";
+import { MicroBudgetService } from "./services/microBudget.js";
+import { AuditAttestationService } from "./services/tamperAttestation.js";
+import { AgentChaosMonkey } from "./services/chaosMonkey.js";
 
 export function createApp(customDb?: Database.Database) {
   const app = express();
@@ -51,6 +55,9 @@ export function createApp(customDb?: Database.Database) {
   );
   const killswitchService = new GlobalKillswitchService(db, auditService, notarizationService);
   const egressProxy = new TransparentEgressProxy(policyService, auditService);
+  const microBudgetService = new MicroBudgetService(db, auditService);
+  const attestationService = new AuditAttestationService(db, auditService, notarizationService);
+  const chaosMonkeyService = new AgentChaosMonkey(policyService, delegationService);
 
   app.use(cors());
   app.use(express.json());
@@ -842,6 +849,131 @@ export function createApp(customDb?: Database.Database) {
 
       res.status(outcome.statusCode).json(outcome.body);
     } catch (err: any) {
+      console.error("Chaos Monkey Error:", err);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // ----------------------------------------------------
+  // Strategic Enterprise Innovation 1: Goal Hijack & Semantic Drift Detection
+  // ----------------------------------------------------
+  app.post("/api/v1/governance/drift-check", (req, res) => {
+    try {
+      const { systemGoal, action, resource, parameters, driftThreshold } = req.body;
+      if (!systemGoal || !action || !resource) {
+        res.status(400).json({ success: false, error: "Provide systemGoal, action, and resource." });
+        return;
+      }
+
+      const result = GoalDriftDetector.analyzeDrift({
+        systemGoal,
+        action,
+        resource,
+        parameters: parameters || {},
+        driftThreshold,
+      });
+
+      res.json({ success: true, ...result });
+    } catch (err: any) {
+      console.error("Chaos Monkey Error:", err);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // ----------------------------------------------------
+  // Strategic Enterprise Innovation 2: "Agent Chaos Monkey" Red-Team Audit
+  // ----------------------------------------------------
+  app.post("/api/v1/chaos/audit", authenticateAgent, async (req, res) => {
+    try {
+      const agent = (req as any).agent as AgentRow;
+      const certificate = await chaosMonkeyService.runChaosAudit(agent);
+      res.json({ success: true, certificate });
+    } catch (err: any) {
+      console.error("Chaos Monkey Error:", err);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // ----------------------------------------------------
+  // Strategic Enterprise Innovation 3: Zero-Knowledge Verifiable Merkle Attestation
+  // ----------------------------------------------------
+  app.get("/api/v1/audit/attestation/:id", (req, res) => {
+    try {
+      const entryId = parseInt(req.params.id, 10);
+      if (isNaN(entryId)) {
+        res.status(400).json({ success: false, error: "Invalid audit entry ID." });
+        return;
+      }
+
+      const receipt = attestationService.generateReceipt(entryId);
+      res.json({ success: true, receipt });
+    } catch (err: any) {
+      res.status(404).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/audit/attestation/verify", (req, res) => {
+    try {
+      const { receipt } = req.body;
+      if (!receipt) {
+        res.status(400).json({ success: false, error: "Provide receipt object in body." });
+        return;
+      }
+
+      const verification = AuditAttestationService.verifyReceipt(receipt);
+      res.json({ success: true, verification });
+    } catch (err: any) {
+      res.status(400).json({ success: false, error: err.message });
+    }
+  });
+
+  // ----------------------------------------------------
+  // Strategic Enterprise Innovation 4: Micro-Budgeting & Velocity Circuit Breakers
+  // ----------------------------------------------------
+  app.post("/api/v1/runs/register", authenticateAgent, (req, res) => {
+    try {
+      const agent = (req as any).agent as AgentRow;
+      const { runId, maxSpendUsdPerRun, maxVelocityRpm, maxSpendRateUsdPerMin } = req.body;
+
+      if (!runId || !maxSpendUsdPerRun) {
+        res.status(400).json({ success: false, error: "Provide runId and maxSpendUsdPerRun." });
+        return;
+      }
+
+      microBudgetService.registerRun({
+        agentId: agent.id,
+        runId,
+        maxSpendUsdPerRun: Number(maxSpendUsdPerRun),
+        maxVelocityRpm: Number(maxVelocityRpm || 30),
+        maxSpendRateUsdPerMin: Number(maxSpendRateUsdPerMin || 5.0),
+      });
+
+      res.json({ success: true, message: `Run '${runId}' registered with micro-budget caps.` });
+    } catch (err: any) {
+      console.error("Chaos Monkey Error:", err);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/runs/:id/check", authenticateAgent, (req, res) => {
+    try {
+      const runId = req.params.id;
+      const { estimatedCostUsd = 0 } = req.body;
+      const check = microBudgetService.checkAndRecord(runId, Number(estimatedCostUsd));
+      res.json({ success: true, check });
+    } catch (err: any) {
+      console.error("Chaos Monkey Error:", err);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/runs/:id/reset", authenticateAgent, (req, res) => {
+    try {
+      const runId = req.params.id;
+      const reset = microBudgetService.resetCircuit(runId);
+      res.json({ success: reset });
+    } catch (err: any) {
+      console.error("Chaos Monkey Error:", err);
       res.status(500).json({ success: false, error: err.message });
     }
   });
@@ -867,6 +999,9 @@ export function createApp(customDb?: Database.Database) {
       approvalService,
       policyService,
       toolService,
+      attestationService,
+      chaosMonkeyService,
+      microBudgetService,
     },
   };
 }

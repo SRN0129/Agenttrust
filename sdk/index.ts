@@ -1,5 +1,5 @@
 /**
- * AgentTrust Client SDK
+ * AgentTrust Client SDK & Universal 1-Line Interceptor
  * Interoperable security guardrail and authorization client for AI Agent runtimes.
  */
 
@@ -43,6 +43,13 @@ export class ApprovalRequiredError extends Error {
   constructor(public approvalId: string, public reason: string) {
     super(`Action requires human approval. Approval ID: ${approvalId}. Reason: ${reason}`);
     this.name = "ApprovalRequiredError";
+  }
+}
+
+export class CircuitBreakerError extends Error {
+  constructor(public reason: string) {
+    super(`AgentTrust Circuit Breaker Tripped: ${reason}`);
+    this.name = "CircuitBreakerError";
   }
 }
 
@@ -216,4 +223,133 @@ export class AgentTrustClient {
       }
     );
   }
+
+  /**
+   * Check for Goal Hijack & Semantic Drift.
+   */
+  async checkDrift(data: {
+    systemGoal: string;
+    action: string;
+    resource: string;
+    parameters: Record<string, any>;
+  }) {
+    return this.fetchApi<any>("/api/v1/governance/drift-check", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Execute Chaos Monkey Adversarial Red-Team suite.
+   */
+  async runChaosMonkey() {
+    return this.fetchApi<any>("/api/v1/chaos/audit", {
+      method: "POST",
+    });
+  }
+
+  /**
+   * Fetch zero-knowledge verifiable Merkle attestation receipt for an audit entry.
+   */
+  async getAttestationReceipt(entryId: number) {
+    return this.fetchApi<any>(`/api/v1/audit/attestation/${entryId}`);
+  }
+}
+
+/**
+ * Universal 1-Line Drop-in Agent Wrapper
+ * Injects zero-trust security, blast radius scoring, goal drift detection,
+ * and cryptographic audit trails into any agent runtime in a single line.
+ */
+export interface WrapAgentOptions {
+  client: AgentTrustClient;
+  systemGoal?: string;
+  autoPollApproval?: boolean;
+  pollTimeoutMs?: number;
+  onApprovalRequired?: (approvalId: string, action: string, resource: string) => void;
+}
+
+export function wrapAgent<T extends Record<string, any>>(agent: T, options: WrapAgentOptions): T {
+  const { client, systemGoal = "Autonomous agent execution", autoPollApproval = false, pollTimeoutMs = 30000 } = options;
+
+  return new Proxy(agent, {
+    get(target, prop, receiver) {
+      const orig = Reflect.get(target, prop, receiver);
+
+      // Wrap function/tool calls
+      if (typeof orig === "function") {
+        return async function (...args: any[]) {
+          const action = String(prop);
+          const parameters = args.length === 1 && typeof args[0] === "object" ? args[0] : { args };
+          const resource = parameters.resource || parameters.url || parameters.table || `tool:${action}`;
+          const estimatedCostUsd = Number(parameters.estimatedCostUsd || parameters.costUsd || 0);
+
+          // 1. Pre-flight Goal Drift check
+          if (systemGoal) {
+            try {
+              const drift = await client.checkDrift({
+                systemGoal,
+                action,
+                resource,
+                parameters,
+              });
+
+              if (drift && drift.divergenceScore >= 0.85) {
+                throw new PolicyDenialError(drift.reason, "DENY_GOAL_DRIFT");
+              }
+            } catch (err: any) {
+              if (err instanceof PolicyDenialError) throw err;
+              // Pass-through if endpoint not available
+            }
+          }
+
+          // 2. Server-side Zero-Trust Authorization
+          const authz = await client.authorize(action, resource, parameters, estimatedCostUsd);
+
+          if (authz.decision === "DENY") {
+            throw new PolicyDenialError(authz.reason, "DENY");
+          }
+
+          if (authz.decision === "NEEDS_APPROVAL") {
+            if (options.onApprovalRequired) {
+              options.onApprovalRequired(authz.approvalId!, action, resource);
+            }
+
+            if (!autoPollApproval) {
+              throw new ApprovalRequiredError(authz.approvalId!, authz.reason);
+            }
+
+            await client.waitForApproval(authz.approvalId!, 1500, pollTimeoutMs);
+          }
+
+          // 3. Execute underlying tool
+          let result: any;
+          let executionStatus: "SUCCESS" | "FAILED" = "SUCCESS";
+
+          try {
+            result = await orig.apply(target, args);
+            return result;
+          } catch (err: any) {
+            executionStatus = "FAILED";
+            throw err;
+          } finally {
+            // 4. Record verifiable audit outcome
+            try {
+              await client.reportOutcome({
+                action,
+                resource,
+                executionStatus,
+                outputSummary: executionStatus === "SUCCESS" ? "Executed tool successfully" : "Tool threw runtime exception",
+                details: { parameters },
+              });
+            } catch {
+              // Non-blocking outcome recording
+            }
+          }
+        };
+      }
+
+      return orig;
+    },
+  });
 }

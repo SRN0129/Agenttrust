@@ -136,6 +136,23 @@ export class NotarizationService {
   }
 
   /**
+   * Get public key PEM for external verification.
+   */
+  getPublicKey(): string {
+    return this.keyPair.publicKey;
+  }
+
+  /**
+   * Sign arbitrary string/digest using the ECDSA P-256 private key.
+   */
+  signPayload(payload: string): string {
+    const sign = crypto.createSign("SHA256");
+    sign.update(payload);
+    sign.end();
+    return sign.sign(this.keyPair.privateKey, "hex");
+  }
+
+  /**
    * List notarized checkpoints
    */
   listCheckpoints(): any[] {
