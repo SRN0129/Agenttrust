@@ -5,14 +5,11 @@ import path from "node:path";
 
 const projectDir = path.resolve(process.cwd());
 
-export async function initAndCommitRepo(authorName = "AgentTrust Architect", authorEmail = "architect@agenttrust.security") {
-  console.log("📦 Initializing Git repository in:", projectDir);
-  await git.init({ fs, dir: projectDir, defaultBranch: "main" });
+export async function stageAllFiles(baseDir = projectDir) {
+  console.log("📄 Staging files recursively...");
+  let count = 0;
 
-  console.log("📄 Staging tracked files according to .gitignore...");
-  
-  // Recursively add files
-  async function stageDirectory(dir: string, baseDir: string) {
+  async function stageDirectory(dir: string) {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
@@ -35,10 +32,14 @@ export async function initAndCommitRepo(authorName = "AgentTrust Architect", aut
       }
 
       if (entry.isDirectory()) {
-        await stageDirectory(fullPath, baseDir);
+        await stageDirectory(fullPath);
       } else {
         try {
           await git.add({ fs, dir: baseDir, filepath: relativePath });
+          count++;
+          if (relativePath.startsWith(".github") || relativePath.endsWith(".md") || relativePath === "LICENSE") {
+            console.log(`  [+] Staged: ${relativePath}`);
+          }
         } catch (err: any) {
           console.warn(`Could not stage ${relativePath}:`, err.message);
         }
@@ -46,27 +47,38 @@ export async function initAndCommitRepo(authorName = "AgentTrust Architect", aut
     }
   }
 
-  await stageDirectory(projectDir, projectDir);
+  await stageDirectory(baseDir);
+  console.log(`✅ Staged total of ${count} files.`);
+}
 
-  console.log("✍️ Creating initial commit...");
-  const sha = await git.commit({
-    fs,
-    dir: projectDir,
-    message: "feat: AgentTrust - Enterprise AI Agent Trust & Zero-Trust Security Infrastructure\n\n- Deny-by-default policy enforcement\n- Cascading multi-agent delegation & capability attenuation\n- Semantic blast radius & reversibility scoring\n- Human-in-the-loop approvals with 1-click mobile push callback\n- Single-use execution nonces & atomic replay defense\n- Hash-linked verifiable audit ledger\n- ECDSA P-256 digital signature checkpoint notarization\n- Emergency air-gap global killswitch\n- Transparent egress proxy & prompt injection/data leak scanner\n- EU AI Act Art. 12/14 & NIST AI RMF compliance dashboard\n- 41 automated security tests passing",
-    author: {
-      name: authorName,
-      email: authorEmail,
-    },
-  });
+export async function commitChanges(
+  message = "feat(automation): add automated repo keepalive pulse, community standards, security policies, and buyer triage",
+  authorName = "SRN0129",
+  authorEmail = "architect@agenttrust.security"
+) {
+  await stageAllFiles(projectDir);
 
-  console.log(`✅ Git commit created successfully! Commit SHA: ${sha}`);
-  return sha;
+  try {
+    const sha = await git.commit({
+      fs,
+      dir: projectDir,
+      message,
+      author: {
+        name: authorName,
+        email: authorEmail,
+      },
+    });
+    console.log(`✅ Created commit: ${sha}`);
+    return sha;
+  } catch (err: any) {
+    console.log(`Commit result: ${err.message}`);
+    return null;
+  }
 }
 
 export async function pushToGitHub(remoteUrl: string, personalAccessToken: string) {
   console.log(`🚀 Pushing main branch to: ${remoteUrl}`);
-  
-  // Add or update remote origin
+
   try {
     await git.deleteRemote({ fs, dir: projectDir, remote: "origin" });
   } catch {
@@ -96,5 +108,10 @@ export async function pushToGitHub(remoteUrl: string, personalAccessToken: strin
   return pushResult;
 }
 
-// Direct CLI execution
-initAndCommitRepo().catch(console.error);
+async function run() {
+  await commitChanges();
+}
+
+if (process.argv[1]?.endsWith("git_manager.ts")) {
+  run().catch(console.error);
+}

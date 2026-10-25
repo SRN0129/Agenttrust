@@ -1,0 +1,48 @@
+name: Automated Repository Activity & Health Pulse
+
+on:
+  schedule:
+    # Runs automatically every 3 days at 03:00 UTC to maintain continuous green health pulse
+    - cron: '0 3 */3 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  health-pulse:
+    name: Verify System Health & Keepalive Pulse
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: |
+          npm ci
+          npm --prefix client ci
+
+      - name: Execute 41 Automated Enterprise Security Tests
+        run: npm test
+
+      - name: Run Cryptographic Audit Integrity Benchmark
+        run: npx tsx simulator/run_demo.ts
+
+      - name: Record Activity Pulse Heartbeat
+        run: |
+          echo "Last automated health pulse verified on $(date -u +"%Y-%m-%d %H:%M:%S UTC") across 41 security tests." > .pulse.log
+
+      - name: Commit Health Pulse Heartbeat
+        run: |
+          git config user.name "AgentTrust Keepalive Bot"
+          git config user.email "bot@agenttrust.security"
+          git add .pulse.log
+          git commit -m "chore(keepalive): automated repository health check verified [skip ci]" || echo "No changes to commit"
+          git push || echo "Push skipped or branch protected"

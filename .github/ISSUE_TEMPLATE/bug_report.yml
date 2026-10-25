@@ -1,0 +1,28 @@
+name: Bug Report
+description: Report an issue or bug in AgentTrust
+labels: ["kind:bug", "triage:needed"]
+body:
+  - type: markdown
+    attributes:
+      value: Thank you for helping improve AgentTrust!
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what happened.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this behavior?
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Node.js version, OS, Docker / standalone
+    validations:
+      required: false
