@@ -172,8 +172,11 @@ npm install
 npm --prefix client install
 ```
 
-### 2. Integration via SDK
+### 2. Integration via SDKs
 
+AgentTrust provides native first-class SDKs across four major language ecosystems:
+
+#### TypeScript / Node.js
 ```typescript
 import { wrapAgent, AgentTrustClient } from "@agenttrust/sdk";
 
@@ -182,15 +185,45 @@ const client = new AgentTrustClient({
   apiKey: process.env.AGENT_TRUST_KEY!,
 });
 
-// Wrap existing agent instance with zero-trust guardrails
 const safeAgent = wrapAgent(rawAgentInstance, {
   client,
   systemGoal: "Process incoming vendor invoices and verify line items",
-  autoPollApproval: false,
 });
 
-// All tool calls are automatically authorized, bounded, and audited
 await safeAgent.verifyInvoice({ invoiceId: "INV-2026-001" });
+```
+
+#### Python (`sdk-python`)
+```python
+from agenttrust import wrap_agent, AgentTrustClient
+
+client = AgentTrustClient(endpoint="http://localhost:3000", api_key="secret-key")
+safe_agent = wrap_agent(raw_agent, client=client, system_goal="Process vendor invoices")
+
+# Automatically intercepted, evaluated against policy, and logged
+safe_agent.verify_invoice(invoice_id="INV-2026-001")
+```
+
+#### Go (`sdk-go`)
+```go
+import "github.com/SRN0129/Agenttrust/sdk-go/agenttrust"
+
+client := agenttrust.NewClient(agenttrust.ClientConfig{
+    Endpoint: "http://localhost:3000",
+    APIKey:   "secret-key",
+})
+decision, err := client.Authorize(ctx, agenttrust.AuthorizationRequest{
+    Action:   "database:update",
+    Resource: "orders",
+})
+```
+
+#### Rust (`sdk-rust`)
+```rust
+use agenttrust::QuantumCircuitParser;
+
+let metrics = QuantumCircuitParser::parse_qasm(qasm_str);
+println!("Circuit Qubits: {}, Gates: {}", metrics.qubit_count, metrics.total_gate_count);
 ```
 
 ---

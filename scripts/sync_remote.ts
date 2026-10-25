@@ -6,9 +6,9 @@ async function main() {
   const token = execSync('cmd.exe /c "C:\\Users\\soumy\\.tools\\gh\\gh.exe auth token"', { encoding: "utf-8" }).trim();
   const repoUrl = "https://github.com/SRN0129/Agenttrust.git";
 
-  console.log("📦 Staging & Committing repository updates...");
+  console.log("📦 Staging & Committing polyglot repository updates...");
   await commitChanges(
-    "docs: refine architecture specification, remove legacy cloud guide, and harden pipeline"
+    "feat: add polyglot SDKs (Python, Go, Rust), SQL DDL schemas, OpenQASM circuits, and shell toolchain"
   );
 
   console.log("🚀 Pushing all updates to remote repository...");

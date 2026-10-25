@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agenttrust"
+version = "1.0.0"
+description = "Zero-trust policy enforcement, cryptographic audit ledger, and human-in-the-loop governance for autonomous agent runtimes."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "AgentTrust Engineering", email = "architect@agenttrust.security" }
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Topic :: Security",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+keywords = ["ai-agents", "security", "zero-trust", "langchain", "crewai", "quantum-computing"]
+
+[project.urls]
+Homepage = "https://github.com/SRN0129/Agenttrust"
+Repository = "https://github.com/SRN0129/Agenttrust.git"
+Issues = "https://github.com/SRN0129/Agenttrust/issues"
