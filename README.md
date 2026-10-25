@@ -3,6 +3,9 @@
 # 🛡️ AgentTrust
 ### The Zero-Trust Security & Human Approval Layer for Autonomous AI Agents
 
+[![CI & Automated Security Tests](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml/badge.svg)](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-actively%20maintained-brightgreen.svg)](https://github.com/SRN0129/Agenttrust/pulse)
+[![Dependabot](https://img.shields.io/badge/Dependabot-active-brightgreen.svg)](.github/dependabot.yml)
 [![GitHub Stars](https://img.shields.io/github/stars/SRN0129/Agenttrust?style=social)](https://github.com/SRN0129/Agenttrust)
 [![License: MIT / Commercial](https://img.shields.io/badge/License-MIT%20%2F%20Commercial-blue.svg)](LICENSE)
 [![Tests Passing](https://img.shields.io/badge/Automated%20Tests-41%2F41%20Passing-brightgreen.svg)](tests)
@@ -18,7 +21,7 @@
 ### 💼 For Investors, Acquirers & Commercial Inquiries
 > **This project and its intellectual property are available for commercial licensing or acquisition.**  
 > If you are an enterprise CISO, an AI platform looking to integrate an enterprise security layer, or an investor/acquirer:  
-> 📩 **Contact Owner:** Open an [Issue on GitHub](https://github.com/SRN0129/Agenttrust/issues) or connect via [GitHub Profile @SRN0129](https://github.com/SRN0129).
+> 📩 **Open a Priority Inquiry:** Click [**💼 Submit Commercial Inquiry**](https://github.com/SRN0129/Agenttrust/issues/new?template=commercial_inquiry.yml) or connect via [GitHub @SRN0129](https://github.com/SRN0129).
 
 ---
 
