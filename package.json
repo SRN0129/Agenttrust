@@ -13,7 +13,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "seed": "tsx server/db/seed.ts",
-    "simulate": "tsx simulator/run_demo.ts"
+    "simulate": "tsx simulator/run_demo.ts",
+    "git:commit": "tsx scripts/git_manager.ts",
+    "git:push": "tsx scripts/push_to_github.ts"
   },
   "dependencies": {
     "better-sqlite3": "^11.8.1",
