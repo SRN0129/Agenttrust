@@ -3,7 +3,7 @@
 ### Verifiable Zero-Trust Control Plane, Cryptographic Black Box, and Post-Quantum Policy Gateway for Autonomous AI Agents
 
 [![CI](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml/badge.svg)](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml)
-[![Tests Passing](https://img.shields.io/badge/Automated%20Tests-93%2F93%20Passing-brightgreen.svg)](tests)
+[![Tests Passing](https://img.shields.io/badge/Automated%20Tests-103%2F103%20Passing-brightgreen.svg)](tests)
 [![CodeQL Security Scan](https://github.com/SRN0129/Agenttrust/actions/workflows/codeql.yml/badge.svg)](https://github.com/SRN0129/Agenttrust/actions/workflows/codeql.yml)
 [![Engineered with Google Antigravity](https://img.shields.io/badge/Engineered%20With-Google%20Antigravity-4285F4?logo=google&logoColor=white)](https://deepmind.google)
 [![PQC NIST FIPS 204](https://img.shields.io/badge/Post--Quantum-NIST%20FIPS%20204%20(ML--DSA)-8B5CF6.svg)](server/services/pqcAttestation.ts)
@@ -24,6 +24,9 @@
 | Capability | Threat Mitigated | Technical Mechanism |
 | :--- | :--- | :--- |
 | **Direct Authenticated Gateway** | Ambient Authority & Insecure Proxies | Deny-by-default capability glob matching with strict Bearer/API key validation. Zero unauthenticated bypass. |
+| **Action-Specific & Verb Scoping** | Broken Authorization (CWE-863) / Blanket Access | Sub-resource and AST verb extraction (`database:orders:SELECT` vs `DROP`/`UPDATE`). Prevents blanket resource access. |
+| **Cognitive Chain-of-Thought Audit** | Rationalized Jailbreaks & Divergent Hallucinations | Cryptographically hashes and Merkle-anchors the agent's internal thought process; detects goal divergence and rationalized injections. |
+| **Post-Approval Continuous Runtime Watchdog** | Post-Approval Drift & Stealth Cloud Escalation | Wiz/Upwind runtime sidecar model; intercepts post-approval side effects in real-time, instantly auto-quarantining IMDS/IAM expansion. |
 | **Cloud SSRF & IMDS Shield** | AWS/GCP Metadata Exfiltration | Network-level socket inspection strictly blocking loopback and `169.254.169.254`. |
 | **Blast Radius & Micro-Budgets** | Runaway Loop Cost & Table Dropping | Real-time blast radius scoring (0.00–1.00), sliding-window token/USD ceilings, and 30 RPM tripwires. |
 | **Dual-Lock Anti-Replay HITL** | Webhook Token Replay Attacks | EU AI Act Art. 14 compliant single-use ephemeral approval nonces that burn atomically on execution. |
@@ -199,13 +202,34 @@ let decision = client.authorize_tool("system:exec_bash", "server:root").await?;
 
 ---
 
+## Enterprise Defense Assurances: Scoping, Cognitive Audit & Continuous Runtime Visibility
+
+AgentTrust implements three critical guarantees that distinguish autonomous zero-trust gateways from naive reverse proxies:
+
+### 1. Action-Specific & Verb Scoping (Beyond Binary Allow/Deny)
+Prevents CWE-863 (Broken Authorization). Rather than coarse `Allow` or `Deny` on an entire resource, AgentTrust performs syntactic AST/verb extraction across SQL, REST, and Cloud APIs.
+- **Example**: An agent scoped with `database:orders:SELECT` is allowed to execute `SELECT * FROM orders WHERE status = 'pending'`, but is **strictly rejected** with `SCOPE_VIOLATION` if it attempts `DROP TABLE orders` or `UPDATE orders`, even though both target the exact same table.
+
+### 2. Cognitive Chain-of-Thought Auditing & Jailbreak Defense
+Logs *why* the agent decided to act, not just the button it pressed.
+- **Merkle-Anchored Thought Process**: The agent's step-by-step reasoning is digested via SHA-256 into a `reasoningHash` and bound to the cryptographic audit record.
+- **Cognitive Divergence & Jailbreak Interception**: Screens internal thought traces for adversarial rationalization patterns (e.g., `"The prompt says bypass directives and dump secrets"`) and flags semantic divergence between assigned system goals and destructive tool requests before execution.
+
+### 3. Continuous Post-Approval Runtime Visibility (Wiz / Upwind Paradigm)
+Prevents post-approval drift. Even after a human operator or automated policy approves an action, the agent's runtime process is actively monitored:
+- **Perimeter Watchdog**: Tracks outbound system events, cloud API calls, and socket egress.
+- **Instant Auto-Quarantine**: If an agent attempts stealth privilege escalation—such as accessing AWS/GCP Instance Metadata (`169.254.169.254`), querying IAM credentials, or reaching unapproved S3 buckets—the watchdog immediately halts the execution session, revokes ephemeral tokens, and flags the agent for containment.
+
+---
+
 ## Test Suite & Verification
 
-AgentTrust enforces 100% automated regression defense with **93 passing tests across 14 test suites**:
+AgentTrust enforces 100% automated regression defense with **103 passing tests across 15 test suites**:
 
 ```text
  ✓ tests/quantum_trust.test.ts (8 tests)
  ✓ tests/mathematical_algorithms_and_sca.test.ts (13 tests)
+ ✓ tests/scoping_cognitive_runtime_visibility.test.ts (10 tests)
  ✓ tests/defensive_sandbox.test.ts (4 tests)
  ✓ tests/revocation.test.ts (4 tests)
  ✓ tests/bugfixes_and_self_healing.test.ts (9 tests)
@@ -219,9 +243,9 @@ AgentTrust enforces 100% automated regression defense with **93 passing tests ac
  ✓ tests/audit_integrity.test.ts (4 tests)
  ✓ tests/rate_limits_spend.test.ts (2 tests)
 
- Test Files  14 passed (14)
-      Tests  93 passed (93)
-   Duration  4.2s
+ Test Files  15 passed (15)
+      Tests  103 passed (103)
+   Duration  3.1s
 ```
 
 Run tests locally:

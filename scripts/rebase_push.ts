@@ -39,7 +39,7 @@ async function main() {
   await stageAllFiles(projectDir);
 
   // Create commit with remoteRef as parent (clean fast-forward!)
-  const commitMsg = "fix(ui): remove unused resComp from Promise.all dashboard synchronization";
+  const commitMsg = "feat(enterprise): action-specific scoping, cognitive chain-of-thought audit, and continuous post-approval runtime visibility (103/103 tests passing)";
   
   const commitSha = await git.commit({
     fs,

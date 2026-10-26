@@ -25,6 +25,9 @@ import { AuditAttestationService } from "./services/tamperAttestation.js";
 import { AgentChaosMonkey } from "./services/chaosMonkey.js";
 import { AutonomousSelfHealingService } from "./services/selfHealing.js";
 import { QuantumTrustService } from "./services/quantumTrust.js";
+import { ActionScoper } from "./services/actionScoper.js";
+import { CognitiveAuditor } from "./services/cognitiveAuditor.js";
+import { RuntimeVisibilityWatchdog } from "./services/runtimeVisibility.js";
 
 export function createApp(customDb?: Database.Database) {
   const app = express();
@@ -63,6 +66,7 @@ export function createApp(customDb?: Database.Database) {
   const chaosMonkeyService = new AgentChaosMonkey(policyService, delegationService);
   const selfHealingService = new AutonomousSelfHealingService(db, auditService);
   const quantumTrustService = new QuantumTrustService(auditService);
+  const runtimeWatchdog = new RuntimeVisibilityWatchdog(auditService);
 
   app.use(cors());
   app.use(express.json());
@@ -391,13 +395,15 @@ export function createApp(customDb?: Database.Database) {
   });
 
   // ----------------------------------------------------
-  // Policy Authorization Gateway
+  // Policy Authorization Gateway (Action-Specific Scoping & Cognitive Audit)
   // ----------------------------------------------------
   const authzSchema = z.object({
     action: z.string().min(1),
     resource: z.string().min(1),
     parameters: z.record(z.any()).optional(),
     estimatedCostUsd: z.number().nonnegative().optional(),
+    thoughtProcess: z.string().optional(),
+    systemGoal: z.string().optional(),
   });
 
   app.post("/api/v1/authorize", authenticateAgent, (req, res) => {
@@ -414,6 +420,7 @@ export function createApp(customDb?: Database.Database) {
           action: parsed.action,
           resource: parsed.resource,
           decision: "DENY",
+          thoughtProcess: parsed.thoughtProcess,
           payload: {
             threatType: promptScan.threatType,
             reason: promptScan.reason,
@@ -448,6 +455,8 @@ export function createApp(customDb?: Database.Database) {
         resource: parsed.resource,
         parameters: parsed.parameters,
         estimatedCostUsd: parsed.estimatedCostUsd,
+        thoughtProcess: parsed.thoughtProcess,
+        systemGoal: parsed.systemGoal,
       });
 
       // 2. High Blast Radius Dynamic Escalation:
@@ -884,6 +893,94 @@ export function createApp(customDb?: Database.Database) {
   });
 
   // ----------------------------------------------------
+  // Post-Approval Continuous Runtime Visibility & Watchdog (Wiz / Upwind Paradigm)
+  // ----------------------------------------------------
+  app.post("/api/v1/runtime/session/start", (req, res) => {
+    try {
+      const { approvalId, agentId, perimeter } = req.body;
+      if (!approvalId || !agentId || !perimeter) {
+        return res.status(400).json({ success: false, error: "approvalId, agentId, and perimeter object are required." });
+      }
+      const session = runtimeWatchdog.startSession(approvalId, agentId, perimeter);
+      res.status(201).json({
+        success: true,
+        session,
+        message: "Runtime execution session initialized with continuous perimeter monitoring.",
+      });
+    } catch (err: any) {
+      res.status(400).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/runtime/session/record-event", (req, res) => {
+    try {
+      const { sessionId, event } = req.body;
+      if (!sessionId || !event || !event.target || !event.operationType) {
+        return res.status(400).json({ success: false, error: "sessionId and event (target, operationType) are required." });
+      }
+      const result = runtimeWatchdog.inspectTelemetry(sessionId, event);
+      if (!result.permitted) {
+        return res.status(403).json({
+          success: false,
+          ...result,
+        });
+      }
+      res.json({
+        success: true,
+        ...result,
+      });
+    } catch (err: any) {
+      res.status(400).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/runtime/session/complete", (req, res) => {
+    try {
+      const { sessionId } = req.body;
+      if (!sessionId) {
+        return res.status(400).json({ success: false, error: "sessionId is required." });
+      }
+      const result = runtimeWatchdog.completeSession(sessionId);
+      res.json(result);
+    } catch (err: any) {
+      res.status(400).json({ success: false, error: err.message });
+    }
+  });
+
+  app.get("/api/v1/runtime/sessions", (req, res) => {
+    const sessions = runtimeWatchdog.listActiveSessions();
+    res.json({
+      success: true,
+      activeCount: sessions.length,
+      sessions,
+    });
+  });
+
+  // ----------------------------------------------------
+  // Cognitive Reasoning & Chain-of-Thought Inspection
+  // ----------------------------------------------------
+  app.post("/api/v1/cognitive/analyze-thought", (req, res) => {
+    try {
+      const { thoughtProcess, action, systemGoal, parameters } = req.body;
+      if (!thoughtProcess) {
+        return res.status(400).json({ success: false, error: "thoughtProcess text string is required." });
+      }
+      const analysis = CognitiveAuditor.analyzeReasoning(
+        thoughtProcess,
+        action || "generic:action",
+        systemGoal || "",
+        parameters || {}
+      );
+      res.json({
+        success: true,
+        analysis,
+      });
+    } catch (err: any) {
+      res.status(400).json({ success: false, error: err.message });
+    }
+  });
+
+  // ----------------------------------------------------
   // Enterprise Feature 2: Cryptographic Notarization & Checkpoints
   // ----------------------------------------------------
   app.post("/api/v1/notarize/checkpoint", (req, res) => {
@@ -1234,6 +1331,7 @@ export function createApp(customDb?: Database.Database) {
       microBudgetService,
       selfHealingService,
       quantumTrustService,
+      runtimeWatchdog,
     },
   };
 }

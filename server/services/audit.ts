@@ -14,6 +14,8 @@ export interface AuditRecordInput {
   resource: string;
   decision: string;
   payload: unknown;
+  thoughtProcess?: string; // Chain-of-Thought internal reasoning
+  reasoningHash?: string;
   timestamp?: number;
 }
 
@@ -42,8 +44,28 @@ export class AuditLedgerService {
   append(input: AuditRecordInput): AuditRow {
     const timestamp = input.timestamp || Date.now();
     const eventId = `evt_${crypto.randomUUID()}`;
-    const payloadJson = canonicalJson(input.payload);
-    const payloadHash = computePayloadHash(input.payload);
+
+    // Package Cognitive Chain-of-Thought reasoning into cryptographic payload
+    let fullPayload = input.payload;
+    if (input.thoughtProcess) {
+      const reasoningHash =
+        input.reasoningHash ||
+        crypto.createHash("sha256").update(input.thoughtProcess).digest("hex");
+      const basePayload =
+        typeof input.payload === "object" && input.payload !== null
+          ? (input.payload as Record<string, unknown>)
+          : { data: input.payload };
+      fullPayload = {
+        ...basePayload,
+        _cognitiveAudit: {
+          thoughtProcess: input.thoughtProcess,
+          reasoningHash,
+        },
+      };
+    }
+
+    const payloadJson = canonicalJson(fullPayload);
+    const payloadHash = computePayloadHash(fullPayload);
 
     const insertTx = this.db.transaction(() => {
       // Get the latest row in the ledger

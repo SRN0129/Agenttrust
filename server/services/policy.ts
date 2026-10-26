@@ -3,6 +3,8 @@ import crypto from "node:crypto";
 import { AgentRow } from "./registry.js";
 import { ApprovalWorkflowService } from "./approval.js";
 import { AuditLedgerService } from "./audit.js";
+import { ActionScoper, ScopedAction } from "./actionScoper.js";
+import { CognitiveAuditor, CognitiveAnalysisResult } from "./cognitiveAuditor.js";
 
 export interface PolicyRule {
   id: string;
@@ -23,6 +25,8 @@ export interface AuthorizationRequest {
   resource: string;
   parameters?: Record<string, unknown>;
   estimatedCostUsd?: number;
+  thoughtProcess?: string; // Chain-of-Thought reasoning explaining WHY action is proposed
+  systemGoal?: string; // Assigned system mission
 }
 
 export interface AuthorizationDecision {
@@ -33,6 +37,8 @@ export interface AuthorizationDecision {
   approvalRequired?: boolean;
   approvalId?: string;
   ticket?: string; // execution nonce if auto-allowed or already pre-authorized
+  scopedAction?: ScopedAction;
+  cognitiveAudit?: CognitiveAnalysisResult;
 }
 
 export class PolicyEngineService {
@@ -195,7 +201,39 @@ export class PolicyEngineService {
         };
       }
 
-      // 2. Capability Scoping Check
+      // 2. Cognitive Audit: Chain-of-Thought Reasoning Inspection
+      let cognitiveAuditResult: CognitiveAnalysisResult | undefined = undefined;
+      if (request.thoughtProcess) {
+        cognitiveAuditResult = CognitiveAuditor.analyzeReasoning(
+          request.thoughtProcess,
+          action,
+          request.systemGoal || "",
+          parameters
+        );
+
+        if (cognitiveAuditResult.isRationalizedJailbreak) {
+          this.auditService.append({
+            agentId: agent.id,
+            eventType: "COGNITIVE_JAILBREAK_INTERCEPTED",
+            action,
+            resource,
+            decision: "DENY",
+            payload: {
+              reason: "Agent reasoning indicates prompt injection or safety rule rationalization.",
+              thoughtProcess: request.thoughtProcess,
+              cognitive: cognitiveAuditResult,
+            },
+          });
+          return {
+            allowed: false,
+            decision: "DENY",
+            reason: `COGNITIVE_SECURITY_VIOLATION: ${cognitiveAuditResult.cognitiveSummary}`,
+            cognitiveAudit: cognitiveAuditResult,
+          };
+        }
+      }
+
+      // 3. Action-Specific & Verb-Level Scoping Check
       let allowedCapabilities: string[] = [];
       try {
         allowedCapabilities = JSON.parse(agent.allowed_capabilities);
@@ -203,8 +241,11 @@ export class PolicyEngineService {
         allowedCapabilities = [];
       }
 
-      const hasCapability = allowedCapabilities.some((cap) => this.matchPattern(cap, action));
-      if (!hasCapability) {
+      const scopedAction = ActionScoper.resolveScopedAction(action, resource, parameters);
+      const scopeEvaluation = ActionScoper.evaluateScope(scopedAction, allowedCapabilities);
+      const hasGeneralCapability = allowedCapabilities.some((cap) => this.matchPattern(cap, action));
+
+      if (!hasGeneralCapability && !scopeEvaluation.allowed) {
         this.auditService.append({
           agentId: agent.id,
           eventType: "AUTHZ_REQUEST",
@@ -215,12 +256,40 @@ export class PolicyEngineService {
             reason: "Capability scope boundary violation",
             allowedCapabilities,
             requestedAction: action,
+            scopedAction,
+            scopeEvaluation,
           },
         });
         return {
           allowed: false,
           decision: "DENY",
-          reason: `Action '${action}' is outside agent's assigned capabilities: [${allowedCapabilities.join(", ")}].`,
+          reason: scopeEvaluation.reason.includes("SCOPE_VIOLATION")
+            ? scopeEvaluation.reason
+            : `Action '${action}' is outside agent's assigned capabilities: [${allowedCapabilities.join(", ")}].`,
+          scopedAction,
+          cognitiveAudit: cognitiveAuditResult,
+        };
+      }
+
+      // Explicit verb-level rejection (e.g. agent has database:orders:SELECT, but issues DROP/UPDATE)
+      if (scopeEvaluation.reason.includes("SCOPE_VIOLATION")) {
+        this.auditService.append({
+          agentId: agent.id,
+          eventType: "AUTHZ_REQUEST",
+          action,
+          resource,
+          decision: "DENY",
+          payload: {
+            reason: scopeEvaluation.reason,
+            scopedAction,
+          },
+        });
+        return {
+          allowed: false,
+          decision: "DENY",
+          reason: scopeEvaluation.reason,
+          scopedAction,
+          cognitiveAudit: cognitiveAuditResult,
         };
       }
 
@@ -318,6 +387,8 @@ export class PolicyEngineService {
           action,
           resource,
           decision: "DENY",
+          thoughtProcess: request.thoughtProcess,
+          reasoningHash: cognitiveAuditResult?.reasoningHash,
           payload: {
             policyId: matchedPolicy.id,
             policyName: matchedPolicy.name,
@@ -329,6 +400,8 @@ export class PolicyEngineService {
           decision: "DENY",
           reason: `Explicitly denied by policy '${matchedPolicy.name}' (${matchedPolicy.id}).`,
           matchedPolicyId: matchedPolicy.id,
+          scopedAction,
+          cognitiveAudit: cognitiveAuditResult,
         };
       }
 
@@ -349,6 +422,8 @@ export class PolicyEngineService {
           matchedPolicyId: matchedPolicy.id,
           approvalRequired: true,
           approvalId: approval.id,
+          scopedAction,
+          cognitiveAudit: cognitiveAuditResult,
         };
       }
 
@@ -371,6 +446,8 @@ export class PolicyEngineService {
             matchedPolicyId: matchedPolicy.id,
             approvalRequired: true,
             approvalId: approval.id,
+            scopedAction,
+            cognitiveAudit: cognitiveAuditResult,
           };
         }
 
@@ -381,6 +458,8 @@ export class PolicyEngineService {
           action,
           resource,
           decision: "ALLOW",
+          thoughtProcess: request.thoughtProcess,
+          reasoningHash: cognitiveAuditResult?.reasoningHash,
           payload: {
             policyId: matchedPolicy.id,
             policyName: matchedPolicy.name,
@@ -393,6 +472,8 @@ export class PolicyEngineService {
           decision: "ALLOW",
           reason: `Authorized by policy '${matchedPolicy.name}'.`,
           matchedPolicyId: matchedPolicy.id,
+          scopedAction,
+          cognitiveAudit: cognitiveAuditResult,
         };
       }
 
