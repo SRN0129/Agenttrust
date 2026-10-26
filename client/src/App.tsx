@@ -233,7 +233,7 @@ export default function App() {
     try {
       setLoading(true);
       const headers = getAuthHeaders();
-      const [resAgents, resPolicies, resPending, resAllApprovals, resAudit, resVerify, resCheckpoints, resComp] =
+      const [resAgents, resPolicies, resPending, resAllApprovals, resAudit, resVerify, resCheckpoints] =
         await Promise.all([
           fetch("/api/v1/agents", { headers }).then((r) => r.json()).catch(() => ({ success: false })),
           fetch("/api/v1/policies", { headers }).then((r) => r.json()).catch(() => ({ success: false })),
@@ -242,7 +242,6 @@ export default function App() {
           fetch("/api/v1/audit?limit=100", { headers }).then((r) => r.json()).catch(() => ({ success: false })),
           fetch("/api/v1/audit/verify", { headers }).then((r) => r.json()).catch(() => ({ success: false })),
           fetch("/api/v1/notarize/checkpoints", { headers }).then((r) => r.json()).catch(() => ({ success: false })),
-          fetch("/api/v1/compliance/report", { headers }).then((r) => r.json()).catch(() => ({ success: false })),
         ]);
 
       if (resAgents.success) setAgents(resAgents.agents);

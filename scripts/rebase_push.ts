@@ -39,7 +39,7 @@ async function main() {
   await stageAllFiles(projectDir);
 
   // Create commit with remoteRef as parent (clean fast-forward!)
-  const commitMsg = "fix(quality): eliminate unused variables in UI and bound Aho-Corasick DFA search against loop injection";
+  const commitMsg = "fix(ui): remove unused resComp from Promise.all dashboard synchronization";
   
   const commitSha = await git.commit({
     fs,
