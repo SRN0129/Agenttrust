@@ -141,20 +141,6 @@ Access the dashboard at `http://localhost:4000`.
 
 ---
 
-## Deploy to Render in 1 Click
-
-AgentTrust is ready for immediate deployment on **Render**:
-
-1. Fork or push this repository to your GitHub account.
-2. In [Render](https://dashboard.render.com/), create a new **Web Service**.
-3. Select **Docker** as the runtime (it automatically uses the included multi-stage [`Dockerfile`](Dockerfile)).
-4. Set environment variables:
-   * `PORT`: `4000`
-   * `NODE_ENV`: `production`
-5. Click **Create Web Service**.
-
----
-
 ## Polyglot SDK Quickstarts
 
 ### 1. Python (`sdk-python`) — LangChain & CrewAI
@@ -165,7 +151,7 @@ from langchain.agents import AgentExecutor
 # Authenticated Direct Gateway
 client = AgentTrustClient(
     api_key="at_live_8f3a9e...",
-    endpoint="https://agenttrust.onrender.com"
+    endpoint="https://gateway.agenttrust.io"
 )
 
 # Intercept tool calls with automatic policy screening & blast radius check
@@ -181,7 +167,7 @@ import { AgentTrustClient } from "@srn0129/agenttrust";
 
 const client = new AgentTrustClient({
   apiKey: "at_live_8f3a9e...",
-  endpoint: "https://agenttrust.onrender.com"
+  endpoint: "https://gateway.agenttrust.io"
 });
 
 const result = await client.executeProtectedTool({
@@ -194,7 +180,7 @@ const result = await client.executeProtectedTool({
 ```go
 client := agenttrust.NewClient(agenttrust.Config{
     APIKey:   "at_live_8f3a9e...",
-    Endpoint: "https://agenttrust.onrender.com",
+    Endpoint: "https://gateway.agenttrust.io",
 })
 
 res, err := client.Authorize(ctx, agenttrust.AuthorizationRequest{
@@ -207,7 +193,7 @@ res, err := client.Authorize(ctx, agenttrust.AuthorizationRequest{
 ```rust
 use agenttrust_sdk::AgentTrustClient;
 
-let client = AgentTrustClient::new("at_live_8f3a9e...", "https://agenttrust.onrender.com");
+let client = AgentTrustClient::new("at_live_8f3a9e...", "https://gateway.agenttrust.io");
 let decision = client.authorize_tool("system:exec_bash", "server:root").await?;
 ```
 

@@ -1263,7 +1263,7 @@ from langchain.agents import AgentExecutor
 # 1. Initialize Direct Authenticated Client (Zero Insecure Proxy)
 client = AgentTrustClient(
     api_key="at_live_8f3a9e...",
-    endpoint="https://agenttrust.onrender.com"
+    endpoint="https://gateway.agenttrust.io"
 )
 
 # 2. Wrap LangChain / CrewAI runtime with deterministic policy interceptor
@@ -1281,7 +1281,7 @@ def run_autonomous_agent(prompt: str):
 // Direct Authenticated Zero-Trust Gateway
 const client = new AgentTrustClient({
   apiKey: "at_live_8f3a9e...",
-  endpoint: "https://agenttrust.onrender.com"
+  endpoint: "https://gateway.agenttrust.io"
 });
 
 // Intercept tool calls before external execution
@@ -1301,7 +1301,7 @@ import "github.com/SRN0129/Agenttrust/sdk-go"
 func main() {
     client := agenttrust.NewClient(agenttrust.Config{
         APIKey:   "at_live_8f3a9e...",
-        Endpoint: "https://agenttrust.onrender.com",
+        Endpoint: "https://gateway.agenttrust.io",
     })
     
     // Authenticated policy authorization
@@ -1316,7 +1316,7 @@ func main() {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let client = AgentTrustClient::new("at_live_8f3a9e...", "https://agenttrust.onrender.com");
+    let client = AgentTrustClient::new("at_live_8f3a9e...", "https://gateway.agenttrust.io");
     let decision = client.authorize_tool("system:exec_bash", "server:root").await?;
     Ok(())
 }`}
