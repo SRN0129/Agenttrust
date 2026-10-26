@@ -850,7 +850,7 @@ export function createApp(customDb?: Database.Database) {
   // Space Colonization Swarm Topology Synthesis
   app.post("/api/v1/swarm/synthesize-topology", (req, res) => {
     try {
-      const { parentAgentId, tasks, options } = req.body;
+      const { parentAgentId, tasks } = req.body;
       if (!parentAgentId || !Array.isArray(tasks)) {
         return res.status(400).json({ success: false, error: "parentAgentId and tasks array are required" });
       }

@@ -5,12 +5,10 @@ import {
   ShieldAlert,
   AlertTriangle,
   CheckCircle2,
-  XCircle,
   Clock,
   Users,
   FileText,
   Sliders,
-  Play,
   Copy,
   Check,
   RefreshCw,
@@ -18,23 +16,15 @@ import {
   Key,
   Terminal,
   Activity,
-  ArrowRight,
   Flame,
-  HelpCircle,
   Award,
   GitBranch,
-  FileCheck2,
   AlertOctagon,
   Cpu,
   Zap,
-  Download,
-  Filter,
   Search,
   CheckCircle,
-  Layers,
   Code2,
-  ExternalLink,
-  ChevronRight,
   Fingerprint
 } from "lucide-react";
 
@@ -162,7 +152,6 @@ export default function App() {
   });
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authInput, setAuthInput] = useState(adminKey);
-  const [authVerified, setAuthVerified] = useState(true);
 
   // System States
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -172,10 +161,8 @@ export default function App() {
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
   const [integrity, setIntegrity] = useState<IntegrityReport | null>(null);
   const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
-  const [compliance, setCompliance] = useState<ComplianceReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
-  const [pqcVerified, setPqcVerified] = useState(true);
 
   // Search & Filter state
   const [agentSearch, setAgentSearch] = useState("");
@@ -220,8 +207,7 @@ export default function App() {
   });
 
   const [killswitchReason, setKillswitchReason] = useState("Suspected autonomous credential exfiltration anomaly");
-  const [killswitchEmail, setKillswitchEmail] = useState("ciso@enterprise.internal");
-  const [createdApiKey, setCreatedApiKey] = useState<{ key: string; agentId: string; type: string } | null>(null);
+  const killswitchEmail = "ciso@enterprise.internal";
 
   // Simulator / Threat Telemetry
   const [simLogs, setSimLogs] = useState<Array<{ id: string; time: string; stage: string; status: "success" | "warning" | "denied" | "pending"; message: string }>>([
@@ -266,8 +252,6 @@ export default function App() {
       if (resAudit.success) setAuditEvents(resAudit.events);
       if (resVerify.success) setIntegrity(resVerify.integrity);
       if (resCheckpoints.success) setCheckpoints(resCheckpoints.checkpoints);
-      if (resComp.success) setCompliance(resComp.report);
-      setAuthVerified(true);
     } catch (err) {
       console.error("Dashboard synchronization error:", err);
     } finally {
@@ -421,7 +405,6 @@ export default function App() {
       const res = await fetch("/api/v1/audit/verify", { headers: getAuthHeaders() });
       const data = await res.json();
       if (data.success && data.integrity.valid) {
-        setPqcVerified(true);
         addSimLog("Attestation Notary", "success", `Merkle tree & NIST FIPS 204 signatures verified. Tip: ${data.integrity.latestHash?.substring(0, 16)}...`);
       }
     } catch (e: any) {

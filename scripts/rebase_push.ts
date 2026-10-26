@@ -39,7 +39,7 @@ async function main() {
   await stageAllFiles(projectDir);
 
   // Create commit with remoteRef as parent (clean fast-forward!)
-  const commitMsg = "feat(core): space colonization swarm synthesis, capability semilattice, Aho-Corasick DFA, Count-Min Sketch, and Bayesian blast radius (93/93 tests passing)";
+  const commitMsg = "fix(quality): eliminate unused variables in UI and bound Aho-Corasick DFA search against loop injection";
   
   const commitSha = await git.commit({
     fs,

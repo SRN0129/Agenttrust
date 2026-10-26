@@ -64,7 +64,7 @@ export class BayesianRiskTracker {
     this.history.push({ action, resource, isReconnaissance, isSensitive, isDestructive });
 
     // Likelihood ratio: L = P(Observation | Malicious) / P(Observation | Benign)
-    let likelihoodRatio = 1.0;
+    let likelihoodRatio: number;
 
     if (isDestructive && isSensitive) {
       likelihoodRatio = 25.0; // Overwhelming indicator of malicious intent

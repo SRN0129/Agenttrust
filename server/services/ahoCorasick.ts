@@ -100,12 +100,14 @@ export class AhoCorasickAutomaton {
     }
 
     const matches: PatternMatch[] = [];
-    if (!text || text.length === 0) return matches;
+    if (typeof text !== "string" || text.length === 0) return matches;
 
-    const lowerText = text.toLowerCase();
+    // Defend against loop bound injection and unbounded user payloads
+    const maxScanLen = Math.min(text.length, 500_000);
+    const lowerText = text.slice(0, maxScanLen).toLowerCase();
     let current = this.root;
 
-    for (let i = 0; i < lowerText.length; i++) {
+    for (let i = 0; i < maxScanLen; i++) {
       const char = lowerText[i];
 
       // Follow failure transitions if child does not exist
