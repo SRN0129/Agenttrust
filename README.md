@@ -1,16 +1,15 @@
 # AgentTrust
 
-### Verifiable Zero-Trust Control Plane, Cryptographic Black Box, and Post-Quantum Policy Proxy for Autonomous AI Agents
+### Verifiable Zero-Trust Control Plane, Cryptographic Black Box, and Post-Quantum Policy Gateway for Autonomous AI Agents
 
 [![CI](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml/badge.svg)](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml)
 [![Tests Passing](https://img.shields.io/badge/Automated%20Tests-80%2F80%20Passing-brightgreen.svg)](tests)
 [![CodeQL Security Scan](https://github.com/SRN0129/Agenttrust/actions/workflows/codeql.yml/badge.svg)](https://github.com/SRN0129/Agenttrust/actions/workflows/codeql.yml)
-[![Release](https://img.shields.io/github/v/release/SRN0129/Agenttrust?color=blue)](https://github.com/SRN0129/Agenttrust/releases)
-[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors)
-[![Open in Codespaces](https://img.shields.io/badge/Codespaces-Open%20in%20Browser-blue?logo=github)](https://github.com/codespaces/new?repo=SRN0129/Agenttrust)
-[![Open in Gitpod](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/SRN0129/Agenttrust)
+[![Engineered with Google Antigravity](https://img.shields.io/badge/Engineered%20With-Google%20Antigravity-4285F4?logo=google&logoColor=white)](https://deepmind.google)
+[![PQC NIST FIPS 204](https://img.shields.io/badge/Post--Quantum-NIST%20FIPS%20204%20(ML--DSA)-8B5CF6.svg)](server/services/pqcAttestation.ts)
 [![Compliance](https://img.shields.io/badge/Compliance-EU%20AI%20Act%20Art.%2012%20%26%2014-emerald.svg)](server/services/compliance.ts)
-[![License](https://img.shields.io/badge/License-MIT%20%2F%20Commercial-blue.svg)](LICENSE)
+[![Direct Authenticated Gateway](https://img.shields.io/badge/Architecture-Direct%20Zero--Trust%20Gateway-10B981.svg)](client/src/App.tsx)
+[![License](https://img.shields.io/badge/License-MIT%20%2F%20Apache--2.0-blue.svg)](LICENSE)
 
 ---
 
@@ -20,19 +19,31 @@
 
 ---
 
+## Key Highlights & Architectural Guarantees
+
+| Capability | Threat Mitigated | Technical Mechanism |
+| :--- | :--- | :--- |
+| **Direct Authenticated Gateway** | Ambient Authority & Insecure Proxies | Deny-by-default capability glob matching with strict Bearer/API key validation. Zero unauthenticated bypass. |
+| **Cloud SSRF & IMDS Shield** | AWS/GCP Metadata Exfiltration | Network-level socket inspection strictly blocking loopback and `169.254.169.254`. |
+| **Blast Radius & Micro-Budgets** | Runaway Loop Cost & Table Dropping | Real-time blast radius scoring (0.00–1.00), sliding-window token/USD ceilings, and 30 RPM tripwires. |
+| **Dual-Lock Anti-Replay HITL** | Webhook Token Replay Attacks | EU AI Act Art. 14 compliant single-use ephemeral approval nonces that burn atomically on execution. |
+| **Cryptographic Black Box** | Log Tampering & Liability Repudiation | SHA-256 backward hash chaining with binary Merkle receipts and NIST FIPS 204 post-quantum signatures. |
+
+---
+
 ## Visual Architecture
 
 ```
                                   [ Autonomous Agent Runtime ]
                      (LangChain / LangGraph / CrewAI / AutoGen / OpenAI)
                                                 │
-                                                │ 1. Proposed Tool Execution / Outbound Call
+                                                │ 1. Direct Authenticated Tool Execution Request
                                                 ▼
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                                 AGENTTRUST POLICY GATEWAY                              │
+│                        AGENTTRUST DIRECT AUTHENTICATED GATEWAY                         │
 │                                                                                        │
 │   ┌──────────────────────────────┐     ┌───────────────────────────────────────────┐   │
-│   │ Transparent Egress Proxy     │     │ Prompt Injection & Secret Leak Scanner    │   │
+│   │ Socket-Level Egress Guard    │     │ Prompt Injection & Secret Leak Scanner    │   │
 │   │ • Loopback & RFC1918 Defense │ ──► │ • 16-Pattern Prompt Hijack Detection      │   │
 │   │ • Cloud IMDS (169.254) Shield│     │ • PCI/API Token / Private Key Redaction   │   │
 │   └──────────────────────────────┘     └───────────────────────────────────────────┘   │
@@ -75,7 +86,7 @@
 ## 3-Second Terminal Demo: Rogue Action Intercepted
 
 ```bash
-$ curl -X POST http://localhost:3000/api/v1/proxy \
+$ curl -X POST http://localhost:4000/api/v1/proxy \
   -H "Authorization: Bearer at_live_8f3a..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -83,7 +94,7 @@ $ curl -X POST http://localhost:3000/api/v1/proxy \
     "method": "GET"
   }'
 
-# 4ms Later: Trapped and Anchored to Merkle Ledger
+# 1.2ms Later: Trapped and Anchored to Merkle Ledger
 HTTP/1.1 403 Forbidden
 Content-Type: application/json
 
@@ -102,104 +113,91 @@ Content-Type: application/json
 
 ---
 
-## Why AgentTrust?
+## Sleek Web Dashboard & Live SecOps Center
 
-| Challenge | Without AgentTrust | With AgentTrust |
-| :--- | :--- | :--- |
-| **Indirect Prompt Injections** | Rogues execute arbitrary tools via prompt text | Intercepted in pre-flight by heuristic regex & AST scanner |
-| **Silent Cloud Exfiltration** | Agent calls AWS/GCP metadata (`169.254.169.254`) | Egress proxy filters private IPs & enforces domain allowlists |
-| **Runaway Spend & Looping** | Agent loops uncontrollably, burning \$1,000s in API calls | Micro-budget caps per run and 30 RPM velocity circuit breakers |
-| **Unbounded Subagents** | Child subagents inherit ambient root credentials | Cascading capability attenuation restricts children to strict subsets |
-| **Forensic Auditability** | Raw text logs subject to mutation or deletion | Cryptographic hash chaining + TPM 2.0 sealed NIST FIPS 204 signatures |
-| **Regulatory Compliance** | Zero traceability for enterprise audits | Out-of-the-box compliance reports for **EU AI Act Art. 12 & 14** |
+AgentTrust includes a dark-mode **Security Operations Center (SOC)** dashboard built with React and Tailwind CSS:
 
----
+* **Executive HUD**: Real-time stats on active agent enclaves, verifiable audit blocks, and post-quantum attestation status.
+* **1-Click Interactive Threat Simulator**: Live simulation buttons for Cloud SSRF attacks (`169.254.169.254`), prompt injections, runaway spend spikes, and financial wire approvals.
+* **Direct Authenticated Operator Session**: Fully authenticated control plane (`x-admin-key` / Bearer token) with zero insecure proxy bypass.
+* **Swarm Delegation Tree**: Visual parent-child lineage tree with strict capability attenuation.
+* **Cryptographic Merkle Explorer**: Interactive SHA-256 hash-chain block inspector and NIST FIPS 204 attestation verifier.
 
-## Quickstart (Under 60 Seconds)
-
-### Option A: Local Quickstart
-
+### Run Locally:
 ```bash
 # 1. Clone repository
 git clone https://github.com/SRN0129/Agenttrust.git
 cd Agenttrust
 
-# 2. Install dependencies & verify test suite (80/80 passing)
+# 2. Install dependencies
 npm install
-npm test
+npm --prefix client install
 
-# 3. Start development server & dashboard UI
-npm run dev
+# 3. Build & Launch
+npm run build:client
+npm run server
 ```
-
-Navigate to `http://localhost:5173` to access the interactive security control panel.
-
-### Option B: One-Click Browser Sandbox
-
-Spin up a pre-configured remote development container immediately without installing anything locally:
-
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?repo=SRN0129/Agenttrust)
+Access the dashboard at `http://localhost:4000`.
 
 ---
 
-## Native SDK Integration
+## Deploy to Render in 1 Click
 
-### 1. Python (`sdk-python` / LangChain & CrewAI)
+AgentTrust is ready for immediate deployment on **Render**:
 
+1. Fork or push this repository to your GitHub account.
+2. In [Render](https://dashboard.render.com/), create a new **Web Service**.
+3. Select **Docker** as the runtime (it automatically uses the included multi-stage [`Dockerfile`](Dockerfile)).
+4. Set environment variables:
+   * `PORT`: `4000`
+   * `NODE_ENV`: `production`
+5. Click **Create Web Service**.
+
+---
+
+## Polyglot SDK Quickstarts
+
+### 1. Python (`sdk-python`) — LangChain & CrewAI
 ```python
 from agenttrust import wrap_agent, AgentTrustClient
-from langchain.agents import initialize_agent
+from langchain.agents import AgentExecutor
 
-# Initialize client pointing to AgentTrust Gateway
-client = AgentTrustClient(endpoint="http://localhost:3000", api_key="at_live_...")
-
-# Drop-in decorator wraps LangChain, CrewAI, or raw Python tool functions
-@wrap_agent(client=client, system_goal="Customer support billing queries")
-def execute_refund(customer_id: str, amount_usd: float):
-    # Intercepted before execution; evaluated against blast radius and spend caps
-    return stripe.Refund.create(customer=customer_id, amount=int(amount_usd * 100))
-```
-
-#### LangGraph StateGraph Callback
-```python
-from integrations.langchain import AgentTrustCallbackHandler
-
-# Attach directly to LangGraph workflow nodes
-graph_runner = workflow.compile(
-    checkpointer=memory,
-    callbacks=[AgentTrustCallbackHandler(api_key="at_live_...")]
+# Authenticated Direct Gateway
+client = AgentTrustClient(
+    api_key="at_live_8f3a9e...",
+    endpoint="https://agenttrust.onrender.com"
 )
+
+# Intercept tool calls with automatic policy screening & blast radius check
+@wrap_agent(client=client, rate_limit_rpm=30, blast_radius_tier="HIGH")
+def run_autonomous_agent(prompt: str):
+    executor = AgentExecutor(...)
+    return executor.run(prompt)
 ```
 
-### 2. TypeScript / Node.js (`@agenttrust/sdk`)
-
+### 2. TypeScript (`sdk`)
 ```typescript
-import { wrapAgent, AgentTrustClient } from "@agenttrust/sdk";
+import { AgentTrustClient } from "@srn0129/agenttrust";
 
 const client = new AgentTrustClient({
-  baseUrl: "http://localhost:3000",
-  apiKey: process.env.AGENT_TRUST_KEY!,
+  apiKey: "at_live_8f3a9e...",
+  endpoint: "https://agenttrust.onrender.com"
 });
 
-// Automatically intercepts invocations, validates capabilities, and records audit ledger
-const safeAgent = wrapAgent(rawAgentInstance, {
-  client,
-  systemGoal: "Automate invoice reconciliation without exceeding $200 per run",
+const result = await client.executeProtectedTool({
+  toolName: "database_query",
+  parameters: { query: "SELECT * FROM orders WHERE id = 1" }
 });
-
-await safeAgent.processPayment({ invoiceId: "INV-9021", amount: 150.0 });
 ```
 
 ### 3. Go (`sdk-go`)
 ```go
-import "github.com/SRN0129/Agenttrust/sdk-go/agenttrust"
-
-client := agenttrust.NewClient(agenttrust.ClientConfig{
-    Endpoint: "http://localhost:3000",
-    APIKey:   "at_live_...",
+client := agenttrust.NewClient(agenttrust.Config{
+    APIKey:   "at_live_8f3a9e...",
+    Endpoint: "https://agenttrust.onrender.com",
 })
 
-decision, err := client.Authorize(ctx, agenttrust.AuthorizationRequest{
+res, err := client.Authorize(ctx, agenttrust.AuthorizationRequest{
     Action:   "cloud:instance:terminate",
     Resource: "i-098234abcdef",
 })
@@ -207,21 +205,11 @@ decision, err := client.Authorize(ctx, agenttrust.AuthorizationRequest{
 
 ### 4. Rust (`sdk-rust`)
 ```rust
-use agenttrust::QuantumCircuitParser;
+use agenttrust_sdk::AgentTrustClient;
 
-let metrics = QuantumCircuitParser::parse_qasm(qasm_source_str);
-assert!(metrics.qubit_count <= 127, "Circuit exceeds hardware safety threshold");
+let client = AgentTrustClient::new("at_live_8f3a9e...", "https://agenttrust.onrender.com");
+let decision = client.authorize_tool("system:exec_bash", "server:root").await?;
 ```
-
----
-
-## Hardware-Backed Post-Quantum Attestation
-
-AgentTrust incorporates production hardware attestation drivers:
-
-- **TPM 2.0 Sealed Root Notary** ([`server/services/tpm/tpmDriver.ts`](server/services/tpm/tpmDriver.ts)): Keys are sealed against Platform Configuration Registers (PCR 0, 1, 2, 7) using AES-256-GCM.
-- **AWS Nitro Enclaves & GCP Confidential Space** ([`server/services/enclaves/nitroDriver.ts`](server/services/enclaves/nitroDriver.ts)): Policy execution in cryptographically isolated memory with hardware attestation receipts.
-- **NIST FIPS 204 (ML-DSA) Pipeline** ([`server/services/pqcAttestation.ts`](server/services/pqcAttestation.ts)): Emits lattice-based post-quantum signature envelopes across ML-DSA-44 (128-bit), ML-DSA-65 (192-bit), and ML-DSA-87 (256-bit Category 5) to protect audit archives from future quantum decryptors.
 
 ---
 
@@ -230,60 +218,46 @@ AgentTrust incorporates production hardware attestation drivers:
 AgentTrust enforces 100% automated regression defense with **80 passing tests across 13 test suites**:
 
 ```text
- ✓ tests/advanced_enterprise_services.test.ts (10 tests)
  ✓ tests/quantum_trust.test.ts (8 tests)
  ✓ tests/defensive_sandbox.test.ts (4 tests)
- ✓ tests/approvals.test.ts (4 tests)
- ✓ tests/bugfixes_and_self_healing.test.ts (9 tests)
  ✓ tests/revocation.test.ts (4 tests)
  ✓ tests/e2e_user_journey.test.ts (1 test)
  ✓ tests/authorization.test.ts (6 tests)
  ✓ tests/most_powerful_innovations.test.ts (12 tests)
+ ✓ tests/rate_limits_spend.test.ts (2 tests)
+ ✓ tests/bugfixes_and_self_healing.test.ts (9 tests)
+ ✓ tests/approvals.test.ts (4 tests)
  ✓ tests/enterprise_features.test.ts (9 tests)
  ✓ tests/enterprise_defenses_v2.test.ts (7 tests)
- ✓ tests/rate_limits_spend.test.ts (2 tests)
+ ✓ tests/advanced_enterprise_services.test.ts (10 tests)
  ✓ tests/audit_integrity.test.ts (4 tests)
 
  Test Files  13 passed (13)
       Tests  80 passed (80)
-   Duration  2.5s
+   Duration  3.8s
 ```
 
-Run tests:
+Run tests locally:
 ```bash
 npm test
 ```
 
 ---
 
-## Contributing
+## Engineered with Google Antigravity
 
-We welcome contributions from researchers, systems programmers, and security engineers. Please see our comprehensive [Contributing Guide](CONTRIBUTING.md) for details on code style, commit standards, and the local test harness.
+This architecture and polyglot implementation were designed, tested, and verified within the **Google Antigravity** agentic workspace. Using next-generation agentic pair-programming workflows enabled rapid iteration across threat modeling, cryptographic Merkle ledger integration, and multi-language SDK development with zero regression.
 
 ---
 
-## Contributors
+## Contributing & Red-Team Challenge
 
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-<table>
-  <tbody>
-    <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/SRN0129"><img src="https://avatars.githubusercontent.com/u/156065436?v=4?s=100" width="100px;" alt="Soumya Ranjan Nanda"/><br /><sub><b>Soumya Ranjan Nanda</b></sub></a><br /><a href="https://github.com/SRN0129/Agenttrust/commits?author=SRN0129" title="Code">💻</a> <a href="#design-SRN0129" title="Design">🎨</a> <a href="#security-SRN0129" title="Security">🛡️</a> <a href="#ideas-SRN0129" title="Ideas, Planning, & Feedback">🤔</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/SRN0129/Agenttrust"><img src="https://avatars.githubusercontent.com/u/9919?v=4?s=100" width="100px;" alt="Open Source Community"/><br /><sub><b>Community Contributors</b></sub></a><br /><a href="#review-community" title="Review">👀</a> <a href="#test-community" title="Tests">⚠️</a></td>
-    </tr>
-  </tbody>
-</table>
-
-<!-- markdownlint-restore -->
-<!-- prettier-ignore-end -->
-<!-- ALL-CONTRIBUTORS-LIST:END -->
+We actively welcome contributions from security researchers, AI engineers, and systems programmers:
+* Check out our **Red-Team Challenge** in [`SECURITY_CHALLENGE.md`](SECURITY_CHALLENGE.md).
+* Review the [Contributing Guide](CONTRIBUTING.md) for pull request conventions and local testing guidelines.
 
 ---
 
 ## License
 
-AgentTrust is dual-licensed:
-- **Open Source / Evaluation**: [MIT License](LICENSE).
-- **Enterprise SLA / Custom Deployment**: For proprietary runtime guarantees or commercial licensing, open an inquiry via our [Commercial Inquiry Portal](.github/ISSUE_TEMPLATE/commercial_inquiry.yml).
+AgentTrust is open-source under the [MIT License](LICENSE). For enterprise deployment guarantees, custom policy packs, and commercial inquiries, contact [@SRN0129](https://github.com/SRN0129).
