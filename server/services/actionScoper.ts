@@ -72,7 +72,25 @@ export class ActionScoper {
       return { verb: "UNKNOWN", isDestructive: false, isMutative: false };
     }
 
-    const clean = query.trim().replace(/\/\*[\s\S]*?\*\/|--.*$/gm, "").trim();
+    // Linear non-backtracking comment stripper to prevent ReDoS (CWE-1333)
+    let clean = "";
+    let i = 0;
+    const len = Math.min(query.length, 10000);
+    while (i < len) {
+      if (query[i] === "/" && query[i + 1] === "*") {
+        const endComment = query.indexOf("*/", i + 2);
+        if (endComment === -1) break;
+        i = endComment + 2;
+      } else if (query[i] === "-" && query[i + 1] === "-") {
+        const nextLine = query.indexOf("\n", i + 2);
+        if (nextLine === -1) break;
+        i = nextLine + 1;
+      } else {
+        clean += query[i];
+        i++;
+      }
+    }
+    clean = clean.trim();
     const tokens = clean.split(/\s+/);
     const verb = tokens[0]?.toUpperCase() || "UNKNOWN";
 

@@ -4,7 +4,6 @@ import request from "supertest";
 import { createApp } from "../server/app.js";
 import { ActionScoper } from "../server/services/actionScoper.js";
 import { CognitiveAuditor } from "../server/services/cognitiveAuditor.js";
-import { RuntimeVisibilityWatchdog } from "../server/services/runtimeVisibility.js";
 
 describe("Enterprise Assurance: Action-Specific Scoping, Cognitive Audit & Runtime Visibility", () => {
   let db: Database.Database;
@@ -173,6 +172,9 @@ describe("Enterprise Assurance: Action-Specific Scoping, Cognitive Audit & Runti
     });
 
     it("should detect cognitive goal divergence when destructive reasoning has 0 relation to system goal", () => {
+      const auditor = new CognitiveAuditor();
+      expect(auditor).toBeInstanceOf(CognitiveAuditor);
+
       const analysis = CognitiveAuditor.analyzeReasoning(
         "Deleting historical logs because storage space is slightly low.",
         "database:purge",
