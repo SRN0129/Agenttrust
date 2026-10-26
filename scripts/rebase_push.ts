@@ -39,7 +39,7 @@ async function main() {
   await stageAllFiles(projectDir);
 
   // Create commit with remoteRef as parent (clean fast-forward!)
-  const commitMsg = "fix(security): resolve CodeQL alerts #74, #75, #76 with linear comment tokenizer and strict test fixtures";
+  const commitMsg = "fix(quality): remove unused ActionScoper import from server/app.ts";
   
   const commitSha = await git.commit({
     fs,

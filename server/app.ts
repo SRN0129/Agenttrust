@@ -25,7 +25,6 @@ import { AuditAttestationService } from "./services/tamperAttestation.js";
 import { AgentChaosMonkey } from "./services/chaosMonkey.js";
 import { AutonomousSelfHealingService } from "./services/selfHealing.js";
 import { QuantumTrustService } from "./services/quantumTrust.js";
-import { ActionScoper } from "./services/actionScoper.js";
 import { CognitiveAuditor } from "./services/cognitiveAuditor.js";
 import { RuntimeVisibilityWatchdog } from "./services/runtimeVisibility.js";
 
