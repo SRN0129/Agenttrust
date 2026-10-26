@@ -24,6 +24,7 @@ pub enum AgentTrustError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[allow(non_camel_case_types)]
 pub enum Decision {
     ALLOW,
     DENY,
@@ -70,10 +71,10 @@ pub struct QuantumCircuitParser;
 
 impl QuantumCircuitParser {
     pub fn parse_qasm(qasm: &str) -> QuantumCircuitMetrics {
-        let mut qubit_count = 0;
-        let mut total_gates = 0;
-        let mut two_qubit_gates = 0;
-        let mut measurements = 0;
+        let mut qubit_count: usize = 0;
+        let mut total_gates: usize = 0;
+        let mut two_qubit_gates: usize = 0;
+        let mut measurements: usize = 0;
 
         for line in qasm.lines() {
             let trimmed = line.trim();
