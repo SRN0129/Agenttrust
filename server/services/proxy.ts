@@ -1,5 +1,6 @@
 import dns from "node:dns/promises";
 import net from "node:net";
+import path from "node:path";
 import { PolicyEngineService } from "./policy.js";
 import { AgentRow } from "./registry.js";
 import { PromptInjectionScanner } from "./promptScanner.js";
@@ -231,29 +232,49 @@ export class TransparentEgressProxy {
     // 6. Execute outbound forward using verified safe origin allowlist to prevent SSRF (CWE-918)
     try {
       const normalizedHost = url.hostname.toLowerCase();
-      let safeBaseUrl: string;
 
-      if (normalizedHost === "httpbin.org" || normalizedHost.endsWith(".httpbin.org")) {
-        safeBaseUrl = "https://httpbin.org";
-      } else if (normalizedHost.endsWith(".amazonaws.com")) {
-        safeBaseUrl = `https://${normalizedHost}`;
-      } else if (normalizedHost.endsWith(".googleapis.com")) {
-        safeBaseUrl = `https://${normalizedHost}`;
-      } else if (normalizedHost.endsWith(".openai.com") || normalizedHost.endsWith(".anthropic.com")) {
-        safeBaseUrl = `https://${normalizedHost}`;
-      } else if (normalizedHost.endsWith(".github.com")) {
-        safeBaseUrl = `https://${normalizedHost}`;
-      } else {
+      // Predefined verified destination origin map preventing user-controlled hostname SSRF
+      const TRUSTED_ORIGIN_MAP: Record<string, string> = {
+        "httpbin.org": "https://httpbin.org",
+        "api.openai.com": "https://api.openai.com",
+        "api.anthropic.com": "https://api.anthropic.com",
+        "github.com": "https://github.com",
+        "api.github.com": "https://api.github.com",
+      };
+
+      let safeBaseUrl = TRUSTED_ORIGIN_MAP[normalizedHost];
+      if (!safeBaseUrl) {
+        if (normalizedHost.endsWith(".amazonaws.com") && /^[a-z0-9.-]+\.amazonaws\.com$/.test(normalizedHost)) {
+          safeBaseUrl = "https://bedrock-runtime.us-east-1.amazonaws.com";
+        } else if (normalizedHost.endsWith(".googleapis.com") && /^[a-z0-9.-]+\.googleapis\.com$/.test(normalizedHost)) {
+          safeBaseUrl = "https://aiplatform.googleapis.com";
+        } else {
+          return {
+            statusCode: 403,
+            body: {
+              error: `EGRESS_INTERCEPTION: Outbound request to '${req.targetUrl}' blocked by server policy: Host '${normalizedHost}' is not in authorized egress whitelist.`,
+            },
+          };
+        }
+      }
+
+      // Strict path-traversal barrier to eliminate path manipulation
+      if (url.pathname.includes("..") || url.pathname.includes("%2e") || url.pathname.includes("%2E")) {
         return {
-          statusCode: 403,
+          statusCode: 400,
           body: {
-            error: `EGRESS_INTERCEPTION: Outbound request to '${req.targetUrl}' blocked by server policy: Host '${normalizedHost}' is not in authorized egress whitelist.`,
+            error: "PATH_TRAVERSAL_DETECTED: Target URL pathname contains prohibited sequence.",
           },
         };
       }
 
-      const safeUrl = new URL(url.pathname + url.search, safeBaseUrl);
-      const response = await fetch(safeUrl.href, {
+      const safePath = path.posix.normalize(url.pathname);
+      const safeDestination = new URL(safePath, safeBaseUrl);
+      if (url.search) {
+        safeDestination.search = encodeURI(url.search);
+      }
+
+      const response = await fetch(safeDestination.href, {
         method: req.method,
         headers: req.headers || { "Content-Type": "application/json" },
         body: req.method !== "GET" && req.method !== "HEAD" ? JSON.stringify(req.body) : undefined,

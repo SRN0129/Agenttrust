@@ -39,7 +39,7 @@ async function main() {
   await stageAllFiles(projectDir);
 
   // Create commit with remoteRef as parent (clean fast-forward!)
-  const commitMsg = "fix(security): resolve SSRF in proxy egress and rate-limit static client handler";
+  const commitMsg = "fix(security): eliminate SSRF dataflow taint in proxy using fixed origin mapping and path normalization";
   
   const commitSha = await git.commit({
     fs,
