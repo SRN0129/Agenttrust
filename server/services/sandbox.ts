@@ -183,7 +183,7 @@ export class IsolatedSandboxRunner {
   ): Promise<SandboxResult<T>> {
     const startTime = Date.now();
     try {
-      const module = await WebAssembly.compile(wasmBuffer);
+      const module = await WebAssembly.compile(wasmBuffer as BufferSource);
       const instance = await WebAssembly.instantiate(module, {}); // Zero host imports
       const fn = instance.exports[entryExport] as Function;
 

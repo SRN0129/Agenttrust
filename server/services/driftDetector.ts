@@ -2,7 +2,8 @@
  * AgentTrust Goal Hijack & Semantic Drift Detector
  * Detects intent drift, mission hijacking, and indirect prompt injection attempts
  * before tools are executed.
- * Powered by an offline, zero-dependency sub-word and domain vector space embedding engine.
+ * Powered by an offline, zero-dependency sub-word and domain vector space embedding engine
+ * augmented with Information-Theoretic Entropy & Jensen-Shannon Divergence metrics.
  */
 
 export interface DriftAnalysisRequest {
@@ -20,6 +21,75 @@ export interface DriftAnalysisResult {
   anomalyFlags: string[];
   recommendedDecision: "ALLOW" | "NEEDS_APPROVAL" | "DENY";
   reason: string;
+  informationTheoreticMetrics?: {
+    goalEntropy: number;
+    actionEntropy: number;
+    jensenShannonDivergence: number;
+  };
+}
+
+/**
+ * Information-Theoretic Distribution & Entropy Engine.
+ */
+export class InformationTheoreticAnalyzer {
+  /**
+   * Generates empirical probability distribution P(w) over tokens.
+   */
+  public static tokenDistribution(text: string): Map<string, number> {
+    const tokens = text.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(t => t.length > 1);
+    const dist = new Map<string, number>();
+    if (tokens.length === 0) return dist;
+
+    for (const t of tokens) {
+      dist.set(t, (dist.get(t) || 0) + 1);
+    }
+
+    const total = tokens.length;
+    for (const [k, v] of dist.entries()) {
+      dist.set(k, v / total);
+    }
+    return dist;
+  }
+
+  /**
+   * Calculates Shannon Entropy H(P) = -sum(P(w) * log2(P(w))) in bits.
+   */
+  public static shannonEntropy(dist: Map<string, number>): number {
+    let entropy = 0;
+    for (const p of dist.values()) {
+      if (p > 0) {
+        entropy -= p * Math.log2(p);
+      }
+    }
+    return Number(entropy.toFixed(3));
+  }
+
+  /**
+   * Calculates symmetric Jensen-Shannon Divergence D_JS(P || Q) in range [0, 1].
+   */
+  public static jensenShannonDivergence(distP: Map<string, number>, distQ: Map<string, number>): number {
+    if (distP.size === 0 || distQ.size === 0) return 1.0;
+
+    const unionKeys = new Set([...distP.keys(), ...distQ.keys()]);
+    let kl_P_M = 0;
+    let kl_Q_M = 0;
+
+    for (const key of unionKeys) {
+      const p = distP.get(key) || 0;
+      const q = distQ.get(key) || 0;
+      const m = 0.5 * (p + q);
+
+      if (p > 0 && m > 0) {
+        kl_P_M += p * Math.log2(p / m);
+      }
+      if (q > 0 && m > 0) {
+        kl_Q_M += q * Math.log2(q / m);
+      }
+    }
+
+    const js = 0.5 * kl_P_M + 0.5 * kl_Q_M;
+    return Math.max(0.0, Math.min(1.0, Number(js.toFixed(3))));
+  }
 }
 
 /**
@@ -154,7 +224,14 @@ export class GoalDriftDetector {
       anomalyFlags.push("DESTRUCTIVE_ACTION_VIOLATES_READONLY_GOAL");
     }
 
-    // 3. Offline Semantic Cosine Vector Embedding Similarity
+    // 3. Information-Theoretic Entropy & Jensen-Shannon Divergence
+    const goalDist = InformationTheoreticAnalyzer.tokenDistribution(normalizedGoal);
+    const actionDist = InformationTheoreticAnalyzer.tokenDistribution(`${normalizedAction} ${normalizedResource} ${stringifiedParams}`);
+    const goalEntropy = InformationTheoreticAnalyzer.shannonEntropy(goalDist);
+    const actionEntropy = InformationTheoreticAnalyzer.shannonEntropy(actionDist);
+    const jsDivergence = InformationTheoreticAnalyzer.jensenShannonDivergence(goalDist, actionDist);
+
+    // 4. Offline Semantic Cosine Vector Embedding Similarity
     const goalVec = SemanticEmbeddingEngine.embedText(normalizedGoal);
     const actionVec = SemanticEmbeddingEngine.embedText(`${normalizedAction} ${normalizedResource} ${stringifiedParams}`);
     const semanticSimilarity = SemanticEmbeddingEngine.cosineSimilarity(goalVec, actionVec);
@@ -185,10 +262,10 @@ export class GoalDriftDetector {
       ? sharedTokens / actionResourceTokens.size 
       : 0;
 
-    // Combined metric: 60% semantic embedding vector distance, 40% lexical overlap distance
+    // Combined metric: 50% semantic vector distance, 30% lexical overlap, 20% Jensen-Shannon divergence
     const vectorDivergence = 1.0 - semanticSimilarity;
     const lexicalDivergence = 1.0 - Math.min(1.0, overlapRatio * 1.5);
-    let divergenceScore = (vectorDivergence * 0.6) + (lexicalDivergence * 0.4);
+    let divergenceScore = (vectorDivergence * 0.5) + (lexicalDivergence * 0.3) + (jsDivergence * 0.2);
 
     // If there is significant direct token overlap, cap divergence
     if (overlapRatio > 0.4) {
@@ -242,6 +319,11 @@ export class GoalDriftDetector {
       anomalyFlags,
       recommendedDecision,
       reason,
+      informationTheoreticMetrics: {
+        goalEntropy,
+        actionEntropy,
+        jensenShannonDivergence: jsDivergence,
+      },
     };
   }
 }

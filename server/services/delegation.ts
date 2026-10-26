@@ -1,6 +1,8 @@
 import Database from "better-sqlite3";
 import { AgentRow, AgentRegistryService } from "./registry.js";
 import { AuditLedgerService } from "./audit.js";
+import { CapabilitySemilattice } from "./capabilitySemilattice.js";
+import { SpaceColonizationEngine, SwarmTaskInput, SynthesizedSwarmTopology } from "./spaceColonization.js";
 
 export interface DelegateSubagentInput {
   parentAgentId: string;
@@ -34,9 +36,10 @@ export class AgentDelegationService {
   }
 
   /**
-   * Mint an attenuated subagent with strict capability and budget downscoping.
+   * Mint an attenuated subagent with strict capability and budget downscoping
+   * verified by Bounded Meet-Semilattice algebra.
    */
-  delegateSubagent(input: DelegateSubagentInput): { childAgent: AgentRow; apiKey: string } {
+  delegateSubagent(input: DelegateSubagentInput): { childAgent: AgentRow; apiKey: string; latticeProof?: string } {
     const parent = this.registryService.getAgentById(input.parentAgentId);
     if (!parent) {
       throw new Error(`Parent agent ${input.parentAgentId} not found.`);
@@ -48,16 +51,13 @@ export class AgentDelegationService {
 
     const parentCaps = JSON.parse(parent.allowed_capabilities) as string[];
 
-    // 1. Strict Capability Attenuation (Child capabilities must be subset of parent)
-    for (const cap of input.delegatedCapabilities) {
-      const allowedByParent = parentCaps.some(
-        pCap => pCap === "*" || pCap === cap || (pCap.endsWith("*") && cap.startsWith(pCap.slice(0, -1)))
+    // 1. Strict Capability Attenuation via Bounded Meet-Semilattice Non-Amplification Theorem
+    const semilatticeCheck = CapabilitySemilattice.verifyNonAmplification(parentCaps, input.delegatedCapabilities);
+    if (!semilatticeCheck.valid) {
+      const cap = semilatticeCheck.violations[0];
+      throw new Error(
+        `Attenuation Violation: Parent cannot delegate capability '${cap}' which it does not possess. Parent capabilities: [${parentCaps.join(", ")}].`
       );
-      if (!allowedByParent) {
-        throw new Error(
-          `Attenuation Violation: Parent cannot delegate capability '${cap}' which it does not possess. Parent capabilities: [${parentCaps.join(", ")}].`
-        );
-      }
     }
 
     // 2. Strict Budget Ceilings
@@ -103,10 +103,43 @@ export class AgentDelegationService {
         delegatedCapabilities: input.delegatedCapabilities,
         allocatedBudgetUsd: input.allocatedSpendLimitUsd,
         allocatedRateLimitRpm: input.allocatedRateLimitRpm,
+        latticeProof: semilatticeCheck.latticeProof,
       },
     });
 
-    return { childAgent, apiKey };
+    return { childAgent, apiKey, latticeProof: semilatticeCheck.latticeProof };
+  }
+
+  /**
+   * Synthesizes an optimal least-privilege subagent swarm hierarchy using
+   * the Space Colonization Algorithm (SCA).
+   */
+  synthesizeSwarmTopology(parentAgentId: string, tasks: SwarmTaskInput[]): SynthesizedSwarmTopology {
+    const parent = this.registryService.getAgentById(parentAgentId);
+    if (!parent) {
+      throw new Error(`Parent agent ${parentAgentId} not found.`);
+    }
+
+    const parentCaps = JSON.parse(parent.allowed_capabilities) as string[];
+    return SpaceColonizationEngine.synthesizeSwarmTree(parent.id, parentCaps, tasks);
+  }
+
+  /**
+   * Analyzes potential lateral attack paths from an agent's current permissions
+   * towards high-value crown-jewel assets and identifies topological choke points.
+   */
+  analyzePerimeterRisk(
+    agentId: string,
+    crownJewels: { name: string; resourcePattern: string; valueScore: number }[],
+    toolHops: { tool: string; requiredAccess: string; grantsAccess: string }[]
+  ) {
+    const agent = this.registryService.getAgentById(agentId);
+    if (!agent) {
+      throw new Error(`Agent ${agentId} not found.`);
+    }
+
+    const agentCaps = JSON.parse(agent.allowed_capabilities) as string[];
+    return SpaceColonizationEngine.analyzeAttackPerimeter(agentCaps, crownJewels, toolHops);
   }
 
   /**

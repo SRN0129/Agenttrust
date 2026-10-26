@@ -1,11 +1,17 @@
+import { AhoCorasickAutomaton } from "./ahoCorasick.js";
+
 export interface ScanResult {
   safe: boolean;
   threatType?: "PROMPT_INJECTION" | "SENSITIVE_DATA_LEAK" | "MALICIOUS_OVERRIDE";
   reason?: string;
   flaggedPatterns: string[];
+  scanMethod?: "DFA_AHO_CORASICK" | "REGEX_FALLBACK";
 }
 
 export class PromptInjectionScanner {
+  private static dfa: AhoCorasickAutomaton;
+  private static initialized = false;
+
   // Common prompt injection, jailbreak, and system instruction override patterns
   private static injectionPatterns = [
     /ignore\s+(all\s+)?(previous|prior)\s+instructions/i,
@@ -28,19 +34,62 @@ export class PromptInjectionScanner {
     { name: "AWS Secret Access Key Pattern", regex: /(?:aws_secret_access_key|aws_access_key_id)\s*[:=]\s*[A-Za-z0-9/+=]{20,}/i },
   ];
 
+  private static initDfa(): void {
+    if (this.initialized) return;
+    this.dfa = new AhoCorasickAutomaton();
+
+    const dfaTriggers = [
+      "ignore previous instructions",
+      "ignore all previous instructions",
+      "ignore prior instructions",
+      "disregard prior directives",
+      "system override",
+      "developer mode",
+      "dan mode",
+      "reveal system prompt",
+      "print environment variables",
+      "base64 decode and execute",
+      "exfiltrate data",
+      "prompt_injection",
+      "admin_mode = true",
+      "admin_mode=true",
+      "-----begin rsa private key-----",
+      "-----begin private key-----",
+    ];
+
+    for (const trig of dfaTriggers) {
+      this.dfa.addPattern(trig, "PROMPT_INJECTION");
+    }
+
+    this.dfa.build();
+    this.initialized = true;
+  }
+
   /**
-   * Scans text inputs, prompts, and parameters for prompt injections or data leaks.
+   * Scans text inputs, prompts, and parameters for prompt injections or data leaks
+   * using hybrid Aho-Corasick Deterministic Finite Automaton and AST regexes.
    */
   static scan(input: unknown): ScanResult {
     if (!input) return { safe: true, flaggedPatterns: [] };
 
+    this.initDfa();
     const textToScan = typeof input === "string" ? input : JSON.stringify(input);
     const flagged: string[] = [];
 
-    // 1. Check for prompt injection / jailbreak attempts
+    // 1. O(n) Aho-Corasick Automaton Search
+    const dfaMatches = this.dfa.search(textToScan);
+    if (dfaMatches.length > 0) {
+      for (const m of dfaMatches) {
+        if (!flagged.includes(m.pattern)) flagged.push(m.pattern);
+      }
+    }
+
+    // 2. Regex verification for flexible whitespace variants
     for (const pattern of this.injectionPatterns) {
       if (pattern.test(textToScan)) {
-        flagged.push(pattern.source);
+        if (!flagged.includes(pattern.source)) {
+          flagged.push(pattern.source);
+        }
       }
     }
 
@@ -50,10 +99,11 @@ export class PromptInjectionScanner {
         threatType: "PROMPT_INJECTION",
         reason: `Potential prompt injection / jailbreak detected matching signature: [${flagged.join(", ")}]`,
         flaggedPatterns: flagged,
+        scanMethod: "DFA_AHO_CORASICK",
       };
     }
 
-    // 2. Check for sensitive credential leaks
+    // 3. Sensitive credential leaks
     for (const item of this.sensitiveDataPatterns) {
       if (item.regex.test(textToScan)) {
         flagged.push(item.name);

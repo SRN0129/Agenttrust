@@ -1,5 +1,6 @@
 import Database from "better-sqlite3";
 import { AuditLedgerService } from "./audit.js";
+import { CountMinSketch } from "./countMinSketch.js";
 
 export interface MicroBudgetConfig {
   agentId: string;
@@ -16,6 +17,7 @@ export interface VelocityCheckResult {
   currentRpm: number;
   currentSpendRatePerMin: number;
   reason: string;
+  probabilisticFrequencyEstimate?: number;
 }
 
 interface ActionTimestamp {
@@ -31,6 +33,9 @@ export class MicroBudgetService {
     isTripped: boolean;
     tripReason?: string;
   }> = new Map();
+
+  // Bounded (ε, δ) Count-Min Sketch for high-throughput sub-linear velocity estimation
+  private sketch: CountMinSketch = new CountMinSketch(0.01, 0.01);
 
   constructor(private db: Database.Database, private auditService?: AuditLedgerService) {}
 
@@ -54,6 +59,9 @@ export class MicroBudgetService {
       throw new Error(`INVALID_COST: estimatedCostUsd must be a non-negative finite number. Received: ${estimatedCostUsd}`);
     }
 
+    // Record in probabilistic frequency sketch
+    this.sketch.add(`run:${runId}`, 1);
+
     const run = this.runs.get(runId);
     if (!run) {
       // Default permissive if no specific run isolation is active, but still track
@@ -64,8 +72,11 @@ export class MicroBudgetService {
         currentRpm: 0,
         currentSpendRatePerMin: 0,
         reason: "No micro-budget constraints applied to this run.",
+        probabilisticFrequencyEstimate: this.sketch.estimate(`run:${runId}`),
       };
     }
+
+    this.sketch.add(`agent:${run.config.agentId}`, 1);
 
     if (run.isTripped) {
       return {
@@ -75,6 +86,7 @@ export class MicroBudgetService {
         currentRpm: 0,
         currentSpendRatePerMin: 0,
         reason: `CIRCUIT_BREAKER_ACTIVE: Execution halted due to previous violation: ${run.tripReason}`,
+        probabilisticFrequencyEstimate: this.sketch.estimate(`run:${runId}`),
       };
     }
 
@@ -109,6 +121,7 @@ export class MicroBudgetService {
         currentRpm,
         currentSpendRatePerMin,
         reason: run.tripReason,
+        probabilisticFrequencyEstimate: this.sketch.estimate(`run:${runId}`),
       };
     }
 
@@ -133,13 +146,14 @@ export class MicroBudgetService {
         currentRpm,
         currentSpendRatePerMin,
         reason: run.tripReason,
+        probabilisticFrequencyEstimate: this.sketch.estimate(`run:${runId}`),
       };
     }
 
     // Check 3: Spending Rate Velocity Spike ($/min)
     if (currentSpendRatePerMin > run.config.maxSpendRateUsdPerMin) {
       run.isTripped = true;
-      run.tripReason = `SPEND_RATE_SPIKE_DETECTED: Spend rate $${currentSpendRatePerMin.toFixed(2)}/min exceeds limit $${run.config.maxSpendRateUsdPerMin.toFixed(2)}/min`;
+      run.tripReason = `SPEND_RATE_SPIKE_DETECTED: Burn rate of $${currentSpendRatePerMin.toFixed(2)}/min exceeds safe ceiling of $${run.config.maxSpendRateUsdPerMin.toFixed(2)}/min`;
 
       this.auditService?.append({
         agentId: run.config.agentId,
@@ -157,6 +171,7 @@ export class MicroBudgetService {
         currentRpm,
         currentSpendRatePerMin,
         reason: run.tripReason,
+        probabilisticFrequencyEstimate: this.sketch.estimate(`run:${runId}`),
       };
     }
 
@@ -171,6 +186,7 @@ export class MicroBudgetService {
       currentRpm,
       currentSpendRatePerMin,
       reason: "Within allocated micro-budget and safe velocity parameters.",
+      probabilisticFrequencyEstimate: this.sketch.estimate(`run:${runId}`),
     };
   }
 
@@ -197,6 +213,11 @@ export class MicroBudgetService {
       isTripped: run.isTripped,
       tripReason: run.tripReason,
       activeWindowActions: run.actions.length,
+      probabilisticFrequency: this.sketch.estimate(`run:${runId}`),
     };
+  }
+
+  public getSketch(): CountMinSketch {
+    return this.sketch;
   }
 }

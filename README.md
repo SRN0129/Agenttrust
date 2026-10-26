@@ -3,7 +3,7 @@
 ### Verifiable Zero-Trust Control Plane, Cryptographic Black Box, and Post-Quantum Policy Gateway for Autonomous AI Agents
 
 [![CI](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml/badge.svg)](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml)
-[![Tests Passing](https://img.shields.io/badge/Automated%20Tests-80%2F80%20Passing-brightgreen.svg)](tests)
+[![Tests Passing](https://img.shields.io/badge/Automated%20Tests-93%2F93%20Passing-brightgreen.svg)](tests)
 [![CodeQL Security Scan](https://github.com/SRN0129/Agenttrust/actions/workflows/codeql.yml/badge.svg)](https://github.com/SRN0129/Agenttrust/actions/workflows/codeql.yml)
 [![Engineered with Google Antigravity](https://img.shields.io/badge/Engineered%20With-Google%20Antigravity-4285F4?logo=google&logoColor=white)](https://deepmind.google)
 [![PQC NIST FIPS 204](https://img.shields.io/badge/Post--Quantum-NIST%20FIPS%20204%20(ML--DSA)-8B5CF6.svg)](server/services/pqcAttestation.ts)
@@ -201,26 +201,27 @@ let decision = client.authorize_tool("system:exec_bash", "server:root").await?;
 
 ## Test Suite & Verification
 
-AgentTrust enforces 100% automated regression defense with **80 passing tests across 13 test suites**:
+AgentTrust enforces 100% automated regression defense with **93 passing tests across 14 test suites**:
 
 ```text
  ✓ tests/quantum_trust.test.ts (8 tests)
+ ✓ tests/mathematical_algorithms_and_sca.test.ts (13 tests)
  ✓ tests/defensive_sandbox.test.ts (4 tests)
  ✓ tests/revocation.test.ts (4 tests)
- ✓ tests/e2e_user_journey.test.ts (1 test)
- ✓ tests/authorization.test.ts (6 tests)
- ✓ tests/most_powerful_innovations.test.ts (12 tests)
- ✓ tests/rate_limits_spend.test.ts (2 tests)
  ✓ tests/bugfixes_and_self_healing.test.ts (9 tests)
+ ✓ tests/most_powerful_innovations.test.ts (12 tests)
+ ✓ tests/authorization.test.ts (6 tests)
+ ✓ tests/e2e_user_journey.test.ts (1 test)
  ✓ tests/approvals.test.ts (4 tests)
  ✓ tests/enterprise_features.test.ts (9 tests)
  ✓ tests/enterprise_defenses_v2.test.ts (7 tests)
  ✓ tests/advanced_enterprise_services.test.ts (10 tests)
  ✓ tests/audit_integrity.test.ts (4 tests)
+ ✓ tests/rate_limits_spend.test.ts (2 tests)
 
- Test Files  13 passed (13)
-      Tests  80 passed (80)
-   Duration  3.8s
+ Test Files  14 passed (14)
+      Tests  93 passed (93)
+   Duration  4.2s
 ```
 
 Run tests locally:
