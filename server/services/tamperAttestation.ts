@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import Database from "better-sqlite3";
-import { AuditLedgerService, AuditRow } from "./audit.js";
+import { AuditLedgerService } from "./audit.js";
 import { NotarizationService } from "./notarization.js";
 
 export interface MerkleProofStep {

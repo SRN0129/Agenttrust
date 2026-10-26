@@ -52,7 +52,7 @@ export async function stageAllFiles(baseDir = projectDir) {
   // Check for deleted files in git index and stage their removal
   try {
     const matrix = await git.statusMatrix({ fs, dir: baseDir });
-    for (const [filepath, head, workdir, stage] of matrix) {
+    for (const [filepath, head, workdir] of matrix) {
       if (head === 1 && workdir === 0) {
         await git.remove({ fs, dir: baseDir, filepath });
         console.log(`  [-] Staged removal: ${filepath}`);

@@ -140,6 +140,33 @@ export function createApp(customDb?: Database.Database) {
     });
   };
 
+  // In-memory rate limiter for public cryptographic verification endpoints
+  const verificationRateLimiter = (() => {
+    const windowMs = 60 * 1000;
+    const maxRequests = 120;
+    const hits = new Map<string, { count: number; resetAt: number }>();
+
+    return (req: Request, res: Response, next: NextFunction) => {
+      const ip = req.ip || req.socket.remoteAddress || "127.0.0.1";
+      const now = Date.now();
+      const client = hits.get(ip);
+
+      if (!client || now > client.resetAt) {
+        hits.set(ip, { count: 1, resetAt: now + windowMs });
+        next();
+        return;
+      }
+
+      if (client.count >= maxRequests) {
+        res.status(429).json({ success: false, error: "RATE_LIMIT_EXCEEDED: Too many verification requests." });
+        return;
+      }
+
+      client.count++;
+      next();
+    };
+  })();
+
   // ----------------------------------------------------
   // Health & System Info
   // ----------------------------------------------------
@@ -1001,15 +1028,24 @@ export function createApp(customDb?: Database.Database) {
     }
   });
 
-  app.post("/api/v1/audit/attestation/verify", (req, res) => {
+  app.post("/api/v1/audit/attestation/verify", verificationRateLimiter, (req, res) => {
     try {
-      const { receipt } = req.body;
-      if (!receipt) {
+      const receiptSchema = z.object({
+        receipt: z.object({
+          merkleRoot: z.string().min(1),
+          entry: z.object({
+            entryHash: z.string().min(1),
+          }).passthrough(),
+        }).passthrough(),
+      });
+
+      const parsed = receiptSchema.safeParse(req.body);
+      if (!parsed.success) {
         res.status(400).json({ success: false, error: "Provide receipt object in body." });
         return;
       }
 
-      const verification = AuditAttestationService.verifyReceipt(receipt);
+      const verification = AuditAttestationService.verifyReceipt(parsed.data.receipt as any);
       res.json({ success: true, verification });
     } catch (err: any) {
       res.status(400).json({ success: false, error: err.message });
@@ -1099,7 +1135,7 @@ export function createApp(customDb?: Database.Database) {
     }
   });
 
-  app.post("/api/v1/quantum/pqc-attestation", (req, res) => {
+  app.post("/api/v1/quantum/pqc-attestation", verificationRateLimiter, (req, res) => {
     try {
       const verification = auditService.verifyIntegrity();
       const tipHash = verification.latestHash || "0000000000000000000000000000000000000000000000000000000000000000";
@@ -1113,14 +1149,20 @@ export function createApp(customDb?: Database.Database) {
     }
   });
 
-  app.post("/api/v1/quantum/pqc-verify", (req, res) => {
+  app.post("/api/v1/quantum/pqc-verify", verificationRateLimiter, (req, res) => {
     try {
-      const { manifest } = req.body;
-      if (!manifest) {
+      const manifestSchema = z.object({
+        manifest: z.object({
+          ledgerTipHash: z.string().min(1),
+        }).passthrough(),
+      });
+
+      const parsed = manifestSchema.safeParse(req.body);
+      if (!parsed.success) {
         res.status(400).json({ success: false, error: "Provide manifest in body." });
         return;
       }
-      const valid = QuantumTrustService.verifyPqcManifest(manifest);
+      const valid = QuantumTrustService.verifyPqcManifest(parsed.data.manifest as any);
       res.json({ success: true, valid });
     } catch (err: any) {
       res.status(400).json({ success: false, error: err.message });

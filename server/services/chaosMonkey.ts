@@ -1,7 +1,6 @@
 import crypto from "node:crypto";
 import { PolicyEngineService } from "./policy.js";
-import { ProtectedToolService } from "./tools.js";
-import { AgentRegistryService, AgentRow } from "./registry.js";
+import { AgentRow } from "./registry.js";
 import { AgentDelegationService } from "./delegation.js";
 import { GoalDriftDetector } from "./driftDetector.js";
 import { PromptInjectionScanner } from "./promptScanner.js";

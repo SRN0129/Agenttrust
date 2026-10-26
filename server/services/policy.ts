@@ -1,7 +1,7 @@
 import Database from "better-sqlite3";
 import crypto from "node:crypto";
 import { AgentRow } from "./registry.js";
-import { ApprovalWorkflowService, ApprovalRow } from "./approval.js";
+import { ApprovalWorkflowService } from "./approval.js";
 import { AuditLedgerService } from "./audit.js";
 
 export interface PolicyRule {

@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach } from "vitest";
 import Database from "better-sqlite3";
 import { createApp } from "../server/app.js";
 import { BlastRadiusAnalyzer } from "../server/services/blastRadius.js";
-import { NotarizationService } from "../server/services/notarization.js";
 import request from "supertest";
 
 describe("Enterprise Innovations: Delegation, Blast Radius, Notarization & Killswitch", () => {

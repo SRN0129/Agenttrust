@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import Database from "better-sqlite3";
 import request from "supertest";
 import { createApp } from "../server/app.js";
-import { wrapAgent, AgentTrustClient } from "../sdk/index.js";
+import { wrapAgent } from "../sdk/index.js";
 import { GoalDriftDetector } from "../server/services/driftDetector.js";
 import { AuditAttestationService } from "../server/services/tamperAttestation.js";
 
@@ -200,7 +200,7 @@ describe("Strategic Enterprise Innovations (Most Powerful Tool Suite)", () => {
   describe("3. Zero-Knowledge Verifiable Merkle Attestation Receipts", () => {
     it("should construct Merkle tree and generate verifiable inclusion receipts", () => {
       // Record a few audit entries
-      const entry1 = services.auditService.append({
+      services.auditService.append({
         agentId: testAgentId,
         eventType: "TOOL_CALL",
         action: "document:read",

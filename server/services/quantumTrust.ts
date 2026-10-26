@@ -22,6 +22,12 @@ export interface QuantumCircuitInspectionResult {
   divergenceDetected: boolean;
   maxRecommendedShots: number;
   estimatedQpuCostUsd: number;
+  circuitMetrics?: {
+    qubitCount: number;
+    circuitDepth: number;
+    totalGateCount: number;
+    twoQubitGateCount: number;
+  };
   anomalyFlags: string[];
   reason: string;
 }
@@ -141,6 +147,12 @@ export class QuantumTrustService {
       divergenceDetected,
       maxRecommendedShots: Math.min(requestedShots, QuantumTrustService.MAX_SHOTS_PER_JOB),
       estimatedQpuCostUsd,
+      circuitMetrics: {
+        qubitCount,
+        circuitDepth,
+        totalGateCount,
+        twoQubitGateCount,
+      },
       anomalyFlags,
       reason,
     };

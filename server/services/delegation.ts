@@ -1,5 +1,4 @@
 import Database from "better-sqlite3";
-import crypto from "node:crypto";
 import { AgentRow, AgentRegistryService } from "./registry.js";
 import { AuditLedgerService } from "./audit.js";
 

@@ -14,11 +14,13 @@ export function generateApiKey(): { apiKey: string; prefix: string; hash: string
   return { apiKey, prefix, hash };
 }
 
+const KEY_SALT = process.env.AGENT_TRUST_SECRET || "agent_trust_master_salt_2026";
+
 /**
- * Hash an API key with a SHA-256 digest.
+ * Hash an API key with HMAC-SHA256 digest using a secure salt.
  */
 export function hashApiKey(key: string): string {
-  return crypto.createHash("sha256").update(key).digest("hex");
+  return crypto.createHmac("sha256", KEY_SALT).update(key).digest("hex");
 }
 
 /**

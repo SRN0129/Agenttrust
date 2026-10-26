@@ -6,9 +6,9 @@ async function main() {
   const token = execSync('cmd.exe /c "C:\\Users\\soumy\\.tools\\gh\\gh.exe auth token"', { encoding: "utf-8" }).trim();
   const repoUrl = "https://github.com/SRN0129/Agenttrust.git";
 
-  console.log("📦 Staging & Committing repository hardening & viral launch suite...");
+  console.log("📦 Staging & Committing CodeQL security fixes & CI workflow repairs...");
   await commitChanges(
-    "feat: harden DNS rebinding, offline vector embeddings, subprocess sandboxing, academic whitepaper, and zero-dollar launch kit"
+    "fix(security): resolve CodeQL alerts, add HMAC salt, fix CI unittest discovery, and update security policy"
   );
 
   console.log("🚀 Pushing all updates to remote repository...");

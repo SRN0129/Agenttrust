@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
-  Key,
   Users,
   FileText,
   Sliders,
@@ -16,21 +15,15 @@ import {
   Check,
   RefreshCw,
   Lock,
-  Unlock,
   Terminal,
   Activity,
-  Layers,
   ArrowRight,
-  ExternalLink,
   Flame,
   HelpCircle,
   Award,
-  Zap,
   GitBranch,
-  Radio,
   FileCheck2,
   AlertOctagon,
-  Download,
 } from "lucide-react";
 
 interface Agent {
@@ -213,7 +206,6 @@ export default function App() {
   // Killswitch Form
   const [killswitchReason, setKillswitchReason] = useState("Suspected autonomous credential exfiltration anomaly");
   const [killswitchEmail, setKillswitchEmail] = useState("ciso@enterprise.internal");
-  const [killswitchResult, setKillswitchResult] = useState<any | null>(null);
 
   // Newly Minted Key
   const [createdApiKey, setCreatedApiKey] = useState<{ key: string; agentId: string; type: string } | null>(null);
@@ -370,7 +362,6 @@ export default function App() {
       });
       const data = await res.json();
       if (data.success) {
-        setKillswitchResult(data.result);
         setShowKillswitchModal(false);
         loadData();
       } else {

@@ -76,6 +76,7 @@ export class PostgresDatabaseAdapter implements IDatabaseAdapter {
     // Translates SQLite parameter markers (?) to Postgres positional markers ($1, $2)
     const pgSql = sql.replace(/\?/g, (_, idx) => `$${idx + 1}`);
     return {
+      sql: pgSql,
       run: (...params: any[]) => ({ changes: 1 }),
       get: (...params: any[]) => null,
       all: (...params: any[]) => [],

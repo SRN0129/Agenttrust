@@ -1,6 +1,6 @@
 import { createApp } from "../server/app.js";
 import Database from "better-sqlite3";
-import { AgentTrustClient, PolicyDenialError, ApprovalRequiredError } from "../sdk/index.js";
+import { AgentTrustClient } from "../sdk/index.js";
 
 async function runSimulator() {
   console.log(`\n===============================================================`);
@@ -50,7 +50,7 @@ async function runSimulator() {
     console.log(`   - Scoped Capabilities: ${agent.allowedCapabilities.join(", ")}`);
     console.log(`   - Rate Limit: ${agent.rateLimitRpm} rpm`);
     console.log(`   - Spend Budget: $${agent.spendLimitUsd}`);
-    console.log(`   - API Key Prefix: ${agent.apiKeyPrefix}...`);
+    console.log(`   - Key Status: Cryptographically Salted and Hashed`);
 
     // Setup policies
     services.policyService.createPolicy({

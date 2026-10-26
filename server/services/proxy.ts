@@ -1,4 +1,3 @@
-import { Request, Response } from "express";
 import dns from "node:dns/promises";
 import net from "node:net";
 import { PolicyEngineService } from "./policy.js";

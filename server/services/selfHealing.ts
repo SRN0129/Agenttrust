@@ -54,12 +54,14 @@ export class AutonomousSelfHealingService {
     }
 
     // 2. Database Low-Level Integrity
-    let integrityOk = true;
+    let integrityOk = false;
     try {
       const integrityRow = this.db.prepare("PRAGMA integrity_check").get() as { integrity_check?: string };
       integrityOk = integrityRow?.integrity_check === "ok";
+      if (!integrityOk) {
+        anomalies.push("DATABASE_INTEGRITY_CHECK_FAILED");
+      }
     } catch {
-      integrityOk = false;
       anomalies.push("DATABASE_INTEGRITY_CHECK_FAILED");
     }
 

@@ -79,7 +79,7 @@ export class BlastRadiusAnalyzer {
       reasons.push("CRITICAL COMBINATION: Irreversible destruction targeting sensitive production assets.");
     }
 
-    let riskTier: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" = "LOW";
+    let riskTier: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
     let escalationRequired = false;
 
     if (compositeScore >= 0.85) {

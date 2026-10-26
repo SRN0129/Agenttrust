@@ -61,12 +61,12 @@ export class SemanticEmbeddingEngine {
 
     // 2. Sub-word character 3-gram hashing for vocabulary-agnostic morphological similarity
     for (const token of tokens) {
-      for (let i = 0; i < token.length - 2; i++) {
-        const trigram = token.slice(i, i + 3);
-        let hash = 0;
-        for (let j = 0; j < trigram.length; j++) {
-          hash = (hash * 31 + trigram.charCodeAt(j)) >>> 0;
-        }
+      const maxIter = Math.min(token.length - 2, 50);
+      for (let i = 0; i < maxIter; i++) {
+        const c0 = token.charCodeAt(i);
+        const c1 = token.charCodeAt(i + 1);
+        const c2 = token.charCodeAt(i + 2);
+        const hash = (((c0 * 31 + c1) * 31) + c2) >>> 0;
         const bucket = clusterKeys.length + (hash % 16);
         vector[bucket] += 0.5;
       }
@@ -204,17 +204,9 @@ export class GoalDriftDetector {
       divergenceScore = Math.max(divergenceScore, 0.85);
     }
 
-    // Check for exfiltration targets in resource or parameters
-    if (
-      normalizedResource.includes("pastebin.com") ||
-      stringifiedParams.includes("pastebin.com") ||
-      normalizedResource.includes("webhook.site") ||
-      stringifiedParams.includes("webhook.site") ||
-      normalizedResource.includes("ngrok.io") ||
-      stringifiedParams.includes("ngrok.io") ||
-      normalizedResource.includes("requestcatcher") ||
-      stringifiedParams.includes("requestcatcher")
-    ) {
+    // Check for exfiltration targets in resource or parameters via strict domain boundary matching
+    const EXFIL_DOMAIN_PATTERN = /(?:^|[/:@.])(pastebin\.com|webhook\.site|ngrok\.io|requestcatcher(?:\.com)?)(?:[/:?]|$)/i;
+    if (EXFIL_DOMAIN_PATTERN.test(normalizedResource) || EXFIL_DOMAIN_PATTERN.test(stringifiedParams)) {
       anomalyFlags.push("EXFILTRATION_SINK_DETECTED");
       divergenceScore = Math.max(divergenceScore, 0.98);
     }
