@@ -1169,8 +1169,14 @@ export function createApp(customDb?: Database.Database) {
   // Serve static UI in production if built
   const clientDistPath = path.resolve(process.cwd(), "client", "dist");
   if (fs.existsSync(clientDistPath)) {
+    const staticLimiter = rateLimit({
+      windowMs: 15 * 60 * 1000,
+      max: 1000,
+      standardHeaders: true,
+      legacyHeaders: false,
+    });
     app.use(express.static(clientDistPath));
-    app.get("*", (req, res, next) => {
+    app.get("*", staticLimiter, (req, res, next) => {
       if (req.path.startsWith("/api") || req.path.startsWith("/health")) {
         return next();
       }

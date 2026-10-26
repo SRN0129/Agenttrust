@@ -228,10 +228,32 @@ export class TransparentEgressProxy {
       };
     }
 
-    // 6. Execute outbound forward using validated and sanitized URL
+    // 6. Execute outbound forward using verified safe origin allowlist to prevent SSRF (CWE-918)
     try {
-      const sanitizedTarget = new URL(url.protocol + "//" + url.host + url.pathname + url.search);
-      const response = await fetch(sanitizedTarget.href, {
+      const normalizedHost = url.hostname.toLowerCase();
+      let safeBaseUrl: string;
+
+      if (normalizedHost === "httpbin.org" || normalizedHost.endsWith(".httpbin.org")) {
+        safeBaseUrl = "https://httpbin.org";
+      } else if (normalizedHost.endsWith(".amazonaws.com")) {
+        safeBaseUrl = `https://${normalizedHost}`;
+      } else if (normalizedHost.endsWith(".googleapis.com")) {
+        safeBaseUrl = `https://${normalizedHost}`;
+      } else if (normalizedHost.endsWith(".openai.com") || normalizedHost.endsWith(".anthropic.com")) {
+        safeBaseUrl = `https://${normalizedHost}`;
+      } else if (normalizedHost.endsWith(".github.com")) {
+        safeBaseUrl = `https://${normalizedHost}`;
+      } else {
+        return {
+          statusCode: 403,
+          body: {
+            error: `EGRESS_INTERCEPTION: Outbound request to '${req.targetUrl}' blocked by server policy: Host '${normalizedHost}' is not in authorized egress whitelist.`,
+          },
+        };
+      }
+
+      const safeUrl = new URL(url.pathname + url.search, safeBaseUrl);
+      const response = await fetch(safeUrl.href, {
         method: req.method,
         headers: req.headers || { "Content-Type": "application/json" },
         body: req.method !== "GET" && req.method !== "HEAD" ? JSON.stringify(req.body) : undefined,

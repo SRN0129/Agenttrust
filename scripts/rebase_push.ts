@@ -39,7 +39,7 @@ async function main() {
   await stageAllFiles(projectDir);
 
   // Create commit with remoteRef as parent (clean fast-forward!)
-  const commitMsg = "feat(enterprise): cloud egress connectors, nitro enclaves, TPM2 notary, multi-QPU routing, and NIST FIPS 204 PQC attestation (closes #15, #16, #17, #18, #19, #20, #21)";
+  const commitMsg = "fix(security): resolve SSRF in proxy egress and rate-limit static client handler";
   
   const commitSha = await git.commit({
     fs,
