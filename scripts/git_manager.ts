@@ -22,11 +22,14 @@ export async function stageAllFiles(baseDir = projectDir) {
         relativePath.startsWith("dist") ||
         relativePath.startsWith("client/dist") ||
         relativePath.startsWith("data") ||
+        relativePath.includes("__pycache__") ||
+        relativePath.startsWith("target") ||
         relativePath === ".git" ||
         relativePath.startsWith(".git/") ||
         relativePath.startsWith(".git\\") ||
         entry.name.endsWith(".db") ||
-        entry.name.endsWith(".log")
+        entry.name.endsWith(".log") ||
+        entry.name.endsWith(".pyc")
       ) {
         continue;
       }
@@ -90,7 +93,7 @@ export async function commitChanges(
   }
 }
 
-export async function pushToGitHub(remoteUrl: string, personalAccessToken: string) {
+export async function pushToGitHub(remoteUrl: string, personalAccessToken: string, force = false) {
   console.log(`🚀 Pushing main branch to: ${remoteUrl}`);
 
   try {
@@ -112,6 +115,7 @@ export async function pushToGitHub(remoteUrl: string, personalAccessToken: strin
     dir: projectDir,
     remote: "origin",
     ref: "main",
+    force,
     onAuth: () => ({
       username: personalAccessToken,
       password: "",

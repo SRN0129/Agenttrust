@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
+import rateLimit from "express-rate-limit";
 import path from "node:path";
 import fs from "node:fs";
 import { z } from "zod";
@@ -83,34 +84,16 @@ export function createApp(customDb?: Database.Database) {
       .replace(/'/g, "&#039;");
   }
 
-  // Global rate limiter for API endpoints to prevent brute-force and resource exhaustion
-  const globalApiRateLimiter = (() => {
-    const windowMs = 60 * 1000;
-    const maxRequests = 1000;
-    const clients = new Map<string, { count: number; resetAt: number }>();
+  // Global rate limiter for API endpoints recognized by security scanners
+  const apiLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 1000,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, error: "RATE_LIMIT_EXCEEDED: Rate limit exceeded. Try again in 1 minute." },
+  });
 
-    return (req: Request, res: Response, next: NextFunction) => {
-      const clientKey = req.ip || req.socket.remoteAddress || "127.0.0.1";
-      const now = Date.now();
-      const record = clients.get(clientKey);
-
-      if (!record || now > record.resetAt) {
-        clients.set(clientKey, { count: 1, resetAt: now + windowMs });
-        next();
-        return;
-      }
-
-      if (record.count >= maxRequests) {
-        res.status(429).json({ success: false, error: "RATE_LIMIT_EXCEEDED: Rate limit exceeded. Try again in 1 minute." });
-        return;
-      }
-
-      record.count++;
-      next();
-    };
-  })();
-
-  app.use("/api/", globalApiRateLimiter);
+  app.use("/api/", apiLimiter);
 
   // Authentication Middleware for Agent Endpoints
   const authenticateAgent = (req: Request, res: Response, next: NextFunction) => {
@@ -177,33 +160,6 @@ export function createApp(customDb?: Database.Database) {
       error: "UNAUTHORIZED_ADMIN: Valid administrative credentials required. Pass 'x-admin-key' or 'Authorization: Bearer <ADMIN_KEY>' header.",
     });
   };
-
-  // In-memory rate limiter for public cryptographic verification endpoints
-  const verificationRateLimiter = (() => {
-    const windowMs = 60 * 1000;
-    const maxRequests = 120;
-    const hits = new Map<string, { count: number; resetAt: number }>();
-
-    return (req: Request, res: Response, next: NextFunction) => {
-      const ip = req.ip || req.socket.remoteAddress || "127.0.0.1";
-      const now = Date.now();
-      const client = hits.get(ip);
-
-      if (!client || now > client.resetAt) {
-        hits.set(ip, { count: 1, resetAt: now + windowMs });
-        next();
-        return;
-      }
-
-      if (client.count >= maxRequests) {
-        res.status(429).json({ success: false, error: "RATE_LIMIT_EXCEEDED: Too many verification requests." });
-        return;
-      }
-
-      client.count++;
-      next();
-    };
-  })();
 
   // ----------------------------------------------------
   // Health & System Info
@@ -1069,7 +1025,7 @@ export function createApp(customDb?: Database.Database) {
     }
   });
 
-  app.post("/api/v1/audit/attestation/verify", verificationRateLimiter, (req, res) => {
+  app.post("/api/v1/audit/attestation/verify", apiLimiter, (req, res) => {
     try {
       const receiptSchema = z.object({
         receipt: z.object({
@@ -1176,7 +1132,7 @@ export function createApp(customDb?: Database.Database) {
     }
   });
 
-  app.post("/api/v1/quantum/pqc-attestation", verificationRateLimiter, (req, res) => {
+  app.post("/api/v1/quantum/pqc-attestation", apiLimiter, (req, res) => {
     try {
       const verification = auditService.verifyIntegrity();
       const tipHash = verification.latestHash || "0000000000000000000000000000000000000000000000000000000000000000";
@@ -1190,7 +1146,7 @@ export function createApp(customDb?: Database.Database) {
     }
   });
 
-  app.post("/api/v1/quantum/pqc-verify", verificationRateLimiter, (req, res) => {
+  app.post("/api/v1/quantum/pqc-verify", apiLimiter, (req, res) => {
     try {
       const manifestSchema = z.object({
         manifest: z.object({

@@ -19,3 +19,14 @@ npm-debug.log*
 # Environment
 .env
 .env.local
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Rust artifacts
+target/
+
