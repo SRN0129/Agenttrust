@@ -5,6 +5,8 @@ client/node_modules/
 # Production build outputs
 dist/
 client/dist/
+*.tgz
+package-*.tgz
 
 # Local databases & keys
 data/
