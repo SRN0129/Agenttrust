@@ -136,8 +136,8 @@ export function seedDatabase(customDb?: any) {
   });
 
   console.log("✅ Database seeded successfully!");
-  console.log(`- Support Assistant Agent ID: ${agentA.agent.id} (Key: ${agentA.apiKey})`);
-  console.log(`- FinOps Settlement Agent ID: ${agentB.agent.id} (Key: ${agentB.apiKey})`);
+  console.log(`- Support Assistant Agent ID: ${agentA.agent.id} (Key Configured & Hashed)`);
+  console.log(`- FinOps Settlement Agent ID: ${agentB.agent.id} (Key Configured & Hashed)`);
   console.log(`- Sample Pending Approval ID: ${sampleApproval.id}`);
 
   return {

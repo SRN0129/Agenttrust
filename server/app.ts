@@ -74,6 +74,44 @@ export function createApp(customDb?: Database.Database) {
     next();
   });
 
+  function escapeHtml(str: string): string {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  // Global rate limiter for API endpoints to prevent brute-force and resource exhaustion
+  const globalApiRateLimiter = (() => {
+    const windowMs = 60 * 1000;
+    const maxRequests = 1000;
+    const clients = new Map<string, { count: number; resetAt: number }>();
+
+    return (req: Request, res: Response, next: NextFunction) => {
+      const clientKey = req.ip || req.socket.remoteAddress || "127.0.0.1";
+      const now = Date.now();
+      const record = clients.get(clientKey);
+
+      if (!record || now > record.resetAt) {
+        clients.set(clientKey, { count: 1, resetAt: now + windowMs });
+        next();
+        return;
+      }
+
+      if (record.count >= maxRequests) {
+        res.status(429).json({ success: false, error: "RATE_LIMIT_EXCEEDED: Rate limit exceeded. Try again in 1 minute." });
+        return;
+      }
+
+      record.count++;
+      next();
+    };
+  })();
+
+  app.use("/api/", globalApiRateLimiter);
+
   // Authentication Middleware for Agent Endpoints
   const authenticateAgent = (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
@@ -546,10 +584,13 @@ export function createApp(customDb?: Database.Database) {
   // ----------------------------------------------------
   app.get("/api/v1/approvals/callback", (req, res) => {
     const { id, token, decision } = req.query as { id: string; token: string; decision: "APPROVE" | "REJECT" };
-    if (!id || !token || !decision) {
+    if (!id || !token || !decision || (decision !== "APPROVE" && decision !== "REJECT")) {
       res.status(400).send("Invalid callback link parameters.");
       return;
     }
+
+    const safeId = escapeHtml(id);
+    const safeDecision = decision === "APPROVE" ? "APPROVED" : "REJECTED";
 
     const valid = approvalService.verifyCallbackToken(token, id);
     if (!valid) {
@@ -575,15 +616,15 @@ export function createApp(customDb?: Database.Database) {
           <div style="max-width:480px; margin:0 auto; background:#0f172a; padding:40px; border-radius:16px; border:1px solid #1e293b;">
             <div style="font-size:48px; margin-bottom:16px;">${decision === "APPROVE" ? "✅" : "❌"}</div>
             <h2 style="color:${decision === "APPROVE" ? "#34d399" : "#f87171"}; margin:0 0 8px 0;">
-              Action Request ${decision}D
+              Action Request ${safeDecision}
             </h2>
             <p style="color:#94a3b8; font-size:14px; margin-bottom:24px;">
-              Request ID: <code>${id}</code>
+              Request ID: <code>${safeId}</code>
             </p>
             ${
               decision === "APPROVE"
                 ? `<p style="color:#cbd5e1; font-size:13px; background:#022c22; padding:12px; border-radius:8px; border:1px solid #065f46;">
-                     Single-use execution ticket generated: <code>${updated.execution_nonce?.substring(0, 16)}...</code><br>
+                     Single-use execution ticket generated: <code>${escapeHtml(updated.execution_nonce?.substring(0, 16) || "")}...</code><br>
                      Replay protection active. Ticket burns on first tool use.
                    </p>`
                 : `<p style="color:#cbd5e1; font-size:13px; background:#450a0a; padding:12px; border-radius:8px; border:1px solid #991b1b;">
@@ -594,7 +635,7 @@ export function createApp(customDb?: Database.Database) {
         </html>
       `);
     } catch (err: any) {
-      res.status(400).send(`Error processing decision: ${err.message}`);
+      res.status(400).send("Error processing decision: " + escapeHtml(err.message || "Unknown error"));
     }
   });
 

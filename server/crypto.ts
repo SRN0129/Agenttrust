@@ -17,10 +17,10 @@ export function generateApiKey(): { apiKey: string; prefix: string; hash: string
 const KEY_SALT = process.env.AGENT_TRUST_SECRET || "agent_trust_master_salt_2026";
 
 /**
- * Hash an API key with HMAC-SHA256 digest using a secure salt.
+ * Hash an API key using PBKDF2 with SHA-256 (NIST SP 800-132 compliant).
  */
 export function hashApiKey(key: string): string {
-  return crypto.createHmac("sha256", KEY_SALT).update(key).digest("hex");
+  return crypto.pbkdf2Sync(key, KEY_SALT, 10000, 32, "sha256").toString("hex");
 }
 
 /**

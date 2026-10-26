@@ -228,9 +228,10 @@ export class TransparentEgressProxy {
       };
     }
 
-    // 6. Execute outbound forward
+    // 6. Execute outbound forward using validated and sanitized URL
     try {
-      const response = await fetch(req.targetUrl, {
+      const sanitizedTarget = new URL(url.protocol + "//" + url.host + url.pathname + url.search);
+      const response = await fetch(sanitizedTarget.href, {
         method: req.method,
         headers: req.headers || { "Content-Type": "application/json" },
         body: req.method !== "GET" && req.method !== "HEAD" ? JSON.stringify(req.body) : undefined,

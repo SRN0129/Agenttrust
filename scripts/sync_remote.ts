@@ -6,9 +6,9 @@ async function main() {
   const token = execSync('cmd.exe /c "C:\\Users\\soumy\\.tools\\gh\\gh.exe auth token"', { encoding: "utf-8" }).trim();
   const repoUrl = "https://github.com/SRN0129/Agenttrust.git";
 
-  console.log("📦 Staging & Committing Rust type annotations and Go cache CI fixes...");
+  console.log("📦 Staging & Committing CodeQL alerts fix...");
   await commitChanges(
-    "fix(sdk-rust,ci): explicit usize type annotations, non-camel-case lint allow, and disable Go root cache"
+    "fix(security): resolve XSS, PBKDF2 key hashing, clear-text logging, and global API rate-limiting"
   );
 
   console.log("🚀 Pushing all updates to remote repository...");
