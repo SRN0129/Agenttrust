@@ -39,7 +39,7 @@ async function main() {
   await stageAllFiles(projectDir);
 
   // Create commit with remoteRef as parent (clean fast-forward!)
-  const commitMsg = "ci(release): automate workspace package publishing across all 4 orbital modules";
+  const commitMsg = "chore(lockfile): synchronize package-lock.json with workspace dependencies for CI and package publishing";
   
   const commitSha = await git.commit({
     fs,
