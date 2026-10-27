@@ -29,7 +29,12 @@ jobs:
       - name: Compile TypeScript & Build
         run: npm run build:server
 
-      - name: Publish Package to GitHub Packages
-        run: npm publish
+      - name: Publish All Packages to GitHub Packages
+        run: |
+          npm publish --if-present || true
+          npm publish --workspace=packages/orbital-notary --if-present || true
+          npm publish --workspace=packages/space-killswitch --if-present || true
+          npm publish --workspace=packages/doppler-ephemeris --if-present || true
+          npm publish --workspace=packages/qkd-witness --if-present || true
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

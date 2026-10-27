@@ -39,7 +39,7 @@ async function main() {
   await stageAllFiles(projectDir);
 
   // Create commit with remoteRef as parent (clean fast-forward!)
-  const commitMsg = "feat(release): v2.0.0 open modular workspaces and package ecosystem";
+  const commitMsg = "ci(release): automate workspace package publishing across all 4 orbital modules";
   
   const commitSha = await git.commit({
     fs,
