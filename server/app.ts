@@ -27,6 +27,7 @@ import { AutonomousSelfHealingService } from "./services/selfHealing.js";
 import { QuantumTrustService } from "./services/quantumTrust.js";
 import { CognitiveAuditor } from "./services/cognitiveAuditor.js";
 import { RuntimeVisibilityWatchdog } from "./services/runtimeVisibility.js";
+import { OrbitalManager } from "./services/orbitalManager.js";
 
 export function createApp(customDb?: Database.Database) {
   const app = express();
@@ -66,6 +67,7 @@ export function createApp(customDb?: Database.Database) {
   const selfHealingService = new AutonomousSelfHealingService(db, auditService);
   const quantumTrustService = new QuantumTrustService(auditService);
   const runtimeWatchdog = new RuntimeVisibilityWatchdog(auditService);
+  const orbitalManager = new OrbitalManager(auditService);
 
   app.use(cors());
   app.use(express.json());
@@ -399,7 +401,7 @@ export function createApp(customDb?: Database.Database) {
   const authzSchema = z.object({
     action: z.string().min(1),
     resource: z.string().min(1),
-    parameters: z.record(z.any()).optional(),
+    parameters: z.record(z.string(), z.any()).optional(),
     estimatedCostUsd: z.number().nonnegative().optional(),
     thoughtProcess: z.string().optional(),
     systemGoal: z.string().optional(),
@@ -409,6 +411,20 @@ export function createApp(customDb?: Database.Database) {
     try {
       const parsed = authzSchema.parse(req.body);
       const agent = (req as any).agent as AgentRow;
+
+      // 0a. Space-Based Emergency Kill-Switch Check
+      if (orbitalManager.isAgentQuarantined(agent.id)) {
+        res.json({
+          success: true,
+          agentId: agent.id,
+          action: parsed.action,
+          resource: parsed.resource,
+          allowed: false,
+          decision: "DENY",
+          reason: "ORBITAL_EMERGENCY_QUARANTINE: Agent execution is frozen by an active direct-to-satellite kill-switch directive.",
+        });
+        return;
+      }
 
       // 0. Prompt Injection & Malicious Content Scanning
       const promptScan = PromptInjectionScanner.scan(parsed.parameters);
@@ -488,12 +504,23 @@ export function createApp(customDb?: Database.Database) {
         }
       }
 
+      let orbitalAttestation: any = undefined;
+      if (decision.allowed && orbitalManager.isTier0Action(parsed.action, parsed.estimatedCostUsd)) {
+        orbitalAttestation = orbitalManager.issueOrbitalAttestation({
+          agentId: agent.id,
+          action: parsed.action,
+          resource: parsed.resource,
+          payload: parsed.parameters || {},
+        });
+      }
+
       res.json({
         success: true,
         agentId: agent.id,
         action: parsed.action,
         resource: parsed.resource,
         blastRadius,
+        orbitalAttestation,
         ...decision,
       });
     } catch (err: any) {
@@ -669,7 +696,7 @@ export function createApp(customDb?: Database.Database) {
     toolName: z.string().min(1),
     action: z.string().min(1),
     resource: z.string().min(1),
-    parameters: z.record(z.any()).default({}),
+    parameters: z.record(z.string(), z.any()).default({}),
     approvalId: z.string().optional(),
     executionNonce: z.string().optional(),
     costUsd: z.number().nonnegative().optional(),
@@ -1298,6 +1325,132 @@ export function createApp(customDb?: Database.Database) {
     }
   });
 
+  // ----------------------------------------------------
+  // SpaceMesh & Orbital Notary Gateway Endpoints
+  // ----------------------------------------------------
+  app.get("/api/v1/orbital/status", apiLimiter, (req, res) => {
+    res.json({
+      success: true,
+      enabled: orbitalManager.isEnabled(),
+      config: orbitalManager.getConfig(),
+      constellationCount: orbitalManager.getConstellation().length,
+      killSwitchStatus: orbitalManager.getKillSwitchStatus(),
+    });
+  });
+
+  app.get("/api/v1/orbital/constellation", apiLimiter, (req, res) => {
+    const constellation = orbitalManager.getConstellation().map(sat => {
+      const pos = orbitalManager.notary.propagateSatellitePosition(sat.id);
+      return {
+        ...sat,
+        currentPosition: pos,
+      };
+    });
+    res.json({
+      success: true,
+      count: constellation.length,
+      satellites: constellation,
+    });
+  });
+
+  app.post("/api/v1/orbital/notary/attest", apiLimiter, (req, res) => {
+    try {
+      const { agentId, action, resource, payload, groundLocation } = req.body;
+      if (!agentId || !action || !resource) {
+        res.status(400).json({ success: false, error: "agentId, action, and resource are required." });
+        return;
+      }
+      const receipt = orbitalManager.issueOrbitalAttestation({
+        agentId,
+        action,
+        resource,
+        payload: payload || {},
+        groundLocation,
+      });
+      res.status(201).json({
+        success: true,
+        receipt,
+      });
+    } catch (err: any) {
+      res.status(400).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/orbital/notary/verify", apiLimiter, (req, res) => {
+    try {
+      const { receipt } = req.body;
+      if (!receipt) {
+        res.status(400).json({ success: false, error: "receipt object is required." });
+        return;
+      }
+      const result = orbitalManager.verifyOrbitalAttestation(receipt);
+      res.json({
+        success: true,
+        ...result,
+      });
+    } catch (err: any) {
+      res.status(400).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/orbital/killswitch/broadcast", apiLimiter, async (req, res) => {
+    try {
+      const { scope, targetAgentId, reason } = req.body;
+      if (!scope || !reason) {
+        res.status(400).json({ success: false, error: "scope and reason are required." });
+        return;
+      }
+      const outcome = await orbitalManager.broadcastOrbitalHalt({
+        scope,
+        targetAgentId,
+        reason,
+      });
+      res.json({
+        success: true,
+        ...outcome,
+      });
+    } catch (err: any) {
+      res.status(400).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/orbital/doppler/verify-position", apiLimiter, (req, res) => {
+    try {
+      const { agentId, claimedLocation, satelliteState, observation } = req.body;
+      if (!agentId || !claimedLocation || !satelliteState || !observation) {
+        res.status(400).json({
+          success: false,
+          error: "agentId, claimedLocation, satelliteState, and observation are required.",
+        });
+        return;
+      }
+      const proof = orbitalManager.verifyProofOfSpace(agentId, claimedLocation, satelliteState, observation);
+      res.json({
+        success: true,
+        proof,
+      });
+    } catch (err: any) {
+      res.status(400).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/orbital/qkd/verify-entanglement", apiLimiter, (req, res) => {
+    try {
+      const { agentId, simulatedEavesdropper } = req.body;
+      if (!agentId) {
+        res.status(400).json({ success: false, error: "agentId is required." });
+        return;
+      }
+      const result = orbitalManager.evaluateQkdSecurity(agentId, !!simulatedEavesdropper);
+      res.json({
+        success: true,
+        ...result,
+      });
+    } catch (err: any) {
+      res.status(400).json({ success: false, error: err.message });
+    }
+  });
+
   // Serve static UI in production if built
   const clientDistPath = path.resolve(process.cwd(), "client", "dist");
   if (fs.existsSync(clientDistPath)) {
@@ -1331,6 +1484,7 @@ export function createApp(customDb?: Database.Database) {
       selfHealingService,
       quantumTrustService,
       runtimeWatchdog,
+      orbitalManager,
     },
   };
 }

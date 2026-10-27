@@ -1,0 +1,26 @@
+{
+  "name": "@srn0129/agenttrust-orbital-notary",
+  "version": "1.0.0",
+  "description": "Space-airgapped LEO satellite hardware notary and Post-Quantum Orbital Attestation Receipt (OAR) engine for autonomous AI agents",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "keywords": [
+    "zero-trust",
+    "satellite",
+    "space-hsm",
+    "orbital-notary",
+    "post-quantum",
+    "nist-fips-204",
+    "ai-agents",
+    "cryptosat",
+    "sgp4"
+  ],
+  "author": "SRN0129",
+  "license": "MIT",
+  "dependencies": {}
+}

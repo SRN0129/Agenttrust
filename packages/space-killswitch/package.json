@@ -1,0 +1,24 @@
+{
+  "name": "@srn0129/agenttrust-space-killswitch",
+  "version": "1.0.0",
+  "description": "Unjammable space-based direct-to-satellite dead man's switch and orbital emergency quarantine engine for rogue AI agents",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "keywords": [
+    "zero-trust",
+    "satellite",
+    "kill-switch",
+    "dead-mans-switch",
+    "iridium-sbd",
+    "direct-to-cell",
+    "anti-rogue-ai"
+  ],
+  "author": "SRN0129",
+  "license": "MIT",
+  "dependencies": {}
+}

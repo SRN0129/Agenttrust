@@ -1,0 +1,27 @@
+{
+  "name": "@srn0129/agenttrust-qkd-witness",
+  "version": "1.0.0",
+  "description": "Satellite-assisted Quantum Key Distribution (QKD), Bell inequality CHSH entanglement verification, and Q-Day immunity witness for autonomous AI agents",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "keywords": [
+    "zero-trust",
+    "quantum",
+    "qkd",
+    "bell-inequality",
+    "chsh",
+    "entanglement",
+    "q-day-immunity",
+    "bb84",
+    "ekert91",
+    "post-quantum"
+  ],
+  "author": "SRN0129",
+  "license": "MIT",
+  "dependencies": {}
+}

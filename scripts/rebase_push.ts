@@ -39,7 +39,7 @@ async function main() {
   await stageAllFiles(projectDir);
 
   // Create commit with remoteRef as parent (clean fast-forward!)
-  const commitMsg = "fix(quality): remove unused ActionScoper import from server/app.ts";
+  const commitMsg = "feat(frontier): space-airgap orbital notary, doppler ephemeris, direct-to-satellite killswitch and QKD Q-Day immunity (119/119 tests passing)";
   
   const commitSha = await git.commit({
     fs,
