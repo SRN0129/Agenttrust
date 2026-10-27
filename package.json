@@ -1,12 +1,15 @@
 {
   "name": "@srn0129/agenttrust",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
-  "description": "Zero-trust policy enforcement, cryptographic audit ledger, and human-in-the-loop governance for autonomous agent runtimes",
+  "description": "Zero-trust policy enforcement, cryptographic audit ledger, orbital space-airgap attestation, and human-in-the-loop governance for autonomous agent runtimes",
   "repository": {
     "type": "git",
     "url": "https://github.com/SRN0129/Agenttrust.git"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },

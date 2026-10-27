@@ -2,11 +2,15 @@
   "name": "@srn0129/agenttrust-doppler-ephemeris",
   "version": "1.0.0",
   "description": "Orbital Doppler frequency shift, relativistic time dilation, and anti-spoofing Proof-of-Space engine for autonomous AI agents",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SRN0129/Agenttrust.git",
+    "directory": "packages/doppler-ephemeris"
+  },
   "scripts": {
-    "build": "tsc",
     "test": "vitest run"
   },
   "keywords": [

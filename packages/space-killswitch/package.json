@@ -2,11 +2,15 @@
   "name": "@srn0129/agenttrust-space-killswitch",
   "version": "1.0.0",
   "description": "Unjammable space-based direct-to-satellite dead man's switch and orbital emergency quarantine engine for rogue AI agents",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SRN0129/Agenttrust.git",
+    "directory": "packages/space-killswitch"
+  },
   "scripts": {
-    "build": "tsc",
     "test": "vitest run"
   },
   "keywords": [

@@ -39,7 +39,7 @@ async function main() {
   await stageAllFiles(projectDir);
 
   // Create commit with remoteRef as parent (clean fast-forward!)
-  const commitMsg = "fix(security): resolve CodeQL bypass and unused import alerts for orbital endpoints";
+  const commitMsg = "feat(release): v2.0.0 open modular workspaces and package ecosystem";
   
   const commitSha = await git.commit({
     fs,

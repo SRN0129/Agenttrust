@@ -13,6 +13,7 @@
   "include": [
     "server/**/*",
     "sdk/**/*",
+    "packages/**/*",
     "simulator/**/*",
     "tests/**/*"
   ]
