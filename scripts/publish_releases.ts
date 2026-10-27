@@ -149,8 +149,8 @@ async function createRelease(rel: ReleasePayload): Promise<void> {
           console.log(`✅ Successfully published release: ${rel.tag_name} (${rel.name})`);
           resolve();
         } else {
-          console.error(`❌ Failed to publish release: ${rel.tag_name}. HTTP ${res.statusCode}: ${data}`);
-          reject(new Error(`Failed with ${res.statusCode}: ${data}`));
+          console.error(`❌ Failed to publish release: ${rel.tag_name}. HTTP ${res.statusCode}`);
+          reject(new Error(`Failed with ${res.statusCode}`));
         }
       });
     });
