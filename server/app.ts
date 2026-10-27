@@ -1353,19 +1353,31 @@ export function createApp(customDb?: Database.Database) {
     });
   });
 
+  const orbitalAttestSchema = z.object({
+    agentId: z.string().min(1),
+    action: z.string().min(1),
+    resource: z.string().min(1),
+    payload: z.record(z.string(), z.any()).optional(),
+    groundLocation: z.object({
+      latitude: z.number(),
+      longitude: z.number(),
+      altitudeMeters: z.number().optional(),
+    }).optional(),
+  });
+
   app.post("/api/v1/orbital/notary/attest", apiLimiter, (req, res) => {
     try {
-      const { agentId, action, resource, payload, groundLocation } = req.body;
-      if (!agentId || !action || !resource) {
-        res.status(400).json({ success: false, error: "agentId, action, and resource are required." });
+      const parsed = orbitalAttestSchema.safeParse(req.body);
+      if (!parsed.success) {
+        res.status(400).json({ success: false, error: parsed.error.issues });
         return;
       }
       const receipt = orbitalManager.issueOrbitalAttestation({
-        agentId,
-        action,
-        resource,
-        payload: payload || {},
-        groundLocation,
+        agentId: parsed.data.agentId,
+        action: parsed.data.action,
+        resource: parsed.data.resource,
+        payload: parsed.data.payload || {},
+        groundLocation: parsed.data.groundLocation,
       });
       res.status(201).json({
         success: true,
@@ -1376,14 +1388,21 @@ export function createApp(customDb?: Database.Database) {
     }
   });
 
+  const orbitalVerifySchema = z.object({
+    receipt: z.object({
+      receiptId: z.string().min(1),
+      satelliteId: z.string().min(1),
+    }).passthrough(),
+  });
+
   app.post("/api/v1/orbital/notary/verify", apiLimiter, (req, res) => {
     try {
-      const { receipt } = req.body;
-      if (!receipt) {
-        res.status(400).json({ success: false, error: "receipt object is required." });
+      const parsed = orbitalVerifySchema.safeParse(req.body);
+      if (!parsed.success) {
+        res.status(400).json({ success: false, error: "receipt object with receiptId and satelliteId required." });
         return;
       }
-      const result = orbitalManager.verifyOrbitalAttestation(receipt);
+      const result = orbitalManager.verifyOrbitalAttestation(parsed.data.receipt as any);
       res.json({
         success: true,
         ...result,
@@ -1393,17 +1412,23 @@ export function createApp(customDb?: Database.Database) {
     }
   });
 
+  const orbitalKillBroadcastSchema = z.object({
+    scope: z.enum(["GLOBAL_KILL", "AGENT_SPECIFIC", "CLUSTER_REGION"]),
+    targetAgentId: z.string().optional(),
+    reason: z.string().min(1),
+  });
+
   app.post("/api/v1/orbital/killswitch/broadcast", apiLimiter, async (req, res) => {
     try {
-      const { scope, targetAgentId, reason } = req.body;
-      if (!scope || !reason) {
-        res.status(400).json({ success: false, error: "scope and reason are required." });
+      const parsed = orbitalKillBroadcastSchema.safeParse(req.body);
+      if (!parsed.success) {
+        res.status(400).json({ success: false, error: parsed.error.issues });
         return;
       }
       const outcome = await orbitalManager.broadcastOrbitalHalt({
-        scope,
-        targetAgentId,
-        reason,
+        scope: parsed.data.scope,
+        targetAgentId: parsed.data.targetAgentId,
+        reason: parsed.data.reason,
       });
       res.json({
         success: true,
@@ -1414,17 +1439,44 @@ export function createApp(customDb?: Database.Database) {
     }
   });
 
+  const orbitalDopplerSchema = z.object({
+    agentId: z.string().min(1),
+    claimedLocation: z.object({
+      latitude: z.number(),
+      longitude: z.number(),
+      altitudeMeters: z.number().optional(),
+    }),
+    satelliteState: z.object({
+      satelliteId: z.string(),
+      noradId: z.number(),
+      epoch: z.number(),
+      latitude: z.number(),
+      longitude: z.number(),
+      altitudeKm: z.number(),
+      velocityKmPerSec: z.number(),
+      headingDeg: z.number(),
+    }),
+    observation: z.object({
+      nominalCarrierFrequencyHz: z.number(),
+      observedFrequencyHz: z.number(),
+      observedDopplerShiftHz: z.number(),
+      timestamp: z.number(),
+    }),
+  });
+
   app.post("/api/v1/orbital/doppler/verify-position", apiLimiter, (req, res) => {
     try {
-      const { agentId, claimedLocation, satelliteState, observation } = req.body;
-      if (!agentId || !claimedLocation || !satelliteState || !observation) {
-        res.status(400).json({
-          success: false,
-          error: "agentId, claimedLocation, satelliteState, and observation are required.",
-        });
+      const parsed = orbitalDopplerSchema.safeParse(req.body);
+      if (!parsed.success) {
+        res.status(400).json({ success: false, error: parsed.error.issues });
         return;
       }
-      const proof = orbitalManager.verifyProofOfSpace(agentId, claimedLocation, satelliteState, observation);
+      const proof = orbitalManager.verifyProofOfSpace(
+        parsed.data.agentId,
+        parsed.data.claimedLocation,
+        parsed.data.satelliteState,
+        parsed.data.observation
+      );
       res.json({
         success: true,
         proof,
@@ -1434,14 +1486,19 @@ export function createApp(customDb?: Database.Database) {
     }
   });
 
+  const orbitalQkdSchema = z.object({
+    agentId: z.string().min(1),
+    simulatedEavesdropper: z.boolean().optional(),
+  });
+
   app.post("/api/v1/orbital/qkd/verify-entanglement", apiLimiter, (req, res) => {
     try {
-      const { agentId, simulatedEavesdropper } = req.body;
-      if (!agentId) {
+      const parsed = orbitalQkdSchema.safeParse(req.body);
+      if (!parsed.success) {
         res.status(400).json({ success: false, error: "agentId is required." });
         return;
       }
-      const result = orbitalManager.evaluateQkdSecurity(agentId, !!simulatedEavesdropper);
+      const result = orbitalManager.evaluateQkdSecurity(parsed.data.agentId, !!parsed.data.simulatedEavesdropper);
       res.json({
         success: true,
         ...result,

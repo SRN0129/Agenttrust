@@ -1,7 +1,11 @@
-import { OrbitalNotaryEngine, OrbitalAttestationReceipt, SatelliteNode } from "../../packages/orbital-notary/src/index.js";
-import { SpaceKillSwitch, OrbitalKillDirective, KillSwitchStatus } from "../../packages/space-killswitch/src/index.js";
-import { DopplerEphemerisEngine, SpaceTimeProofOfLocation, GroundCoordinate, SatelliteOrbitalState, DopplerObservation } from "../../packages/doppler-ephemeris/src/index.js";
-import { QkdWitnessEngine, QkdLinkTelemetry, QuantumSessionKeyReceipt } from "../../packages/qkd-witness/src/index.js";
+import { OrbitalNotaryEngine } from "../../packages/orbital-notary/src/index.js";
+import type { OrbitalAttestationReceipt, SatelliteNode } from "../../packages/orbital-notary/src/index.js";
+import { SpaceKillSwitch } from "../../packages/space-killswitch/src/index.js";
+import type { KillSwitchStatus } from "../../packages/space-killswitch/src/index.js";
+import { DopplerEphemerisEngine } from "../../packages/doppler-ephemeris/src/index.js";
+import type { SpaceTimeProofOfLocation, GroundCoordinate, SatelliteOrbitalState, DopplerObservation } from "../../packages/doppler-ephemeris/src/index.js";
+import { QkdWitnessEngine } from "../../packages/qkd-witness/src/index.js";
+import type { QkdLinkTelemetry, QuantumSessionKeyReceipt } from "../../packages/qkd-witness/src/index.js";
 import { AuditLedgerService } from "./audit.js";
 
 export interface OrbitalConfig {
