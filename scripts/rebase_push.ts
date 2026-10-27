@@ -39,7 +39,7 @@ async function main() {
   await stageAllFiles(projectDir);
 
   // Create commit with remoteRef as parent (clean fast-forward!)
-  const commitMsg = "fix(security): resolve log-injection in release management utility scripts";
+  const commitMsg = "chore: remove one-off release execution scripts";
   
   const commitSha = await git.commit({
     fs,
