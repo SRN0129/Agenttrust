@@ -15,10 +15,7 @@ export interface Vector3D {
 
 export class VectorMath {
   public static distance(a: Vector3D, b: Vector3D): number {
-    const dx = a.x - b.x;
-    const dy = a.y - b.y;
-    const dz = a.z - b.z;
-    return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    return Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
   }
 
   public static subtract(a: Vector3D, b: Vector3D): Vector3D {
@@ -34,7 +31,7 @@ export class VectorMath {
   }
 
   public static normalize(v: Vector3D): Vector3D {
-    const len = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+    const len = Math.hypot(v.x, v.y, v.z);
     if (len === 0) return { x: 0, y: 0, z: 0 };
     return { x: v.x / len, y: v.y / len, z: v.z / len };
   }

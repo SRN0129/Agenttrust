@@ -39,7 +39,7 @@ async function main() {
   await stageAllFiles(projectDir);
 
   // Create commit with remoteRef as parent (clean fast-forward!)
-  const commitMsg = "chore: remove one-off release execution scripts";
+  const commitMsg = "refactor(immunity): standard-library-first architecture, RFC SSRF shield, modular routes, and componentized dashboard";
   
   const commitSha = await git.commit({
     fs,

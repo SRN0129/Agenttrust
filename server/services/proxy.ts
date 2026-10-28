@@ -16,62 +16,131 @@ export interface EgressProxyRequest {
 }
 
 /**
- * Checks whether an IPv4 or IPv6 address belongs to private, loopback,
- * cloud metadata (IMDS), or link-local ranges.
+ * Helper to parse IPv4 strings in any format (dotted decimal, octal, hex, dword integer)
+ * into a canonical 32-bit unsigned integer, defeating obfuscation bypasses.
  */
-export function isProhibitedOrPrivateIP(ip: string): boolean {
-  // Normalize IPv4-mapped IPv6 addresses (e.g. ::ffff:127.0.0.1)
-  if (ip.startsWith("::ffff:")) {
-    ip = ip.replace("::ffff:", "");
+function parseIPv4ToUint32(ip: string): number | null {
+  // Trim and strip optional brackets
+  const clean = ip.trim().replace(/^\[|\]$/g, "");
+
+  // Single integer representation (dword integer, hex 0x..., octal 0...)
+  if (/^(0x[0-9a-fA-F]+|\d+)$/.test(clean)) {
+    const val = Number(clean);
+    if (!Number.isNaN(val) && val >= 0 && val <= 0xffffffff) {
+      return val >>> 0;
+    }
   }
 
-  // IPv4 Evaluation
-  if (net.isIPv4(ip)) {
-    const parts = ip.split(".").map(Number);
-    const [p0, p1] = parts;
+  // Dotted notation (1 to 4 parts)
+  const parts = clean.split(".");
+  if (parts.length > 0 && parts.length <= 4) {
+    const nums: number[] = [];
+    for (const p of parts) {
+      if (!p) return null;
+      let n: number;
+      if (p.startsWith("0x") || p.startsWith("0X")) {
+        n = parseInt(p, 16);
+      } else if (p.startsWith("0") && p.length > 1 && /^[0-7]+$/.test(p)) {
+        n = parseInt(p, 8);
+      } else if (/^\d+$/.test(p)) {
+        n = parseInt(p, 10);
+      } else {
+        return null;
+      }
+      if (Number.isNaN(n) || n < 0) return null;
+      nums.push(n);
+    }
 
-    // 127.0.0.0/8 (Loopback)
-    if (p0 === 127) return true;
-    // 0.0.0.0/8 (Local / Unspecified)
+    if (nums.length === 4) {
+      if (nums.some(n => n > 255)) return null;
+      return ((nums[0] << 24) | (nums[1] << 16) | (nums[2] << 8) | nums[3]) >>> 0;
+    } else if (nums.length === 1) {
+      if (nums[0] > 0xffffffff) return null;
+      return nums[0] >>> 0;
+    } else if (nums.length === 2) {
+      // 127.1 -> 127.0.0.1
+      if (nums[0] > 255 || nums[1] > 0xffffff) return null;
+      return ((nums[0] << 24) | nums[1]) >>> 0;
+    } else if (nums.length === 3) {
+      // 127.0.1 -> 127.0.0.1
+      if (nums[0] > 255 || nums[1] > 255 || nums[2] > 0xffff) return null;
+      return ((nums[0] << 24) | (nums[1] << 16) | nums[2]) >>> 0;
+    }
+  }
+  return null;
+}
+
+/**
+ * Checks whether an IPv4 or IPv6 address belongs to private, loopback,
+ * cloud metadata (IMDS), or link-local ranges, adhering strictly to standard RFC CIDR allocations.
+ */
+export function isProhibitedOrPrivateIP(ip: string): boolean {
+  if (!ip || typeof ip !== "string") return true;
+  let cleanIp = ip.trim().replace(/^\[|\]$/g, "").toLowerCase();
+
+  // Handle IPv4-mapped IPv6 (e.g. ::ffff:127.0.0.1 or ::ffff:a9fe:a9fe)
+  if (cleanIp.startsWith("::ffff:")) {
+    const rest = cleanIp.slice(7);
+    if (net.isIPv4(rest) || !rest.includes(":")) {
+      return isProhibitedOrPrivateIP(rest);
+    }
+  }
+
+  // Canonical 32-bit IPv4 Evaluation (handles decimal, octal, hex, dword, shorthand)
+  const u32 = parseIPv4ToUint32(cleanIp);
+  if (u32 !== null) {
+    const p0 = (u32 >>> 24) & 0xff;
+    const p1 = (u32 >>> 16) & 0xff;
+    const p2 = (u32 >>> 8) & 0xff;
+
+    // 0.0.0.0/8 (Local / Current Network)
     if (p0 === 0) return true;
-    // 10.0.0.0/8 (Private RFC1918)
+    // 10.0.0.0/8 (RFC 1918 Private)
     if (p0 === 10) return true;
-    // 172.16.0.0/12 (Private RFC1918)
-    if (p0 === 172 && p1 >= 16 && p1 <= 31) return true;
-    // 192.168.0.0/16 (Private RFC1918)
-    if (p0 === 192 && p1 === 168) return true;
-    // 169.254.0.0/16 (Link-Local / AWS/GCP IMDS Cloud Metadata)
-    if (p0 === 169 && p1 === 254) return true;
     // 100.64.0.0/10 (Carrier-Grade NAT)
     if (p0 === 100 && p1 >= 64 && p1 <= 127) return true;
+    // 127.0.0.0/8 (Loopback)
+    if (p0 === 127) return true;
+    // 169.254.0.0/16 (Link-Local / AWS/GCP IMDS Cloud Metadata)
+    if (p0 === 169 && p1 === 254) return true;
+    // 172.16.0.0/12 (RFC 1918 Private)
+    if (p0 === 172 && p1 >= 16 && p1 <= 31) return true;
     // 192.0.0.0/24 (IETF Protocol Assignments)
-    if (p0 === 192 && p1 === 0 && parts[2] === 0) return true;
-    // 192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24 (Documentation Test-Nets)
-    if (p0 === 192 && p1 === 0 && parts[2] === 2) return true;
-    if (p0 === 198 && p1 === 51 && parts[2] === 100) return true;
-    if (p0 === 203 && p1 === 0 && parts[2] === 113) return true;
-    // 224.0.0.0/4 (Multicast) or 240.0.0.0/4 (Reserved)
+    if (p0 === 192 && p1 === 0 && p2 === 0) return true;
+    // 192.0.2.0/24 (TEST-NET-1)
+    if (p0 === 192 && p1 === 0 && p2 === 2) return true;
+    // 192.168.0.0/16 (RFC 1918 Private)
+    if (p0 === 192 && p1 === 168) return true;
+    // 198.51.100.0/24 (TEST-NET-2)
+    if (p0 === 198 && p1 === 51 && p2 === 100) return true;
+    // 203.0.113.0/24 (TEST-NET-3)
+    if (p0 === 203 && p1 === 0 && p2 === 113) return true;
+    // 224.0.0.0/4 (Multicast) or 240.0.0.0/4 (Reserved / Future Use)
     if (p0 >= 224) return true;
 
     return false;
   }
 
   // IPv6 Evaluation
-  if (net.isIPv6(ip)) {
-    const lower = ip.toLowerCase();
+  if (net.isIPv6(cleanIp)) {
     // Loopback
-    if (lower === "::1" || lower === "0:0:0:0:0:0:0:1") return true;
+    if (cleanIp === "::1" || (cleanIp.endsWith(":0001") && /^0*(:0*)*1$/.test(cleanIp))) return true;
     // Unspecified
-    if (lower === "::" || lower === "0:0:0:0:0:0:0:0") return true;
-    // Unique Local fc00::/7 (fc.. or fd..)
-    if (lower.startsWith("fc") || lower.startsWith("fd")) return true;
-    // Link-local unicast fe80::/10
-    if (lower.startsWith("fe8") || lower.startsWith("fe9") || lower.startsWith("fea") || lower.startsWith("feb")) return true;
-
+    if (cleanIp === "::" || /^0*(:0*)+$/.test(cleanIp)) return true;
+    // Unique-Local (fc00::/7)
+    if (cleanIp.startsWith("fc") || cleanIp.startsWith("fd")) return true;
+    // Link-Local (fe80::/10)
+    if (/^fe[89ab]/i.test(cleanIp)) return true;
+    // IPv4-compatible embedded IPv6 (e.g. ::192.168.1.1)
+    const lastColon = cleanIp.lastIndexOf(":");
+    const embedded = cleanIp.slice(lastColon + 1);
+    if (net.isIPv4(embedded)) {
+      return isProhibitedOrPrivateIP(embedded);
+    }
     return false;
   }
 
-  return true; // Unknown address format is denied by default
+  return true; // Unknown / invalid address format is denied by default
 }
 
 export class TransparentEgressProxy {

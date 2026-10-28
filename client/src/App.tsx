@@ -1,4 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { ThreatSimulatorPanel } from "./components/ThreatSimulatorPanel";
+import { AgentsPanel } from "./components/AgentsPanel";
+import { PoliciesPanel } from "./components/PoliciesPanel";
+import { ApprovalsPanel } from "./components/ApprovalsPanel";
+import { AuditLedgerPanel } from "./components/AuditLedgerPanel";
+import { CompliancePanel } from "./components/CompliancePanel";
 import {
   Shield,
   ShieldCheck,
@@ -688,520 +694,45 @@ export default function App() {
       {/* Dynamic Tab Body */}
       <main className="flex-1 px-6 py-6 overflow-y-auto">
         {/* ========================================================================= */}
-        {/* TAB 1: SOC / LIVE THREAT MONITOR */}
+        {/* MODULAR VIEW COMPONENTS & PANELS */}
         {/* ========================================================================= */}
-        {activeTab === "soc" && (
-          <div className="space-y-6 animate-fade-in">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Left 2 Cols: Live Telemetry Terminal */}
-              <div className="lg:col-span-2 glass-panel rounded-xl p-5 border border-[#1E283F] flex flex-col">
-                <div className="flex items-center justify-between pb-3 border-b border-[#1E283F]">
-                  <div className="flex items-center space-x-2">
-                    <Terminal className="w-4 h-4 text-emerald-400" />
-                    <span className="text-xs font-mono font-bold text-white tracking-wide">LIVE POLICY INTERCEPTION LOGS</span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                      Sub-1.3ms Interceptor
-                    </span>
-                  </div>
-                  <span className="text-xs font-mono text-slate-400">Stream: Active</span>
-                </div>
+        {activeTab === "soc" && <ThreatSimulatorPanel simLogs={simLogs} />}
 
-                <div className="mt-4 flex-1 font-mono text-xs space-y-2 max-h-[420px] overflow-y-auto pr-2">
-                  {simLogs.map((log) => (
-                    <div
-                      key={log.id}
-                      className={`p-2.5 rounded-lg border flex items-start space-x-3 transition ${
-                        log.status === "denied"
-                          ? "bg-rose-950/20 border-rose-500/30 text-rose-200"
-                          : log.status === "warning"
-                          ? "bg-amber-950/20 border-amber-500/30 text-amber-200"
-                          : log.status === "success"
-                          ? "bg-emerald-950/20 border-emerald-500/30 text-emerald-200"
-                          : "bg-slate-900 border-slate-700 text-slate-300"
-                      }`}
-                    >
-                      <span className="text-[10px] text-slate-400 shrink-0">{log.time}</span>
-                      <div className="shrink-0">
-                        {log.status === "denied" && <ShieldAlert className="w-4 h-4 text-rose-400" />}
-                        {log.status === "warning" && <AlertTriangle className="w-4 h-4 text-amber-400" />}
-                        {log.status === "success" && <ShieldCheck className="w-4 h-4 text-emerald-400" />}
-                        {log.status === "pending" && <Clock className="w-4 h-4 text-cyan-400" />}
-                      </div>
-                      <div className="flex-1">
-                        <span className="font-bold uppercase tracking-wider text-[11px] block">{log.stage}</span>
-                        <p className="text-[11px] opacity-90">{log.message}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Right Col: Threat Landscape & Blast Radius Stats */}
-              <div className="space-y-6">
-                <div className="glass-panel rounded-xl p-5 border border-[#1E283F]">
-                  <h3 className="text-xs font-mono font-bold text-white uppercase tracking-wider flex items-center space-x-2">
-                    <Flame className="w-4 h-4 text-amber-400" />
-                    <span>Real-Time Blast Radius Matrix</span>
-                  </h3>
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    Continuous evaluation of agent reversibility, spend, and credential scope.
-                  </p>
-
-                  <div className="mt-4 space-y-3 font-mono text-xs">
-                    <div>
-                      <div className="flex justify-between text-[11px] mb-1">
-                        <span className="text-slate-300">Read Actions (Tier 1: Safe)</span>
-                        <span className="text-emerald-400">Score 0.10 (Auto-Allowed)</span>
-                      </div>
-                      <div className="w-full bg-[#0E1528] rounded-full h-2">
-                        <div className="bg-emerald-500 h-2 rounded-full w-[15%]"></div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between text-[11px] mb-1">
-                        <span className="text-slate-300">Write / Mutate (Tier 2: Monitored)</span>
-                        <span className="text-cyan-400">Score 0.45 (Rate-Governed)</span>
-                      </div>
-                      <div className="w-full bg-[#0E1528] rounded-full h-2">
-                        <div className="bg-cyan-500 h-2 rounded-full w-[45%]"></div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between text-[11px] mb-1">
-                        <span className="text-slate-300">Financial / Cloud Deploy (Tier 3)</span>
-                        <span className="text-amber-400">Score 0.78 (HITL Required)</span>
-                      </div>
-                      <div className="w-full bg-[#0E1528] rounded-full h-2">
-                        <div className="bg-amber-500 h-2 rounded-full w-[78%]"></div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between text-[11px] mb-1">
-                        <span className="text-slate-300">Drop Table / IAM Metadata (Tier 4)</span>
-                        <span className="text-rose-400">Score 0.99 (Trapped & Denied)</span>
-                      </div>
-                      <div className="w-full bg-[#0E1528] rounded-full h-2">
-                        <div className="bg-rose-500 h-2 rounded-full w-[99%]"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Direct Gateway Notice */}
-                <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-950/20 text-xs">
-                  <div className="flex items-center space-x-2 text-emerald-400 font-semibold mb-1">
-                    <CheckCircle className="w-4 h-4" />
-                    <span>Direct Authenticated Gateway</span>
-                  </div>
-                  <p className="text-slate-300 text-[11px] leading-relaxed">
-                    AgentTrust strictly prohibits unauthenticated pass-through proxies. All agent tool calls and operator commands must provide a valid API Key and pass hardware-backed capability verification.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ========================================================================= */}
-        {/* TAB 2: AGENTS & LINEAGE */}
-        {/* ========================================================================= */}
         {activeTab === "agents" && (
-          <div className="space-y-6 animate-fade-in">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="relative w-full sm:w-72">
-                <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Filter agents by name, framework..."
-                  value={agentSearch}
-                  onChange={(e) => setAgentSearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-[#0E1528] border border-[#1E283F] rounded-lg text-xs font-mono text-white focus:outline-none focus:border-cyan-500"
-                />
-              </div>
-
-              <div className="flex items-center space-x-3 w-full sm:w-auto">
-                <button
-                  onClick={() => setShowDelegateModal(true)}
-                  className="px-3.5 py-2 bg-[#0E1528] hover:bg-[#131D36] border border-cyan-500/40 text-cyan-300 rounded-lg text-xs font-mono transition flex items-center space-x-2"
-                >
-                  <GitBranch className="w-3.5 h-3.5" />
-                  <span>Spawn Subagent Swarm</span>
-                </button>
-
-                <button
-                  onClick={() => setShowRegisterModal(true)}
-                  className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-lg text-xs font-semibold font-mono transition flex items-center space-x-2 shadow-lg shadow-emerald-950/40"
-                >
-                  <Shield className="w-3.5 h-3.5" />
-                  <span>Register Autonomous Agent</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Agent Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filteredAgents.map((agent) => (
-                <div key={agent.id} className="glass-card p-5 rounded-xl border border-[#1E283F] flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <h4 className="text-sm font-bold text-white font-mono">{agent.name}</h4>
-                          <span
-                            className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
-                              agent.status === "ACTIVE"
-                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
-                                : "bg-rose-500/10 text-rose-400 border border-rose-500/30"
-                            }`}
-                          >
-                            {agent.status}
-                          </span>
-                        </div>
-                        <p className="text-xs text-slate-400 mt-1">{agent.description}</p>
-                      </div>
-                      <span className="text-[10px] font-mono bg-[#1E283F] text-slate-300 px-2 py-0.5 rounded">
-                        {agent.framework}
-                      </span>
-                    </div>
-
-                    {/* Spend & Rate Limit Gauge */}
-                    <div className="mt-4 pt-3 border-t border-[#1E283F] space-y-2 font-mono text-xs">
-                      <div>
-                        <div className="flex justify-between text-[11px] mb-1">
-                          <span className="text-slate-400">Micro-Budget Spend:</span>
-                          <span className="text-emerald-300 font-semibold">
-                            ${agent.currentSpendUsd.toFixed(2)} / ${agent.spendLimitUsd.toFixed(2)} USD
-                          </span>
-                        </div>
-                        <div className="w-full bg-[#0E1528] rounded-full h-1.5">
-                          <div
-                            className="bg-emerald-500 h-1.5 rounded-full"
-                            style={{
-                              width: `${Math.min(100, (agent.currentSpendUsd / (agent.spendLimitUsd || 1)) * 100)}%`,
-                            }}
-                          ></div>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-between text-[11px] text-slate-400">
-                        <span>Velocity Cap:</span>
-                        <span className="text-cyan-300">{agent.rateLimitRpm} RPM</span>
-                      </div>
-
-                      {agent.parentAgentId && (
-                        <div className="flex items-center space-x-1 text-[11px] text-violet-400 bg-violet-950/30 p-1.5 rounded border border-violet-500/20">
-                          <GitBranch className="w-3 h-3" />
-                          <span>Child of: {agent.parentAgentId.substring(0, 10)}... (Attenuated)</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Capabilities Chips */}
-                    <div className="mt-3 flex flex-wrap gap-1">
-                      {agent.allowedCapabilities.slice(0, 3).map((cap, i) => (
-                        <span key={i} className="text-[10px] font-mono bg-[#0E1528] text-slate-300 border border-[#1E283F] px-1.5 py-0.5 rounded">
-                          {cap}
-                        </span>
-                      ))}
-                      {agent.allowedCapabilities.length > 3 && (
-                        <span className="text-[10px] font-mono text-slate-500">
-                          +{agent.allowedCapabilities.length - 3} more
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="mt-4 pt-3 border-t border-[#1E283F] flex items-center justify-between text-xs font-mono">
-                    <span className="text-[11px] text-slate-500">Key: at_live_{agent.apiKeyPrefix}***</span>
-                    <button
-                      onClick={() => handleCopy(`at_live_${agent.apiKeyPrefix}demo_token`, agent.id)}
-                      className="text-cyan-400 hover:text-cyan-300 flex items-center space-x-1"
-                    >
-                      {copiedKey === agent.id ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                      <span className="text-[11px]">Copy API Key</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <AgentsPanel
+            agents={agents}
+            onOpenRegisterModal={() => setShowRegisterModal(true)}
+            onOpenDelegateModal={() => setShowDelegateModal(true)}
+          />
         )}
 
-        {/* ========================================================================= */}
-        {/* TAB 3: ZERO-TRUST POLICIES */}
-        {/* ========================================================================= */}
         {activeTab === "policies" && (
-          <div className="space-y-6 animate-fade-in">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="relative w-full sm:w-72">
-                <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search policies by action, effect..."
-                  value={policySearch}
-                  onChange={(e) => setPolicySearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-[#0E1528] border border-[#1E283F] rounded-lg text-xs font-mono text-white focus:outline-none focus:border-cyan-500"
-                />
-              </div>
-
-              <button
-                onClick={() => setShowPolicyModal(true)}
-                className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-lg text-xs font-semibold font-mono transition flex items-center space-x-2"
-              >
-                <Sliders className="w-3.5 h-3.5" />
-                <span>Create Zero-Trust Policy</span>
-              </button>
-            </div>
-
-            {/* Policy Table */}
-            <div className="glass-panel rounded-xl overflow-hidden border border-[#1E283F]">
-              <table className="w-full text-left text-xs font-mono">
-                <thead className="bg-[#0C1222] border-b border-[#1E283F] text-slate-400">
-                  <tr>
-                    <th className="px-4 py-3">Policy Rule</th>
-                    <th className="px-4 py-3">Action Pattern</th>
-                    <th className="px-4 py-3">Target Resource</th>
-                    <th className="px-4 py-3">Effect</th>
-                    <th className="px-4 py-3">Spend Ceiling</th>
-                    <th className="px-4 py-3">Priority</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#1E283F]">
-                  {filteredPolicies.map((p) => (
-                    <tr key={p.id} className="hover:bg-white/[0.02] transition">
-                      <td className="px-4 py-3">
-                        <div className="font-bold text-white">{p.name}</div>
-                        <div className="text-[10px] text-slate-400">{p.description}</div>
-                      </td>
-                      <td className="px-4 py-3 text-cyan-300">{p.action_pattern}</td>
-                      <td className="px-4 py-3 text-slate-300">{p.resource_pattern}</td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`text-[10px] px-2 py-0.5 rounded font-bold ${
-                            p.effect === "ALLOW"
-                              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
-                              : p.effect === "DENY"
-                              ? "bg-rose-500/10 text-rose-400 border border-rose-500/30"
-                              : "bg-amber-500/10 text-amber-300 border border-amber-500/30"
-                          }`}
-                        >
-                          {p.effect}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-slate-300">${p.max_cost_usd} USD</td>
-                      <td className="px-4 py-3 text-slate-400">{p.priority}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <PoliciesPanel
+            policies={policies}
+            onOpenPolicyModal={() => setShowPolicyModal(true)}
+          />
         )}
 
-        {/* ========================================================================= */}
-        {/* TAB 4: HUMAN APPROVALS (HITL) */}
-        {/* ========================================================================= */}
         {activeTab === "approvals" && (
-          <div className="space-y-6 animate-fade-in">
-            <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-950/20 flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <Clock className="w-5 h-5 text-amber-400" />
-                <div>
-                  <h4 className="text-xs font-bold font-mono text-white uppercase">EU AI Act Article 14 Human Oversight Gateway</h4>
-                  <p className="text-[11px] text-slate-300">
-                    High-impact agent operations are held in isolated execution stasis until authenticated operator approval is granted.
-                  </p>
-                </div>
-              </div>
-              <span className="text-xs font-mono text-amber-400 font-bold">{pendingApprovals.length} Pending Actions</span>
-            </div>
-
-            {/* Pending Approvals List */}
-            {pendingApprovals.length === 0 ? (
-              <div className="glass-panel rounded-xl p-8 text-center text-slate-400 font-mono text-xs">
-                <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
-                <p>No actions pending operator review. All autonomous runs operating within authorized thresholds.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {pendingApprovals.map((appr) => (
-                  <div key={appr.id} className="glass-card p-5 rounded-xl border border-amber-500/40 relative">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                          HITL Ticket #{appr.id.substring(0, 8)}
-                        </span>
-                        <h4 className="text-sm font-bold font-mono text-white mt-2">{appr.action}</h4>
-                        <p className="text-xs text-slate-400 font-mono">Resource: {appr.resource}</p>
-                      </div>
-                      <span className="text-xs font-mono font-bold text-amber-400">${appr.estimatedCostUsd} USD</span>
-                    </div>
-
-                    <div className="mt-3 p-3 rounded-lg bg-[#07090E] border border-[#1E283F] font-mono text-[11px] text-slate-300">
-                      <div className="text-slate-500 mb-1">Parameters:</div>
-                      <pre className="text-xs text-cyan-300 overflow-x-auto">{JSON.stringify(appr.parameters, null, 2)}</pre>
-                    </div>
-
-                    <div className="mt-4 flex items-center justify-between text-xs font-mono">
-                      <span className="text-[11px] text-slate-400 flex items-center space-x-1">
-                        <Lock className="w-3 h-3 text-cyan-400" />
-                        <span>Single-Use Nonce Guard Active</span>
-                      </span>
-
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handleDecideApproval(appr.id, "REJECTED")}
-                          className="px-3 py-1.5 bg-rose-950/60 hover:bg-rose-900 border border-rose-600 text-rose-200 rounded-lg transition"
-                        >
-                          Reject
-                        </button>
-                        <button
-                          onClick={() => handleDecideApproval(appr.id, "APPROVED")}
-                          className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition shadow-lg shadow-emerald-950/50"
-                        >
-                          Approve Action
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <ApprovalsPanel
+            pendingApprovals={pendingApprovals}
+            onDecideApproval={handleDecideApproval}
+          />
         )}
 
-        {/* ========================================================================= */}
-        {/* TAB 5: CRYPTOGRAPHIC AUDIT BLACK BOX */}
-        {/* ========================================================================= */}
         {activeTab === "audit" && (
-          <div className="space-y-6 animate-fade-in">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div>
-                <h3 className="text-sm font-mono font-bold text-white flex items-center space-x-2">
-                  <Fingerprint className="w-4 h-4 text-emerald-400" />
-                  <span>Immutable SHA-256 Hash Chained Audit Black Box</span>
-                </h3>
-                <p className="text-xs text-slate-400 mt-1">
-                  NIST FIPS 204 (ML-DSA) Post-Quantum attestation anchored into cryptographic Merkle leaves.
-                </p>
-              </div>
-
-              <button
-                onClick={handleVerifyPQC}
-                className="px-4 py-2 bg-[#0E1528] hover:bg-[#131D36] border border-emerald-500/40 text-emerald-300 rounded-lg text-xs font-mono transition flex items-center space-x-2"
-              >
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>Verify Post-Quantum Merkle Tree</span>
-              </button>
-            </div>
-
-            {/* Audit Events Table */}
-            <div className="glass-panel rounded-xl overflow-hidden border border-[#1E283F]">
-              <table className="w-full text-left text-xs font-mono">
-                <thead className="bg-[#0C1222] border-b border-[#1E283F] text-slate-400">
-                  <tr>
-                    <th className="px-4 py-3">Block #</th>
-                    <th className="px-4 py-3">Timestamp</th>
-                    <th className="px-4 py-3">Action / Event</th>
-                    <th className="px-4 py-3">Decision</th>
-                    <th className="px-4 py-3">SHA-256 Entry Hash</th>
-                    <th className="px-4 py-3">Prev Hash Link</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#1E283F]">
-                  {auditEvents.slice(0, 15).map((evt) => (
-                    <tr key={evt.eventId} className="hover:bg-white/[0.02] transition">
-                      <td className="px-4 py-3 text-cyan-300 font-bold">#{evt.index}</td>
-                      <td className="px-4 py-3 text-slate-400">{new Date(evt.timestamp).toLocaleTimeString()}</td>
-                      <td className="px-4 py-3">
-                        <span className="text-white font-semibold">{evt.action || evt.eventType}</span>
-                        <div className="text-[10px] text-slate-500">{evt.resource}</div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`text-[10px] px-2 py-0.5 rounded font-bold ${
-                            evt.decision === "ALLOWED" || evt.decision === "SUCCESS"
-                              ? "bg-emerald-500/10 text-emerald-400"
-                              : evt.decision === "BLOCKED" || evt.decision === "DENIED"
-                              ? "bg-rose-500/10 text-rose-400"
-                              : "bg-amber-500/10 text-amber-300"
-                          }`}
-                        >
-                          {evt.decision}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-emerald-400 truncate max-w-xs">{evt.entryHash}</td>
-                      <td className="px-4 py-3 text-slate-500 truncate max-w-xs">{evt.prevHash}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <AuditLedgerPanel
+            auditEvents={auditEvents}
+            onVerifyPQC={handleVerifyPQC}
+          />
         )}
 
-        {/* ========================================================================= */}
-        {/* TAB 6: EU AI ACT COMPLIANCE & GOVERNANCE */}
-        {/* ========================================================================= */}
         {activeTab === "compliance" && (
-          <div className="space-y-6 animate-fade-in">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Article 12: Traceability */}
-              <div className="glass-panel rounded-xl p-5 border border-[#1E283F]">
-                <div className="flex items-center space-x-2 text-emerald-400 font-mono text-sm font-bold">
-                  <Award className="w-5 h-5" />
-                  <span>EU AI Act Article 12: Continuous Traceability</span>
-                </div>
-                <p className="text-xs text-slate-400 mt-1">
-                  Mandatory automatic event-recording throughout high-risk autonomous AI lifecycles.
-                </p>
-
-                <div className="mt-4 space-y-3 font-mono text-xs">
-                  <div className="flex justify-between border-b border-[#1E283F] pb-2">
-                    <span className="text-slate-400">Ledger Integrity:</span>
-                    <span className="text-emerald-400 font-bold">VERIFIED (Tamper-Sealed)</span>
-                  </div>
-                  <div className="flex justify-between border-b border-[#1E283F] pb-2">
-                    <span className="text-slate-400">Total Immutable Records:</span>
-                    <span className="text-white font-bold">{auditEvents.length} Events</span>
-                  </div>
-                  <div className="flex justify-between border-b border-[#1E283F] pb-2">
-                    <span className="text-slate-400">Notarized Checkpoints:</span>
-                    <span className="text-violet-300 font-bold">{checkpoints.length} Signed Merkle Roots</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Article 14: Human Oversight */}
-              <div className="glass-panel rounded-xl p-5 border border-[#1E283F]">
-                <div className="flex items-center space-x-2 text-cyan-400 font-mono text-sm font-bold">
-                  <ShieldCheck className="w-5 h-5" />
-                  <span>EU AI Act Article 14: Human Oversight</span>
-                </div>
-                <p className="text-xs text-slate-400 mt-1">
-                  Technical architectural mechanisms enabling natural persons to oversee autonomous systems.
-                </p>
-
-                <div className="mt-4 space-y-3 font-mono text-xs">
-                  <div className="flex justify-between border-b border-[#1E283F] pb-2">
-                    <span className="text-slate-400">Single-Use Nonce Defense:</span>
-                    <span className="text-emerald-400 font-bold">ACTIVE (Anti-409 Replay)</span>
-                  </div>
-                  <div className="flex justify-between border-b border-[#1E283F] pb-2">
-                    <span className="text-slate-400">Decided HITL Tickets:</span>
-                    <span className="text-white font-bold">{allApprovals.length} Signed Decisions</span>
-                  </div>
-                  <div className="flex justify-between border-b border-[#1E283F] pb-2">
-                    <span className="text-slate-400">Oversight Score:</span>
-                    <span className="text-emerald-400 font-bold">100 / 100 Compliant</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <CompliancePanel
+            auditEvents={auditEvents}
+            checkpoints={checkpoints}
+            allApprovals={allApprovals}
+          />
         )}
 
         {/* ========================================================================= */}

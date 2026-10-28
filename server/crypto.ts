@@ -46,28 +46,37 @@ export function generateExecutionNonce(): string {
 }
 
 /**
- * Canonical JSON serialization for reproducible hashing.
+ * RFC 8785 compliant JSON Canonicalization Scheme (JCS) serialization.
+ * Guarantees cross-language cryptographic determinism across TypeScript, Python, Go, and Rust SDKs.
  */
 export function canonicalJson(data: unknown): string {
-  if (data === null || data === undefined) return "";
-  if (typeof data !== "object") return String(data);
-  
-  // Sort keys recursively
-  const sortKeys = (obj: any): any => {
-    if (Array.isArray(obj)) {
-      return obj.map(sortKeys);
+  if (data === undefined) return "";
+  if (data === null) return "null";
+  if (typeof data !== "object") {
+    return JSON.stringify(data);
+  }
+
+  const serialize = (val: any): string => {
+    if (val === null) return "null";
+    if (val === undefined || typeof val === "symbol") return "null";
+    if (typeof val !== "object") {
+      return JSON.stringify(val);
     }
-    if (obj !== null && typeof obj === "object") {
-      const sorted: Record<string, any> = {};
-      Object.keys(obj).sort().forEach(k => {
-        sorted[k] = sortKeys(obj[k]);
-      });
-      return sorted;
+    if (Array.isArray(val)) {
+      const elements = val.map(item =>
+        item === undefined || typeof item === "symbol" ? "null" : serialize(item)
+      );
+      return `[${elements.join(",")}]`;
     }
-    return obj;
+    // Object: Sort keys lexicographically by UTF-16 code units per RFC 8785
+    const keys = Object.keys(val)
+      .filter(k => val[k] !== undefined && typeof val[k] !== "symbol")
+      .sort();
+    const props = keys.map(k => `${JSON.stringify(k)}:${serialize(val[k])}`);
+    return `{${props.join(",")}}`;
   };
-  
-  return JSON.stringify(sortKeys(data));
+
+  return serialize(data);
 }
 
 /**

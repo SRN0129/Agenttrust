@@ -57,6 +57,40 @@ export class SqliteDatabaseAdapter implements IDatabaseAdapter {
 }
 
 /**
+ * Built-in Node.js SQLite Adapter (Node.js 22+ node:sqlite DatabaseSync)
+ * Provides standard-library-first, C++-compiler-free embedded persistence.
+ */
+export class BuiltinNodeSqliteDatabaseAdapter implements IDatabaseAdapter {
+  public dialect: DatabaseDialect = "sqlite";
+
+  constructor(private db: any) {}
+
+  exec(sql: string): void {
+    this.db.exec(sql);
+  }
+
+  prepare(sql: string): any {
+    return this.db.prepare(sql);
+  }
+
+  close(): void {
+    this.db.close();
+  }
+
+  getTelemetry() {
+    return {
+      dialect: this.dialect,
+      activeConnections: 1,
+      status: "CONNECTED_NODE_BUILTIN_SQLITE",
+    };
+  }
+
+  getRawInstance(): any {
+    return this.db;
+  }
+}
+
+/**
  * PostgreSQL Distributed Cluster Adapter
  * Connects to external Postgres / AWS Aurora / CockroachDB clusters for multi-pod scale-out.
  */

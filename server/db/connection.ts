@@ -1,12 +1,56 @@
 import Database from "better-sqlite3";
+import { DatabaseSync } from "node:sqlite";
 import path from "node:path";
 import fs from "node:fs";
 
-let dbInstance: Database.Database | null = null;
+let dbInstance: any = null;
 
-export function getDatabase(customPath?: string): Database.Database {
+/**
+ * Creates a zero-external-dependency SQLite instance using Node 22+ built-in node:sqlite.
+ * Eliminates C++ node-gyp binaries, Python toolchain dependencies, and native binary supply chain vulnerabilities.
+ */
+export function createBuiltinSqliteDatabase(customPath?: string): any {
+  const dbPath = customPath || process.env.DATABASE_PATH || path.resolve(process.cwd(), "data", "agent_trust.db");
+  const dir = path.dirname(dbPath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
+  const db = new DatabaseSync(dbPath) as any;
+  db.pragma = (cmd: string) => db.exec(`PRAGMA ${cmd};`);
+  db.transaction = (fn: (...args: any[]) => any) => {
+    return (...args: any[]) => {
+      db.exec("BEGIN");
+      try {
+        const res = fn(...args);
+        db.exec("COMMIT");
+        return res;
+      } catch (err) {
+        db.exec("ROLLBACK");
+        throw err;
+      }
+    };
+  };
+
+  db.pragma("journal_mode = WAL");
+  db.pragma("foreign_keys = ON");
+  db.pragma("synchronous = NORMAL");
+
+  initializeSchema(db);
+  return db;
+}
+
+export function getDatabase(customPath?: string): any {
   if (dbInstance && !customPath) {
     return dbInstance;
+  }
+
+  if (process.env.USE_BUILTIN_SQLITE === "true") {
+    const db = createBuiltinSqliteDatabase(customPath);
+    if (!customPath) {
+      dbInstance = db;
+    }
+    return db;
   }
 
   const dbPath = customPath || process.env.DATABASE_PATH || path.resolve(process.cwd(), "data", "agent_trust.db");

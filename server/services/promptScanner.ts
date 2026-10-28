@@ -68,12 +68,18 @@ export class PromptInjectionScanner {
   /**
    * Scans text inputs, prompts, and parameters for prompt injections or data leaks
    * using hybrid Aho-Corasick Deterministic Finite Automaton and AST regexes.
+   * Pre-processes inputs with Unicode NFKC normalization and zero-width character stripping
+   * to defeat homoglyph and invisible codepoint evasion vectors.
    */
   static scan(input: unknown): ScanResult {
     if (!input) return { safe: true, flaggedPatterns: [] };
 
     this.initDfa();
-    const textToScan = typeof input === "string" ? input : JSON.stringify(input);
+    const rawText = typeof input === "string" ? input : JSON.stringify(input);
+    // Standard Unicode Normalization (NFKC), strip zero-width characters and invisible control codepoints
+    const textToScan = rawText
+      .normalize("NFKC")
+      .replace(/[\u200B-\u200D\uFEFF\u00AD\u2060]/g, "");
     const flagged: string[] = [];
 
     // 1. O(n) Aho-Corasick Automaton Search
