@@ -31,7 +31,7 @@ jobs:
           npm ci
           npm --prefix client ci
 
-      - name: Run Full Security Test Battery (70 Tests)
+      - name: Run Full Security Test Battery (119 Tests)
         run: npm test
 
       - name: Run Chaos Red-Team Benchmark
@@ -39,12 +39,12 @@ jobs:
 
       - name: Record Continuous Hardening Log
         run: |
-          echo "Automated continuous fuzzing verified zero regressions on $(date -u +"%Y-%m-%d %H:%M:%S UTC") across 70 tests." > .fuzzing.log
+          echo "Automated continuous fuzzing verified zero regressions on $(date -u +"%Y-%m-%d %H:%M:%S UTC") across 119 tests." > .fuzzing.log
 
       - name: Commit Hardening Audit Log
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .fuzzing.log
+          git add -f .fuzzing.log
           git commit -m "chore: record automated verification pulse [skip ci]" || echo "No changes to commit"
           git push origin main || echo "Push skipped or branch protected"

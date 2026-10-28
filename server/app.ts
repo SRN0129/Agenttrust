@@ -85,15 +85,6 @@ export function createApp(customDb?: Database.Database) {
     next();
   });
 
-  function escapeHtml(str: string): string {
-    return String(str)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
   // Global rate limiter for API endpoints recognized by security scanners
   const apiLimiter = rateLimit({
     windowMs: 60 * 1000,

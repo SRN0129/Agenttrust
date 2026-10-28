@@ -31,7 +31,7 @@ jobs:
           npm ci
           npm --prefix client ci
 
-      - name: Execute 70 Automated Enterprise Security Tests
+      - name: Execute 119 Automated Enterprise Security Tests
         run: npm test
 
       - name: Run Cryptographic Audit Integrity Benchmark
@@ -39,12 +39,12 @@ jobs:
 
       - name: Record Activity Pulse Heartbeat
         run: |
-          echo "Last automated health pulse verified on $(date -u +"%Y-%m-%d %H:%M:%S UTC") across 70 security tests." > .pulse.log
+          echo "Last automated health pulse verified on $(date -u +"%Y-%m-%d %H:%M:%S UTC") across 119 security tests." > .pulse.log
 
       - name: Commit Health Pulse Heartbeat
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .pulse.log
+          git add -f .pulse.log
           git commit -m "chore: update verification health check [skip ci]" || echo "No changes to commit"
           git push origin main || echo "Push skipped or branch protected"

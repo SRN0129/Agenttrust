@@ -16,6 +16,8 @@ data/
 
 # Logs & temp
 *.log
+!*.pulse.log
+!*.fuzzing.log
 npm-debug.log*
 
 # Environment

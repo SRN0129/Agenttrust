@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { ThreatSimulatorPanel } from "./components/ThreatSimulatorPanel";
 import { AgentsPanel } from "./components/AgentsPanel";
 import { PoliciesPanel } from "./components/PoliciesPanel";
@@ -10,17 +10,13 @@ import {
   ShieldCheck,
   ShieldAlert,
   AlertTriangle,
-  CheckCircle2,
   Clock,
   Users,
   FileText,
   Sliders,
-  Copy,
   Check,
   RefreshCw,
-  Lock,
   Key,
-  Terminal,
   Activity,
   Flame,
   Award,
@@ -28,7 +24,6 @@ import {
   AlertOctagon,
   Cpu,
   Zap,
-  Search,
   CheckCircle,
   Code2,
   Fingerprint
@@ -168,11 +163,7 @@ export default function App() {
   const [integrity, setIntegrity] = useState<IntegrityReport | null>(null);
   const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
   const [loading, setLoading] = useState(false);
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  // Search & Filter state
-  const [agentSearch, setAgentSearch] = useState("");
-  const [policySearch, setPolicySearch] = useState("");
   const [sdkLang, setSdkLang] = useState<"python" | "typescript" | "go" | "rust">("python");
 
   // Modals
@@ -269,12 +260,6 @@ export default function App() {
     const interval = setInterval(loadData, 6000);
     return () => clearInterval(interval);
   }, [adminKey]);
-
-  const handleCopy = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedKey(id);
-    setTimeout(() => setCopiedKey(null), 2000);
-  };
 
   const handleSaveAuth = () => {
     const trimmed = authInput.trim() || "at_admin_secops_demo";
@@ -416,25 +401,6 @@ export default function App() {
       alert("Verification error: " + e.message);
     }
   };
-
-  // Filtered lists
-  const filteredAgents = useMemo(() => {
-    return agents.filter(
-      (a) =>
-        a.name.toLowerCase().includes(agentSearch.toLowerCase()) ||
-        a.framework.toLowerCase().includes(agentSearch.toLowerCase()) ||
-        a.status.toLowerCase().includes(agentSearch.toLowerCase())
-    );
-  }, [agents, agentSearch]);
-
-  const filteredPolicies = useMemo(() => {
-    return policies.filter(
-      (p) =>
-        p.name.toLowerCase().includes(policySearch.toLowerCase()) ||
-        p.action_pattern.toLowerCase().includes(policySearch.toLowerCase()) ||
-        p.effect.toLowerCase().includes(policySearch.toLowerCase())
-    );
-  }, [policies, policySearch]);
 
   return (
     <div className="min-h-screen bg-[#07090E] text-slate-100 flex flex-col font-sans selection:bg-emerald-500/30 selection:text-emerald-300">
