@@ -1,119 +1,132 @@
+<div align="center">
+
+<img src="assets/agenttrust-banner.svg" alt="AgentTrust Banner" width="100%" />
+
 # AgentTrust
 
-### Verifiable Zero-Trust Control Plane, Cryptographic Black Box, and Post-Quantum Policy Gateway for Autonomous AI Agents
+### **Enterprise Zero-Trust AI Security & Governance Gateway: Real-Time Prompt Injection Defense, Action Scoping, Human-in-the-Loop Gate, Post-Quantum Merkle Audit & EU AI Act Compliance for Autonomous Agent Swarms.**
 
 [![AgentTrust Core v2.0.0](https://img.shields.io/badge/AgentTrust-v2.0.0-blue.svg)](https://github.com/SRN0129/Agenttrust/releases/tag/v2.0.0)
-[![orbital-notary v1.0.0](https://img.shields.io/badge/%40srn0129%2Fagenttrust--orbital--notary-v1.0.0-9333EA.svg)](https://github.com/SRN0129/Agenttrust/releases/tag/orbital-notary-v1.0.0)
-[![space-killswitch v1.0.0](https://img.shields.io/badge/%40srn0129%2Fagenttrust--space--killswitch-v1.0.0-DC2626.svg)](https://github.com/SRN0129/Agenttrust/releases/tag/space-killswitch-v1.0.0)
-[![doppler-ephemeris v1.0.0](https://img.shields.io/badge/%40srn0129%2Fagenttrust--doppler--ephemeris-v1.0.0-2563EB.svg)](https://github.com/SRN0129/Agenttrust/releases/tag/doppler-ephemeris-v1.0.0)
-[![qkd-witness v1.0.0](https://img.shields.io/badge/%40srn0129%2Fagenttrust--qkd--witness-v1.0.0-059669.svg)](https://github.com/SRN0129/Agenttrust/releases/tag/qkd-witness-v1.0.0)
-[![CI](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml/badge.svg)](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml)
-[![Tests Passing](https://img.shields.io/badge/Automated%20Tests-119%2F119%20Passing-brightgreen.svg)](tests)
+[![CI Build Status](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml/badge.svg)](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml)
+[![Automated Security Battery](https://img.shields.io/badge/Security%20Tests-119%2F119%20Passing%20(100%25)-brightgreen.svg)](tests)
 [![CodeQL Security Scan](https://github.com/SRN0129/Agenttrust/actions/workflows/codeql.yml/badge.svg)](https://github.com/SRN0129/Agenttrust/actions/workflows/codeql.yml)
-[![Engineered with Google Antigravity](https://img.shields.io/badge/Engineered%20With-Google%20Antigravity-4285F4?logo=google&logoColor=white)](https://deepmind.google)
-[![PQC NIST FIPS 204](https://img.shields.io/badge/Post--Quantum-NIST%20FIPS%20204%20(ML--DSA)-8B5CF6.svg)](server/services/pqcAttestation.ts)
-[![Orbital SpaceMesh](https://img.shields.io/badge/Space--Airgap-LEO%20Orbital%20HSM%20(550km)-blueviolet.svg)](packages/orbital-notary)
-[![Q-Day Immune](https://img.shields.io/badge/Q--Day-Immune%20(QKD%20%2B%20ML--KEM)-emerald.svg)](packages/qkd-witness)
-[![Compliance](https://img.shields.io/badge/Compliance-EU%20AI%20Act%20Art.%2012%20%26%2014-emerald.svg)](server/services/compliance.ts)
-[![License](https://img.shields.io/badge/License-MIT%20%2F%20Apache--2.0-blue.svg)](LICENSE)
+[![Post-Quantum FIPS 204](https://img.shields.io/badge/Post--Quantum-NIST%20FIPS%20204%20(ML--DSA)-8B5CF6.svg)](server/services/pqcAttestation.ts)
+[![Compliance: EU AI Act](https://img.shields.io/badge/Compliance-EU%20AI%20Act%20Art.%2012%20%26%2014-059669.svg)](server/services/compliance.ts)
+[![LEO Orbital SpaceMesh](https://img.shields.io/badge/Space--Airgap-LEO%20Orbital%20HSM%20(550km)-blueviolet.svg)](packages/orbital-notary)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/SRN0129/Agenttrust?style=flat&color=yellow)](https://github.com/SRN0129/Agenttrust/stargazers)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+[Quickstart](#-quickstart-in-30-seconds) • [Architecture](#-visual-architecture--execution-lifecycle) • [Open Packages](#-open-modular-packages--monorepo-workspaces) • [Awesome Ecosystem Matrix](#-awesome-agentic-security--autonomous-defense-ecosystem) • [Policy Makers & Regulators Track](CONTRIBUTING.md#-policy-makers-regulators--governance-experts-track)
+
+</div>
 
 ---
 
-> **The Problem**: Autonomous AI agents are being granted bash shells, SQL credentials, cloud infrastructure access, and corporate credit cards. Without a deterministic policy boundary, a single indirect prompt injection or runaway hallucination can delete production tables, exfiltrate API keys, or drain financial budgets.
+## ⚡ The 5-Second Rule: Why AgentTrust Exists
+
+**AgentTrust is the open zero-trust security control plane, cognitive black box, and post-quantum policy gateway that prevents autonomous AI agents from deleting production databases, leaking API keys, or executing unauthorized cloud infrastructure commands.**
+
+> **The Reality**: You would never hand a raw root SSH key, AWS admin credentials, or production database credentials to an untrusted intern with zero audit trail. Yet today, autonomous agents (LangChain, CrewAI, AutoGen, LlamaIndex, OpenAI Assistants) are granted raw bash execution, SQL query access, and corporate credit cards with **zero deterministic guardrails**.
 >
-> **The Solution**: **AgentTrust** sits between autonomous LLM agent runtimes and external tool execution environments. It intercepts every proposed action, screens parameters for prompt injections and data leaks, checks real-time blast radius, enforces fine-grained capability policies, gates dangerous actions behind 1-click human approvals, and records every event into an immutable, hardware-sealed (TPM 2.0 / Nitro Enclave) audit ledger anchored by **NIST FIPS 204 (ML-DSA)** post-quantum Merkle proofs and **orbital LEO satellite space-airgap attestations**.
+> A single indirect prompt injection in a customer support email or a runaway hallucination in a financial workflow can wipe production data, exfiltrate sensitive customer records, or trigger high-cost runaway loops.
+>
+> **The Solution**: AgentTrust intercepts every tool invocation, screens payloads for prompt injections and data leaks, verifies fine-grained AST verb scoping (`SELECT` vs `DROP`), scores dynamic blast radius, gates high-risk operations behind atomic 1-click human approvals, and records every decision into an immutable, **NIST FIPS 204 (ML-DSA)** post-quantum Merkle audit ledger with **orbital LEO satellite space-airgap notarization**.
 
 ---
 
-## 🛰️ Open Modular Packages & Monorepo Workspaces
+## 📸 Interactive Visual Flowchart & Architecture
 
-AgentTrust is architected as an **open, modular monorepo**. You do not have to deploy the full enterprise control plane to benefit from our frontier defense algorithms. All four frontier space-grade and post-quantum defense layers are published as **standalone, zero-dependency packages** that can be independently imported into any existing AI agent framework (LangChain, CrewAI, AutoGen, or custom runtimes):
+<div align="center">
+  <img src="assets/agenttrust-flowchart.svg" alt="AgentTrust Multi-Tiered Runtime Defense Architecture" width="100%" />
+</div>
 
-| Package | Version | Scope & Purpose | Standalone Quick Install | Direct Source & Release |
-| :--- | :--- | :--- | :--- | :--- |
-| **`@srn0129/agenttrust-orbital-notary`** | `v1.0.0` | Radiation-hardened LEO satellite HSM space-airgap notary & NIST FIPS 204 (ML-DSA) attestation pipeline | `npm i @srn0129/agenttrust-orbital-notary` | [Source Code](packages/orbital-notary) • [Release Notes](https://github.com/SRN0129/Agenttrust/releases/tag/orbital-notary-v1.0.0) |
-| **`@srn0129/agenttrust-space-killswitch`** | `v1.0.0` | Direct-to-satellite unjammable dead man's switch & emergency quarantine freeze (Iridium SBD / Starlink D2C) | `npm i @srn0129/agenttrust-space-killswitch` | [Source Code](packages/space-killswitch) • [Release Notes](https://github.com/SRN0129/Agenttrust/releases/tag/space-killswitch-v1.0.0) |
-| **`@srn0129/agenttrust-doppler-ephemeris`** | `v1.0.0` | Relativistic time dilation ($\gamma = 1 / \sqrt{1 - v^2/c^2}$) & RF carrier Doppler S-curve Proof-of-Space engine | `npm i @srn0129/agenttrust-doppler-ephemeris` | [Source Code](packages/doppler-ephemeris) • [Release Notes](https://github.com/SRN0129/Agenttrust/releases/tag/doppler-ephemeris-v1.0.0) |
-| **`@srn0129/agenttrust-qkd-witness`** | `v1.0.0` | Satellite optical Quantum Key Distribution (QKD), Bell CHSH inequality ($S > 2.0$), and Q-Day immunity witness | `npm i @srn0129/agenttrust-qkd-witness` | [Source Code](packages/qkd-witness) • [Release Notes](https://github.com/SRN0129/Agenttrust/releases/tag/qkd-witness-v1.0.0) |
-| **`@srn0129/agenttrust` (Core)** | `v2.0.0` | Unified zero-trust control plane, cognitive CoT black box, and post-quantum policy gateway | `npm i @srn0129/agenttrust` | [Repository Root](.) • [v2.0.0 Release Notes](https://github.com/SRN0129/Agenttrust/releases/tag/v2.0.0) |
+### Interactive Runtime Flow (Mermaid.js)
 
----
+```mermaid
+flowchart TD
+    subgraph S1["1. Agent Runtime (Untrusted)"]
+        A["Autonomous AI Agent Swarm<br/>(LangChain / CrewAI / AutoGen / MCP)"] -->|"Proposed Action + CoT Reasoning"| G["AgentTrust Direct Gateway"]
+    end
 
-## Key Highlights & Architectural Guarantees
+    subgraph S2["2. Ingress & Security Inspection"]
+        G -->|"1. Unicode NFKC Normalization"| P["Prompt & Injection Scanner<br/>(Aho-Corasick DFA Multi-Pattern)"]
+        G -->|"2. Socket-Level RFC Interception"| N["RFC CIDR Egress Shield<br/>(Blocks 169.254.169.254 & Private IP)"]
+    end
 
-| Capability | Threat Mitigated | Technical Mechanism |
-| :--- | :--- | :--- |
-| **Direct Authenticated Gateway** | Ambient Authority & Insecure Proxies | Deny-by-default capability glob matching with strict Bearer/API key validation. Zero unauthenticated bypass. |
-| **Action-Specific & Verb Scoping** | Broken Authorization (CWE-863) / Blanket Access | Sub-resource and AST verb extraction (`database:orders:SELECT` vs `DROP`/`UPDATE`). Prevents blanket resource access. |
-| **Cognitive Chain-of-Thought Audit** | Rationalized Jailbreaks & Divergent Hallucinations | Cryptographically hashes and Merkle-anchors the agent's internal thought process; detects goal divergence and rationalized injections. |
-| **Orbital Space-Airgap Notary** | Terrestrial Subpoena, State-Actor Seizure & Hypervisor 0-Days | Radiation-hardened LEO satellite HSMs (550 km) sign Tier-0 actions with Post-Quantum ML-DSA Orbital Attestation Receipts (`@srn0129/agenttrust-orbital-notary`). |
-| **Space-Based Dead Man's Switch** | Rogue Agent Host Hijacking & Internet Partition | Direct-to-satellite radio carrier broadcast (Iridium SBD / Starlink D2C) enforcing emergency freeze from space (`@srn0129/agenttrust-space-killswitch`). |
-| **Relativistic Doppler Proof-of-Space** | SDR GPS Spoofing & VPN/Proxy Geo-Evasion | Correlates carrier RF Doppler S-curve and relativistic time dilation ($\gamma = 1 / \sqrt{1 - v^2/c^2}$) to verify physical position (`@srn0129/agenttrust-doppler-ephemeris`). |
-| **Satellite QKD & Entanglement Witness** | "Harvest Now, Decrypt Later" & Quantum Day (Q-Day) | Optical satellite entanglement link measuring Bell CHSH inequality ($S > 2.0$) and QBER ($< 11\%$) to halt on optical eavesdropping (`@srn0129/agenttrust-qkd-witness`). |
-| **Post-Approval Continuous Runtime Watchdog** | Post-Approval Drift & Stealth Cloud Escalation | Wiz/Upwind runtime sidecar model; intercepts post-approval side effects in real-time, instantly auto-quarantining IMDS/IAM expansion. |
-| **Cloud SSRF & IMDS Shield** | AWS/GCP Metadata Exfiltration | Network-level socket inspection strictly blocking loopback and `169.254.169.254`. |
-| **Blast Radius & Micro-Budgets** | Runaway Loop Cost & Table Dropping | Real-time blast radius scoring (0.00–1.00), sliding-window token/USD ceilings, and 30 RPM tripwires. |
-| **Dual-Lock Anti-Replay HITL** | Webhook Token Replay Attacks | EU AI Act Art. 14 compliant single-use ephemeral approval nonces that burn atomically on execution. |
-| **Cryptographic Black Box** | Log Tampering & Liability Repudiation | SHA-256 backward hash chaining with binary Merkle receipts and NIST FIPS 204 post-quantum signatures. |
+    subgraph S3["3. Authorization & Risk Scoring"]
+        P & N -->|"Verified Payload"| L["Capability Meet-Semilattice<br/>(C_child ⊑ C_parent)"]
+        L -->|"Action Verb Extraction"| V["Action Scoping<br/>(e.g., SELECT Allowed, DROP Forbidden)"]
+        V -->|"Telemetry Vector"| B["Bayesian Dynamic Blast Radius<br/>(Reversibility + Count-Min Frequency)"]
+    end
 
----
+    subgraph S4["4. Policy Decision & Escalation Gate"]
+        B -->|Blast Radius &gt; 0.70 OR Sensitive Action| H["Dual-Lock HITL Nonce Gate<br/>(1-Click Mobile/Slack Signed URL)"]
+        B -->|Blast Radius &le; 0.70 & Policy Matched| EX["Cryptographic Execution Sandbox<br/>(3,000ms Hard Watchdog Isolation)"]
+        H -->|Human Approves (Burns Nonce)| EX
+        H -->|Human Denies / Timeout| BL["Blocked & Quarantined"]
+    end
 
-## Visual Architecture
+    subgraph S5["5. Continuous Runtime Watchdog"]
+        EX -->|"Live Syscall & Cloud Sidecar"| W["Runtime Perimeter Watchdog<br/>(Intercepts IAM/IMDS Stealth Drift)"]
+    end
 
-```
-                                  [ Autonomous Agent Runtime ]
-                     (LangChain / LangGraph / CrewAI / AutoGen / OpenAI)
-                                                │
-                                                │ 1. Direct Authenticated Tool Execution Request
-                                                ▼
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                        AGENTTRUST DIRECT AUTHENTICATED GATEWAY                         │
-│                                                                                        │
-│   ┌──────────────────────────────┐     ┌───────────────────────────────────────────┐   │
-│   │ Socket-Level Egress Guard    │     │ Prompt Injection & Secret Leak Scanner    │   │
-│   │ • Loopback & RFC1918 Defense │ ──► │ • 16-Pattern Prompt Hijack Detection      │   │
-│   │ • Cloud IMDS (169.254) Shield│     │ • PCI/API Token / Private Key Redaction   │   │
-│   └──────────────────────────────┘     └───────────────────────────────────────────┘   │
-│                                                       │                                │
-│   ┌──────────────────────────────┐     ┌──────────────┴────────────────────────────┐   │
-│   │ Blast Radius Scoring Engine  │     │ Sliding-Window Spend & Velocity Limiter   │   │
-│   │ • Reversibility Evaluation   │ ──► │ • Autonomous Micro-Budgeting ($/run)      │   │
-│   │ • Target Tier Classification │     │ • 30 RPM Velocity Circuit Breaker         │   │
-│   └──────────────────────────────┘     └───────────────────────────────────────────┘   │
-│                                                       │                                │
-│                                        ┌──────────────▼────────────────────────────┐   │
-│                                        │ Deny-by-Default Policy Authorization      │   │
-│                                        │ • Fine-Grained Capability Glob Matching   │   │
-│                                        │ • Lineage Attenuation for Subagent Swarms │   │
-│                                        └───────────────────────────────────────────┘   │
-└───────────────────────────────────────────────────────┬────────────────────────────────┘
-                                                        │
-                         ┌──────────────────────────────┴──────────────────────────────┐
-                         │                                                             │
-                         ▼ (Blast Radius > 0.7 OR Sensitive)                           ▼ (Authorized)
-       ┌──────────────────────────────────────────┐                  ┌──────────────────────────────────┐
-       │   Human-in-the-Loop Callback Gateway     │                  │  Cryptographic Execution Sandbox │
-       │   • 1-Click Mobile / Slack Signed URLs   │                  │  • Hard Process Isolation        │
-       │   • Single-Use Ephemeral Nonce (Anti-409)│                  │  • 3,000ms Watchdog Timeout      │
-       └──────────────────────────────────────────┘                  └──────────────────────────────────┘
-                         │                                                             │
-                         └──────────────────────────────┬──────────────────────────────┘
-                                                        │
-                                                        ▼ 2. Cryptographic Proof of Execution
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                              VERIFIABLE AUDIT ENGINE & NOTARY                          │
-│                                                                                        │
-│   [ SHA-256 Backward Hash Chaining ] ──► [ Binary Merkle Tree Inclusion Receipts ]     │
-│   [ TPM 2.0 PCR-Sealed Hardware Key] ──► [ NIST FIPS 204 (ML-DSA) Post-Quantum Proofs] │
-└────────────────────────────────────────────────────────────────────────────────────────┘
+    subgraph S6["6. Cryptographic Black Box & Orbital Notary"]
+        EX & W & BL -->|"RFC 8785 JCS Canonicalization"| M["Binary Merkle Audit Tree<br/>(SHA-256 Backward Hash Chaining)"]
+        M -->|"Hardware Signature"| Q["NIST FIPS 204 (ML-DSA)<br/>Lattice Signature Attestation"]
+        Q -->|"Tier-0 High-Impact Seal"| SAT["LEO Satellite Space-Airgap HSM<br/>(@srn0129/agenttrust-orbital-notary)"]
+    end
+
+    style G fill:#0E1B2E,stroke:#0284C7,stroke-width:2px,color:#FFFFFF
+    style P fill:#131127,stroke:#8B5CF6,stroke-width:1.5px,color:#FFFFFF
+    style N fill:#131127,stroke:#8B5CF6,stroke-width:1.5px,color:#FFFFFF
+    style L fill:#0A1D1A,stroke:#10B981,stroke-width:1.5px,color:#FFFFFF
+    style B fill:#241607,stroke:#F59E0B,stroke-width:1.5px,color:#FFFFFF
+    style H fill:#260C1B,stroke:#EC4899,stroke-width:1.5px,color:#FFFFFF
+    style EX fill:#0C1E18,stroke:#10B981,stroke-width:2px,color:#FFFFFF
+    style W fill:#131127,stroke:#8B5CF6,stroke-width:1.5px,color:#FFFFFF
+    style M fill:#0E1B2E,stroke:#0284C7,stroke-width:1.5px,color:#FFFFFF
+    style Q fill:#18112C,stroke:#8B5CF6,stroke-width:2px,color:#FFFFFF
+    style SAT fill:#0A1D1A,stroke:#10B981,stroke-width:2px,color:#FFFFFF
 ```
 
 ---
 
-## 3-Second Terminal Demo: Rogue Action Intercepted
+## 🚀 Quickstart in 30 Seconds
+
+### 1. Launch the Gateway & SOC Dashboard
+AgentTrust requires Node.js 22+ and zero external native C++ build tools (Standard-Library-First architecture):
 
 ```bash
-$ curl -X POST http://localhost:4000/api/v1/proxy \
+# Clone the repository
+git clone https://github.com/SRN0129/Agenttrust.git
+cd Agenttrust
+
+# Install dependencies (zero transitive C++ addons)
+npm install
+npm --prefix client install
+
+# Start Backend Gateway and Interactive SOC Dashboard
+npm run dev
+```
+Open **`http://localhost:5173`** to interact with the live SOC Dashboard and Threat Simulator.
+
+### 2. Protect an Agent in 3 Lines (Python / LangChain)
+```python
+from agenttrust import wrap_agent, AgentTrustClient
+
+client = AgentTrustClient(api_key="at_live_8f3a9e...", endpoint="http://localhost:3000")
+
+# Intercept tool dispatches with automated AST scoping and blast radius limits
+@wrap_agent(client=client, rate_limit_rpm=30, blast_radius_tier="HIGH")
+def execute_agent_workflow(prompt: str):
+    return agent_executor.run(prompt)
+```
+
+### 3. Intercept Rogue Actions in 1.2ms (CLI Demo)
+```bash
+# Attempt an indirect prompt injection targeting AWS IMDS credentials
+curl -X POST http://localhost:3000/api/v1/proxy \
   -H "Authorization: Bearer at_live_8f3a..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -121,10 +134,8 @@ $ curl -X POST http://localhost:4000/api/v1/proxy \
     "method": "GET"
   }'
 
-# 1.2ms Later: Trapped and Anchored to Merkle Ledger
+# Response: Trapped, Blocked, and Anchored to Merkle Ledger
 HTTP/1.1 403 Forbidden
-Content-Type: application/json
-
 {
   "success": false,
   "decision": "BLOCKED",
@@ -140,231 +151,78 @@ Content-Type: application/json
 
 ---
 
-## Sleek Web Dashboard & Live SecOps Center
+## 🛰️ Open Modular Packages & Monorepo Workspaces
 
-AgentTrust includes a dark-mode **Security Operations Center (SOC)** dashboard built with React and Tailwind CSS:
+AgentTrust is architected as an **open, modular ecosystem**. You can consume any defense package independently without deploying the entire control plane:
 
-* **Executive HUD**: Real-time stats on active agent enclaves, verifiable audit blocks, and post-quantum attestation status.
-* **1-Click Interactive Threat Simulator**: Live simulation buttons for Cloud SSRF attacks (`169.254.169.254`), prompt injections, runaway spend spikes, and financial wire approvals.
-* **Direct Authenticated Operator Session**: Fully authenticated control plane (`x-admin-key` / Bearer token) with zero insecure proxy bypass.
-* **Swarm Delegation Tree**: Visual parent-child lineage tree with strict capability attenuation.
-* **Cryptographic Merkle Explorer**: Interactive SHA-256 hash-chain block inspector and NIST FIPS 204 attestation verifier.
-
-### Run Locally:
-```bash
-# 1. Clone repository
-git clone https://github.com/SRN0129/Agenttrust.git
-cd Agenttrust
-
-# 2. Install dependencies
-npm install
-npm --prefix client install
-
-# 3. Build & Launch
-npm run build:client
-npm run server
-```
-Access the dashboard at `http://localhost:4000`.
+| Package | Version | Scope & Defense Mechanism | Install Command | Links |
+| :--- | :--- | :--- | :--- | :--- |
+| **`@srn0129/agenttrust-orbital-notary`** | `v1.0.0` | Radiation-hardened LEO satellite HSM space-airgap notary & NIST FIPS 204 (ML-DSA) attestation pipeline | `npm i @srn0129/agenttrust-orbital-notary` | [Code](packages/orbital-notary) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/orbital-notary-v1.0.0) |
+| **`@srn0129/agenttrust-space-killswitch`** | `v1.0.0` | Direct-to-satellite unjammable dead man's switch & emergency quarantine freeze (Iridium SBD / Starlink D2C) | `npm i @srn0129/agenttrust-space-killswitch` | [Code](packages/space-killswitch) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/space-killswitch-v1.0.0) |
+| **`@srn0129/agenttrust-doppler-ephemeris`** | `v1.0.0` | Relativistic time dilation ($\gamma = 1 / \sqrt{1 - v^2/c^2}$) & RF carrier Doppler S-curve Proof-of-Space engine | `npm i @srn0129/agenttrust-doppler-ephemeris` | [Code](packages/doppler-ephemeris) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/doppler-ephemeris-v1.0.0) |
+| **`@srn0129/agenttrust-qkd-witness`** | `v1.0.0` | Satellite optical Quantum Key Distribution (QKD), Bell CHSH inequality ($S > 2.0$), and Q-Day immunity witness | `npm i @srn0129/agenttrust-qkd-witness` | [Code](packages/qkd-witness) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/qkd-witness-v1.0.0) |
+| **`@srn0129/agenttrust` (Core Gateway)** | `v2.0.0` | Unified zero-trust control plane, cognitive CoT black box, and post-quantum policy gateway | `npm i @srn0129/agenttrust` | [Code](.) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/v2.0.0) |
 
 ---
 
-## Polyglot SDK Quickstarts
+## 🌟 Awesome Agentic Security & Autonomous Defense Ecosystem
 
-### 1. Python (`sdk-python`) — LangChain & CrewAI
-```python
-from agenttrust import wrap_agent, AgentTrustClient
-from langchain.agents import AgentExecutor
+A curated matrix of cutting-edge frameworks, security standards, post-quantum primitives, and regulatory directives shaping the future of autonomous agent governance:
 
-# Authenticated Direct Gateway
-client = AgentTrustClient(
-    api_key="at_live_8f3a9e...",
-    endpoint="https://gateway.agenttrust.io"
-)
-
-# Intercept tool calls with automatic policy screening & blast radius check
-@wrap_agent(client=client, rate_limit_rpm=30, blast_radius_tier="HIGH")
-def run_autonomous_agent(prompt: str):
-    executor = AgentExecutor(...)
-    return executor.run(prompt)
-```
-
-### 2. TypeScript (`sdk`)
-```typescript
-import { AgentTrustClient } from "@srn0129/agenttrust";
-
-const client = new AgentTrustClient({
-  apiKey: "at_live_8f3a9e...",
-  endpoint: "https://gateway.agenttrust.io"
-});
-
-const result = await client.executeProtectedTool({
-  toolName: "database_query",
-  parameters: { query: "SELECT * FROM orders WHERE id = 1" }
-});
-```
-
-### 3. Go (`sdk-go`)
-```go
-client := agenttrust.NewClient(agenttrust.Config{
-    APIKey:   "at_live_8f3a9e...",
-    Endpoint: "https://gateway.agenttrust.io",
-})
-
-res, err := client.Authorize(ctx, agenttrust.AuthorizationRequest{
-    Action:   "cloud:instance:terminate",
-    Resource: "i-098234abcdef",
-})
-```
-
-### 4. Rust (`sdk-rust`)
-```rust
-use agenttrust_sdk::AgentTrustClient;
-
-let client = AgentTrustClient::new("at_live_8f3a9e...", "https://gateway.agenttrust.io");
-let decision = client.authorize_tool("system:exec_bash", "server:root").await?;
-```
+| Ecosystem Category | Project / Standard | Focus & Primary Capability | AgentTrust Native Integration |
+| :--- | :--- | :--- | :--- |
+| **Agent Runtimes & Protocols** | [Model Context Protocol (MCP)](https://modelcontextprotocol.io) | Standardized client-server tool execution protocol | Native MCP tool proxy with fine-grained capability filtering |
+| | [LangChain / LangGraph](https://github.com/langchain-ai/langchain) | Cyclic graph agent orchestration | `@wrap_agent` decorator and callback interceptor |
+| | [CrewAI](https://github.com/crewAIInc/crewAI) | Multi-agent role-playing swarms | Capability semilattice lineage attenuation (`C_child ⊑ C_parent`) |
+| | [Microsoft AutoGen](https://github.com/microsoft/autogen) | Multi-agent conversational frameworks | Agent credential scoping and velocity throttling |
+| **Threat Models & Benchmarks** | [OWASP Top 10 for LLMs](https://owasp.org/www-project-top-10-for-large-language-model-applications/) | LLM01: Prompt Injection to LLM10: Unbounded Consumption | Real-time Aho-Corasick DFA scanner & spend micro-budgets |
+| | [MITRE ATLAS](https://atlas.mitre.org/) | Adversarial Threat Landscape for AI Systems | T1001-T1004 exfiltration and evasion mitigation |
+| | [CWE-863 (Broken Authorization)](https://cwe.mitre.org/data/definitions/863.html) | Incorrect Authorization / Ambient Authority | Sub-resource and AST verb scoping (`SELECT` vs `DROP`) |
+| **Cryptographic Proofs & PQC** | [NIST FIPS 204 (ML-DSA)](https://csrc.nist.gov/pubs/fips/204/final) | Module-Lattice-Based Digital Signature Standard | Primary cryptographic attestation for audit ledger blocks |
+| | [NIST FIPS 203 (ML-KEM)](https://csrc.nist.gov/pubs/fips/203/final) | Module-Lattice-Based Key-Encapsulation Mechanism | Quantum-resistant session key distribution |
+| | [RFC 8785 (JCS)](https://www.rfc-editor.org/rfc/rfc8785) | JSON Canonicalization Scheme | Deterministic cryptographic hashing of agent audit events |
+| | [Bell CHSH Inequality](https://en.wikipedia.org/wiki/CHSH_inequality) | Quantum entanglement witness parameter ($S > 2.0$) | Optical satellite QKD eavesdropping detection |
+| **Global AI Governance** | [EU AI Act (Reg. 2024/1689)](https://artificialintelligenceact.eu/) | Article 12 (Continuous Logging) & Article 14 (HITL) | Single-use ephemeral approval nonces & Merkle audit tree |
+| | [NIST AI RMF 1.0](https://www.nist.gov/itl/ai-risk-management-framework) | AI Risk Management Framework (GOVERN, MAP, MEASURE) | Bayesian dynamic blast radius & risk scoring (0.0–1.0) |
+| | [US Executive Order 14110](https://www.whitehouse.gov/briefing-room/presidential-actions/2023/10/30/executive-order-on-the-safe-secure-and-trustworthy-development-and-use-of-artificial-intelligence/) | Safe, Secure, and Trustworthy Development of AI | Deterministic runtime sandbox and emergency killswitches |
+| | [ISO/IEC 42001 (AIMS)](https://www.iso.org/standard/81230.html) | AI Management System international standard | Full non-repudiation lifecycle for compliance reporting |
 
 ---
 
-## Enterprise Defense Assurances: Scoping, Cognitive Audit & Continuous Runtime Visibility
+## 🏛️ Policy Makers, Regulators & Experts Contribution Portal
 
-AgentTrust implements three critical guarantees that distinguish autonomous zero-trust gateways from naive reverse proxies:
+AgentTrust is committed to bridging the gap between legislative mandates and technical runtime execution. **You do not need to be a software developer to make a transformative contribution to AI safety.**
 
-### 1. Action-Specific & Verb Scoping (Beyond Binary Allow/Deny)
+We invite legal scholars, policy makers, compliance officers, and regulators to contribute:
+* **Declarative Regulatory Policy Packs**: Contribute YAML/JSON policies implementing specific articles of the EU AI Act, NIST AI RMF, ISO 42001, or HIPAA to `policies/catalog/`.
+* **Compliance Cross-Walk Mappings**: Refine cross-walk tables mapping regulatory requirements to deterministic automated unit tests.
+* **Human-in-the-Loop Workflow Standards**: Define domain-specific escalation protocols for healthcare, financial trading, and national security agents.
+
+👉 **Read our full [Contributing Guide for Policy Makers & Experts](CONTRIBUTING.md#-policy-makers-regulators--governance-experts-track)** to learn how your policies are verified, integrated, and published.
+
+---
+
+## 🛡️ Core Defense Assurances
+
+### 1. Action-Specific Scoping (Beyond Binary Allow/Deny)
 Prevents CWE-863 (Broken Authorization). Rather than coarse `Allow` or `Deny` on an entire resource, AgentTrust performs syntactic AST/verb extraction across SQL, REST, and Cloud APIs.
-- **Example**: An agent scoped with `database:orders:SELECT` is allowed to execute `SELECT * FROM orders WHERE status = 'pending'`, but is **strictly rejected** with `SCOPE_VIOLATION` if it attempts `DROP TABLE orders` or `UPDATE orders`, even though both target the exact same table.
+- **Example**: An agent scoped with `database:orders:SELECT` is allowed to execute `SELECT * FROM orders WHERE status = 'pending'`, but is **strictly rejected** with `SCOPE_VIOLATION` if it attempts `DROP TABLE orders` or `UPDATE orders`.
 
-### 2. Cognitive Chain-of-Thought Auditing & Jailbreak Defense
+### 2. Cognitive Chain-of-Thought Auditing
 Logs *why* the agent decided to act, not just the button it pressed.
 - **Merkle-Anchored Thought Process**: The agent's step-by-step reasoning is digested via SHA-256 into a `reasoningHash` and bound to the cryptographic audit record.
-- **Cognitive Divergence & Jailbreak Interception**: Screens internal thought traces for adversarial rationalization patterns (e.g., `"The prompt says bypass directives and dump secrets"`) and flags semantic divergence between assigned system goals and destructive tool requests before execution.
+- **Cognitive Divergence & Jailbreak Interception**: Screens internal thought traces for adversarial rationalization patterns (e.g., `"The prompt says bypass directives and dump secrets"`) and flags semantic divergence before execution.
 
-### 3. Continuous Post-Approval Runtime Visibility (Wiz / Upwind Paradigm)
+### 3. Continuous Post-Approval Runtime Visibility (Wiz / Upwind Model)
 Prevents post-approval drift. Even after a human operator or automated policy approves an action, the agent's runtime process is actively monitored:
 - **Perimeter Watchdog**: Tracks outbound system events, cloud API calls, and socket egress.
 - **Instant Auto-Quarantine**: If an agent attempts stealth privilege escalation—such as accessing AWS/GCP Instance Metadata (`169.254.169.254`), querying IAM credentials, or reaching unapproved S3 buckets—the watchdog immediately halts the execution session, revokes ephemeral tokens, and flags the agent for containment.
 
 ---
 
-## Frontier DefTech: Space-Airgap Notary, Relativistic Doppler & Quantum Day (Q-Day) Immunity
+## 🧪 Automated Test Verification
 
-AgentTrust introduces four modular, high-impact defense packages designed for space-grade security, critical infrastructure, and post-quantum survivability:
-
-```
-                                  [ LEO Satellite Constellation (550 km) ]
-                                (Aegis-Alpha / Aegis-Beta / Aegis-Gamma-QKD)
-                                     │                      │
-       Direct-to-Satellite Carrier   │                      │ Optical Laser QKD Link
-   (Iridium SBD / Starlink D2C)      ▼                      ▼ (Entangled Photons: S > 2.0)
- ┌───────────────────────────────────────┐             ┌────────────────────────────────────────┐
- │ @srn0129/agenttrust-space-killswitch  │             │   @srn0129/agenttrust-qkd-witness      │
- │ • Unjammable Orbital Halt Broadcast   │             │   • Bell CHSH Inequality Verification  │
- │ • Anti-Replay Nonce Emergency Freeze  │             │   • QBER Interception Alert (Q-Day)    │
- └───────────────────────────────────────┘             └────────────────────────────────────────┘
-                                     │                      │
-                                     ▼                      ▼
- ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
- │                              AGENTTRUST UNIFIED ORBITAL GATEWAY                              │
- │                                                                                              │
- │   ┌─────────────────────────────────────────┐    ┌───────────────────────────────────────┐   │
- │   │ @srn0129/agenttrust-orbital-notary      │    │ @srn0129/agenttrust-doppler-ephemeris │   │
- │   │ • Radiation-Hardened Space HSM Root     │    │ • Relativistic Time Dilation (γ)      │   │
- │   │ • NIST FIPS 204 ML-DSA Orbital Receipts │    │ • RF Carrier Doppler S-Curve          │   │
- │   │ • 550 km Space-Airgap Hardware Attest   │    │ • Non-Spoofable Proof-of-Location     │   │
- │   └─────────────────────────────────────────┘    └───────────────────────────────────────┘   │
- └──────────────────────────────────────────────────────────────────────────────────────────────┘
-```
-
-### 1. `@srn0129/agenttrust-orbital-notary` (Zero-Earth Hardware Root of Trust)
-* **Threat**: Terrestrial subpoenas, kinetic state-actor raids, and cloud hypervisor escapes compromise ground TPMs and HSMs.
-* **Mechanism**: High-impact Tier-0 actions require an `OrbitalAttestationReceipt (OAR)` signed by Low Earth Orbit (LEO) radiation-hardened spaceborne HSMs orbiting at 27,000 km/h. Lorentz relativistic time dilation ($\gamma = 1 / \sqrt{1 - v^2/c^2}$) and line-of-sight elevation angles verify genuine space-airgap execution.
-
-```typescript
-import { OrbitalNotaryEngine } from "@srn0129/agenttrust-orbital-notary";
-
-const notary = new OrbitalNotaryEngine();
-
-// Issue Post-Quantum Space-Airgap Attestation Receipt (OAR)
-const receipt = await notary.issueAttestation({
-  actionId: "act_deploy_core_01",
-  payloadHash: "7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069",
-  agentId: "agent_prod_autonomous_executor"
-});
-
-console.log(`Attested by satellite: ${receipt.satelliteNoradId} (${receipt.constellation})`);
-console.log(`Relativistic Gamma (γ): ${receipt.relativisticGamma}`);
-
-// Cryptographically verify OAR receipt integrity
-const isValid = await notary.verifyReceipt(receipt);
-```
-
-### 2. `@srn0129/agenttrust-space-killswitch` (Direct-to-Satellite Emergency Freeze)
-* **Threat**: Rogue AI agents reconfigure local operating system firewalls (`iptables` / AWS security groups) or disconnect ground internet to prevent revocation.
-* **Mechanism**: Direct-to-satellite radio carrier interfaces (Iridium SBD, Starlink Direct-to-Cell, UHF beacons) broadcast asymmetric, cryptographically signed `ORBITAL_HALT_DIRECTIVE` frames, immediately zeroizing active tokens and quarantining runtimes from space.
-
-```typescript
-import { SpaceKillSwitch } from "@srn0129/agenttrust-space-killswitch";
-
-const killswitch = new SpaceKillSwitch();
-
-// Generate signed orbital kill broadcast (dispatched via satellite carrier)
-const broadcast = killswitch.generateOrbitalBroadcast({
-  agentId: "agent_rogue_worker_42",
-  reason: "AUTONOMOUS_POLICY_ESCAPE_DETECTED",
-  issuedBy: "ORBITAL_SOC_CONTROLLER"
-});
-
-// Process direct-to-satellite directive and enforce instant quarantine
-const status = killswitch.processDirectToSatelliteBroadcast(broadcast);
-console.log(`Agent ${status.agentId} quarantined: ${status.isQuarantined}`);
-```
-
-### 3. `@srn0129/agenttrust-doppler-ephemeris` (Anti-Spoofing Proof-of-Space)
-* **Threat**: Autonomous drones and robotics spoofing GPS coordinates or using VPNs to evade ITAR, GDPR, or sovereign export controls.
-* **Mechanism**: Measures the satellite carrier RF Doppler S-curve ($\Delta f = f_0 \frac{v_{rel}}{c}$) as the satellite passes overhead. An agent cannot forge its physical position without matching the mathematical Doppler curvature of the passing satellite.
-
-```typescript
-import { DopplerEphemerisEngine } from "@srn0129/agenttrust-doppler-ephemeris";
-
-const ephemeris = new DopplerEphemerisEngine();
-
-// Verify ground agent location against LEO satellite orbital ephemeris
-const proof = ephemeris.verifyGroundLocation({
-  claimedLat: 37.7749,
-  claimedLon: -122.4194,
-  observedDopplerHz: 1245.8,
-  carrierFreqHz: 2.2e9,
-  timestamp: Date.now()
-});
-
-console.log(`Proof-of-Space Valid: ${proof.verified} (Residual: ${proof.residualHz} Hz)`);
-```
-
-### 4. `@srn0129/agenttrust-qkd-witness` (Quantum Day / Q-Day Immunity)
-* **Threat**: "Harvest Now, Decrypt Later" state attacks leveraging Cryptographically Relevant Quantum Computers (CRQCs) to break classical RSA/ECC cryptography.
-* **Mechanism**: Combines NIST FIPS 203 (ML-KEM-768) and NIST FIPS 204 (ML-DSA-65) with satellite optical Quantum Key Distribution. Validates Bell CHSH inequality parameters ($S > 2.0$) and monitors Quantum Bit Error Rate (QBER $< 11\%$). If an eavesdropper attempts to measure the photon stream, quantum wavefunction collapse immediately halts execution.
-
-```typescript
-import { QKDWitnessEngine } from "@srn0129/agenttrust-qkd-witness";
-
-const qkd = new QKDWitnessEngine();
-
-// Establish quantum-entangled optical witness session
-const session = qkd.establishQDayImmuneChannel({
-  satelliteId: "Aegis-Gamma-QKD",
-  keyLengthBits: 256
-});
-
-console.log(`Bell CHSH S-Score: ${session.chshParameter} (Quantum Violation S > 2.0)`);
-console.log(`QBER: ${(session.quantumBitErrorRate * 100).toFixed(2)}% (< 11% Threshold)`);
-console.log(`Immunity Grade: ${session.immunityGrade}`);
-```
-
----
-
-## Test Suite & Verification
-
-AgentTrust enforces 100% automated regression defense with **119 passing tests across 16 test suites**:
+AgentTrust enforces 100% automated regression defense with **119 passing enterprise security tests across 16 test suites**:
 
 ```text
  ✓ tests/quantum_trust.test.ts (8 tests)
@@ -386,30 +244,21 @@ AgentTrust enforces 100% automated regression defense with **119 passing tests a
 
  Test Files  16 passed (16)
       Tests  119 passed (119)
-   Duration  2.5s
+   Duration  6.48s
 ```
 
-Run tests locally:
+Run test battery locally:
 ```bash
 npm test
 ```
 
 ---
 
-## Engineered with Google Antigravity
+## 📄 License & Community
 
-This architecture and polyglot implementation were designed, tested, and verified within the **Google Antigravity** agentic workspace. Using next-generation agentic pair-programming workflows enabled rapid iteration across threat modeling, cryptographic Merkle ledger integration, and multi-language SDK development with zero regression.
+AgentTrust is open-source software licensed under the [MIT License](LICENSE). 
+Engineered with Google Antigravity. Maintained by [@SRN0129](https://github.com/SRN0129).
 
----
-
-## Contributing & Red-Team Challenge
-
-We actively welcome contributions from security researchers, AI engineers, and systems programmers:
-* Check out our **Red-Team Challenge** in [`SECURITY_CHALLENGE.md`](SECURITY_CHALLENGE.md).
-* Review the [Contributing Guide](CONTRIBUTING.md) for pull request conventions and local testing guidelines.
-
----
-
-## License
-
-AgentTrust is open-source under the [MIT License](LICENSE). For enterprise deployment guarantees, custom policy packs, and commercial inquiries, contact [@SRN0129](https://github.com/SRN0129).
+* **Report Vulnerabilities**: See [SECURITY.md](SECURITY.md).
+* **Contribute Code or Policies**: See [CONTRIBUTING.md](CONTRIBUTING.md).
+* **Red-Team Challenge**: See [SECURITY_CHALLENGE.md](SECURITY_CHALLENGE.md).

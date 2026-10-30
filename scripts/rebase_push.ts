@@ -39,7 +39,7 @@ async function main() {
   await stageAllFiles(projectDir);
 
   // Create commit with remoteRef as parent (clean fast-forward!)
-  const commitMsg = "fix(quality): resolve CodeQL unused element alerts and fix automated fuzzing CI log ignore";
+  const commitMsg = "docs(readme): add visual anchors, SVG banner, Mermaid flowchart, awesome ecosystem matrix, and policy maker track";
   
   const commitSha = await git.commit({
     fs,
