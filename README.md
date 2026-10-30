@@ -7,6 +7,7 @@
 ### **Enterprise Zero-Trust AI Security & Governance Gateway: Real-Time Prompt Injection Defense, Action Scoping, Human-in-the-Loop Gate, Post-Quantum Merkle Audit & EU AI Act Compliance for Autonomous Agent Swarms.**
 
 [![AgentTrust Core v2.0.0](https://img.shields.io/badge/AgentTrust-v2.0.0-blue.svg)](https://github.com/SRN0129/Agenttrust/releases/tag/v2.0.0)
+[![Live Interactive Demo](https://img.shields.io/badge/Live%20Demo-Try%20Interactive%20SOC%20Dashboard-06B6D4?style=flat&logo=safari&logoColor=white)](https://srn0129.github.io/Agenttrust/)
 [![CI Build Status](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml/badge.svg)](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml)
 [![Automated Security Battery](https://img.shields.io/badge/Security%20Tests-119%2F119%20Passing%20(100%25)-brightgreen.svg)](tests)
 [![CodeQL Security Scan](https://github.com/SRN0129/Agenttrust/actions/workflows/codeql.yml/badge.svg)](https://github.com/SRN0129/Agenttrust/actions/workflows/codeql.yml)
@@ -17,7 +18,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/SRN0129/Agenttrust?style=flat&color=yellow)](https://github.com/SRN0129/Agenttrust/stargazers)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-[Quickstart](#-quickstart-in-30-seconds) • [Architecture](#-visual-architecture--execution-lifecycle) • [Open Packages](#-open-modular-packages--monorepo-workspaces) • [Awesome Ecosystem Matrix](#-awesome-agentic-security--autonomous-defense-ecosystem) • [Policy Makers & Regulators Track](CONTRIBUTING.md#-policy-makers-regulators--governance-experts-track)
+[🚀 Try Live Interactive Demo](https://srn0129.github.io/Agenttrust/) • [Quickstart](#-quickstart-in-30-seconds) • [Architecture](#-visual-architecture--execution-lifecycle) • [Open Packages](#-open-modular-packages--monorepo-workspaces) • [Awesome Ecosystem Matrix](#-awesome-agentic-security--autonomous-defense-ecosystem) • [Policy Makers & Regulators Track](CONTRIBUTING.md#-policy-makers-regulators--governance-experts-track)
 
 </div>
 

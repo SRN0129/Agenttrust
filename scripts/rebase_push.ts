@@ -39,7 +39,7 @@ async function main() {
   await stageAllFiles(projectDir);
 
   // Create commit with remoteRef as parent (clean fast-forward!)
-  const commitMsg = "docs(readme): add visual anchors, SVG banner, Mermaid flowchart, awesome ecosystem matrix, and policy maker track";
+  const commitMsg = "feat(demo): enable live interactive GitHub Pages SOC dashboard with mock fallback & automated deployment";
   
   const commitSha = await git.commit({
     fs,
