@@ -28,6 +28,7 @@
     "git:push": "tsx scripts/push_to_github.ts"
   },
   "dependencies": {
+    "@noble/post-quantum": "^0.7.1",
     "better-sqlite3": "^11.8.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",

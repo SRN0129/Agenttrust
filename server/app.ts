@@ -229,10 +229,10 @@ export function createApp(customDb?: Database.Database) {
   });
 
   // ----------------------------------------------------
-  // Modular Routers: Agents & Policies
+  // Modular Routers: Agents & Policies (Protected by Admin Auth)
   // ----------------------------------------------------
-  app.use("/api/v1/agents", createAgentsRouter(registryService, delegationService));
-  app.use("/api/v1/policies", createPoliciesRouter(policyService));
+  app.use("/api/v1/agents", createAgentsRouter(registryService, delegationService, authenticateAdminOrOperator));
+  app.use("/api/v1/policies", createPoliciesRouter(policyService, authenticateAdminOrOperator));
 
   // ----------------------------------------------------
   // Policy Authorization Gateway (Action-Specific Scoping & Cognitive Audit)

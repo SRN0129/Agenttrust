@@ -9,11 +9,11 @@
 [![AgentTrust Core v2.0.0](https://img.shields.io/badge/AgentTrust-v2.0.0-blue.svg)](https://github.com/SRN0129/Agenttrust/releases/tag/v2.0.0)
 [![Live Interactive Demo](https://img.shields.io/badge/Live%20Demo-Try%20Interactive%20SOC%20Dashboard-06B6D4?style=flat&logo=safari&logoColor=white)](https://srn0129.github.io/Agenttrust/)
 [![CI Build Status](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml/badge.svg)](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml)
-[![Automated Security Battery](https://img.shields.io/badge/Security%20Tests-119%2F119%20Passing%20(100%25)-brightgreen.svg)](tests)
+[![Automated Security Battery](https://img.shields.io/badge/Security%20Tests-129%2F129%20Passing%20(100%25)-brightgreen.svg)](tests)
 [![CodeQL Security Scan](https://github.com/SRN0129/Agenttrust/actions/workflows/codeql.yml/badge.svg)](https://github.com/SRN0129/Agenttrust/actions/workflows/codeql.yml)
 [![Post-Quantum FIPS 204](https://img.shields.io/badge/Post--Quantum-NIST%20FIPS%20204%20(ML--DSA)-8B5CF6.svg)](server/services/pqcAttestation.ts)
 [![Compliance: EU AI Act](https://img.shields.io/badge/Compliance-EU%20AI%20Act%20Art.%2012%20%26%2014-059669.svg)](server/services/compliance.ts)
-[![LEO Orbital SpaceMesh](https://img.shields.io/badge/Space--Airgap-LEO%20Orbital%20HSM%20(550km)-blueviolet.svg)](packages/orbital-notary)
+[![LEO Orbital Verification](https://img.shields.io/badge/Orbital%20Verification-LEO%20Physics%20%2B%20Doppler-blueviolet.svg)](packages/orbital-notary)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/SRN0129/Agenttrust?style=flat&color=yellow)](https://github.com/SRN0129/Agenttrust/stargazers)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
@@ -32,7 +32,7 @@
 >
 > A single indirect prompt injection in a customer support email or a runaway hallucination in a financial workflow can wipe production data, exfiltrate sensitive customer records, or trigger high-cost runaway loops.
 >
-> **The Solution**: AgentTrust intercepts every tool invocation, screens payloads for prompt injections and data leaks, verifies fine-grained AST verb scoping (`SELECT` vs `DROP`), scores dynamic blast radius, gates high-risk operations behind atomic 1-click human approvals, and records every decision into an immutable, **NIST FIPS 204 (ML-DSA)** post-quantum Merkle audit ledger with **orbital LEO satellite space-airgap notarization**.
+> **The Solution**: AgentTrust intercepts every tool invocation, screens payloads for prompt injections and data leaks, verifies fine-grained AST verb scoping (`SELECT` vs `DROP`), scores dynamic blast radius, gates high-risk operations behind atomic 1-click human approvals, and records every decision into an immutable, **NIST FIPS 204 (ML-DSA)** post-quantum Merkle audit ledger with verified mathematical orbital physics attestation models.
 
 ---
 
@@ -74,8 +74,8 @@ flowchart TD
 
     subgraph S6["6. Cryptographic Black Box & Orbital Notary"]
         EX & W & BL -->|"RFC 8785 JCS Canonicalization"| M["Binary Merkle Audit Tree<br/>(SHA-256 Backward Hash Chaining)"]
-        M -->|"Hardware Signature"| Q["NIST FIPS 204 (ML-DSA)<br/>Lattice Signature Attestation"]
-        Q -->|"Tier-0 High-Impact Seal"| SAT["LEO Satellite Space-Airgap HSM<br/>(@srn0129/agenttrust-orbital-notary)"]
+        M -->|"Lattice Signature"| Q["NIST FIPS 204 (ML-DSA)<br/>NTT Polynomial Attestation"]
+        Q -->|"Tier-0 High-Impact Seal"| SAT["LEO Orbital Ephemeris Notary<br/>(@srn0129/agenttrust-orbital-notary)"]
     end
 
     style G fill:#0E1B2E,stroke:#0284C7,stroke-width:2px,color:#FFFFFF
@@ -158,10 +158,10 @@ AgentTrust is architected as an **open, modular ecosystem**. You can consume any
 
 | Package | Version | Scope & Defense Mechanism | Install Command | Links |
 | :--- | :--- | :--- | :--- | :--- |
-| **`@srn0129/agenttrust-orbital-notary`** | `v1.0.0` | Radiation-hardened LEO satellite HSM space-airgap notary & NIST FIPS 204 (ML-DSA) attestation pipeline | `npm i @srn0129/agenttrust-orbital-notary` | [Code](packages/orbital-notary) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/orbital-notary-v1.0.0) |
-| **`@srn0129/agenttrust-space-killswitch`** | `v1.0.0` | Direct-to-satellite unjammable dead man's switch & emergency quarantine freeze (Iridium SBD / Starlink D2C) | `npm i @srn0129/agenttrust-space-killswitch` | [Code](packages/space-killswitch) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/space-killswitch-v1.0.0) |
+| **`@srn0129/agenttrust-orbital-notary`** | `v1.0.0` | Keplerian orbit propagation, relativistic time dilation ($\gamma$), and NIST FIPS 204 (ML-DSA) receipt verification engine | `npm i @srn0129/agenttrust-orbital-notary` | [Code](packages/orbital-notary) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/orbital-notary-v1.0.0) |
+| **`@srn0129/agenttrust-space-killswitch`** | `v1.0.0` | Asymmetric cryptographic dead man's switch & emergency quarantine freeze modeled for out-of-band broadcast channels | `npm i @srn0129/agenttrust-space-killswitch` | [Code](packages/space-killswitch) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/space-killswitch-v1.0.0) |
 | **`@srn0129/agenttrust-doppler-ephemeris`** | `v1.0.0` | Relativistic time dilation ($\gamma = 1 / \sqrt{1 - v^2/c^2}$) & RF carrier Doppler S-curve Proof-of-Space engine | `npm i @srn0129/agenttrust-doppler-ephemeris` | [Code](packages/doppler-ephemeris) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/doppler-ephemeris-v1.0.0) |
-| **`@srn0129/agenttrust-qkd-witness`** | `v1.0.0` | Satellite optical Quantum Key Distribution (QKD), Bell CHSH inequality ($S > 2.0$), and Q-Day immunity witness | `npm i @srn0129/agenttrust-qkd-witness` | [Code](packages/qkd-witness) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/qkd-witness-v1.0.0) |
+| **`@srn0129/agenttrust-qkd-witness`** | `v1.0.0` | Quantum Key Distribution (QKD) physics model, Bell CHSH inequality ($S > 2.0$), and QBER eavesdropping detection | `npm i @srn0129/agenttrust-qkd-witness` | [Code](packages/qkd-witness) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/qkd-witness-v1.0.0) |
 | **`@srn0129/agenttrust` (Core Gateway)** | `v2.0.0` | Unified zero-trust control plane, cognitive CoT black box, and post-quantum policy gateway | `npm i @srn0129/agenttrust` | [Code](.) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/v2.0.0) |
 
 ---
@@ -205,47 +205,70 @@ We invite legal scholars, policy makers, compliance officers, and regulators to 
 
 ## 🛡️ Core Defense Assurances
 
-### 1. Action-Specific Scoping (Beyond Binary Allow/Deny)
+### 1. Authenticated Control Plane & Policy Protection
+Eliminates unauthenticated administrative access.
+- **Strict Operator & Admin Key Guard**: Mutating endpoints (`/api/v1/agents/register`, `/api/v1/policies`, `/api/v1/agents/:id/revoke`, `/api/v1/agents/:id/status`) require cryptographic admin tokens (`X-Admin-Key` or `Authorization: Bearer`).
+- **Startup Random Entropy Generation**: When no explicit `ADMIN_KEY` is configured in production, the server automatically generates a high-entropy 192-bit token (`at_admin_<hex>`), logs it securely once on startup, and denies unauthenticated callers.
+
+### 2. Action-Specific Scoping (Beyond Binary Allow/Deny)
 Prevents CWE-863 (Broken Authorization). Rather than coarse `Allow` or `Deny` on an entire resource, AgentTrust performs syntactic AST/verb extraction across SQL, REST, and Cloud APIs.
 - **Example**: An agent scoped with `database:orders:SELECT` is allowed to execute `SELECT * FROM orders WHERE status = 'pending'`, but is **strictly rejected** with `SCOPE_VIOLATION` if it attempts `DROP TABLE orders` or `UPDATE orders`.
 
-### 2. Cognitive Chain-of-Thought Auditing
-Logs *why* the agent decided to act, not just the button it pressed.
-- **Merkle-Anchored Thought Process**: The agent's step-by-step reasoning is digested via SHA-256 into a `reasoningHash` and bound to the cryptographic audit record.
-- **Cognitive Divergence & Jailbreak Interception**: Screens internal thought traces for adversarial rationalization patterns (e.g., `"The prompt says bypass directives and dump secrets"`) and flags semantic divergence before execution.
+### 3. Genuine NIST FIPS 204 (ML-DSA) Post-Quantum Signatures
+Replaces synthetic mocks with genuine Module-Lattice Digital Signatures:
+- **Module-Lattice Polynomial Arithmetic**: Uses `@noble/post-quantum` implementing NIST FIPS 204 ML-DSA-44 (Category 2), ML-DSA-65 (Category 3), and ML-DSA-87 (Category 5) with Number Theoretic Transform (NTT) polynomial operations.
+- **Quantum-Resistant Attestation Envelopes**: Signs action hashes and Merkle root tips, preventing future retrospective decryption and forgery by quantum computers ("Harvest Now, Decrypt Later").
 
-### 3. Continuous Post-Approval Runtime Visibility (Wiz / Upwind Model)
-Prevents post-approval drift. Even after a human operator or automated policy approves an action, the agent's runtime process is actively monitored:
-- **Perimeter Watchdog**: Tracks outbound system events, cloud API calls, and socket egress.
-- **Instant Auto-Quarantine**: If an agent attempts stealth privilege escalation—such as accessing AWS/GCP Instance Metadata (`169.254.169.254`), querying IAM credentials, or reaching unapproved S3 buckets—the watchdog immediately halts the execution session, revokes ephemeral tokens, and flags the agent for containment.
+### 4. Non-Tamperable Merkle Audit Ledger
+Guarantees non-repudiation and forensic integrity:
+- **Append-Only Backward Chaining**: Each audit row contains `merkleRoot = SHA256(previousRoot + canonicalJson(event))`.
+- **Zero In-Band Tamper Vectors**: All mock/tamper test endpoints have been eliminated from the production API surface. Ledger integrity is mathematically verified across all blocks.
+
+### 5. Multi-Tier Defensive Sandbox & Process Containment
+Shields AgentTrust core and database from tool vulnerabilities, RCEs, and memory crashes:
+- **In-Process Sanitization**: Deep parameter cloning, prototype pollution stripping (`__proto__`, `constructor`, `prototype`), and strict watchdog timeouts.
+- **Subprocess Hardening**: Arbitrary tool scripts run in unprivileged Node.js child processes with empty environment (`env: {}`, no ambient credentials or API tokens) and strict memory ceilings (`--max-old-space-size`).
+- **Sterile WebAssembly**: Supports sandboxed WASM bytecode execution with zero host imports.
+
+### 6. SSRF Shield & RFC CIDR Egress Proxy
+Guards against Cloud Metadata exfiltration and internal network scanning:
+- **Socket-Level Connect Interception**: Pre-flight and connect-level IP parsing blocks AWS/GCP IMDS (`169.254.169.254`), loopbacks, and RFC 1918 private subnets.
+- **Evasion-Resistant**: Immune to octal, hexadecimal, decimal, IPv4-mapped IPv6, and DNS rebinding attacks.
+
+### 7. Cognitive Chain-of-Thought Auditing & Runtime Visibility
+Logs *why* the agent decided to act, not just the button it pressed:
+- **Merkle-Anchored Thought Process**: The agent's step-by-step reasoning is digested via SHA-256 into a `reasoningHash` and bound to the cryptographic audit record.
+- **Cognitive Divergence & Jailbreak Interception**: Screens internal thought traces for adversarial rationalization patterns and flags semantic divergence before execution.
+- **Continuous Runtime Watchdog**: Tracks outbound system events, cloud API calls, and socket egress to detect post-approval drift.
 
 ---
 
 ## 🧪 Automated Test Verification
 
-AgentTrust enforces 100% automated regression defense with **119 passing enterprise security tests across 16 test suites**:
+AgentTrust enforces 100% automated regression defense with **129 passing enterprise security tests across 17 test suites**:
 
 ```text
  ✓ tests/quantum_trust.test.ts (8 tests)
  ✓ tests/mathematical_algorithms_and_sca.test.ts (13 tests)
- ✓ tests/orbital_spacemesh_and_qkd.test.ts (16 tests)
- ✓ tests/scoping_cognitive_runtime_visibility.test.ts (10 tests)
- ✓ tests/defensive_sandbox.test.ts (4 tests)
- ✓ tests/revocation.test.ts (4 tests)
- ✓ tests/bugfixes_and_self_healing.test.ts (9 tests)
- ✓ tests/most_powerful_innovations.test.ts (12 tests)
- ✓ tests/authorization.test.ts (6 tests)
  ✓ tests/e2e_user_journey.test.ts (1 test)
+ ✓ tests/authorization.test.ts (6 tests)
+ ✓ tests/scoping_cognitive_runtime_visibility.test.ts (10 tests)
+ ✓ tests/most_powerful_innovations.test.ts (12 tests)
  ✓ tests/approvals.test.ts (4 tests)
+ ✓ tests/bugfixes_and_self_healing.test.ts (11 tests)
+ ✓ tests/orbital_spacemesh_and_qkd.test.ts (16 tests)
  ✓ tests/enterprise_features.test.ts (9 tests)
- ✓ tests/enterprise_defenses_v2.test.ts (7 tests)
  ✓ tests/advanced_enterprise_services.test.ts (10 tests)
+ ✓ tests/pqc_mldsa_fips204.test.ts (8 tests)
  ✓ tests/audit_integrity.test.ts (4 tests)
+ ✓ tests/revocation.test.ts (4 tests)
  ✓ tests/rate_limits_spend.test.ts (2 tests)
+ ✓ tests/defensive_sandbox.test.ts (4 tests)
+ ✓ tests/enterprise_defenses_v2.test.ts (7 tests)
 
- Test Files  16 passed (16)
-      Tests  119 passed (119)
-   Duration  6.48s
+ Test Files  17 passed (17)
+      Tests  129 passed (129)
+   Duration  7.37s
 ```
 
 Run test battery locally:

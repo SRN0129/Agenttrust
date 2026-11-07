@@ -209,10 +209,16 @@ export class TransparentEgressProxy {
       resolvedIPs = [hostname];
     } else {
       try {
-        const records = await dns.lookup(hostname, { all: true });
+        let timer: NodeJS.Timeout;
+        const lookupPromise = dns.lookup(hostname, { all: true });
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          timer = setTimeout(() => reject(new Error("DNS_LOOKUP_TIMEOUT")), 1500);
+        });
+        const records = await Promise.race([lookupPromise, timeoutPromise]);
+        clearTimeout(timer!);
         resolvedIPs = records.map(r => r.address);
       } catch {
-        // If domain is unresolvable or mock, proceed to policy check
+        // If domain is unresolvable, times out, or mock, proceed to policy check
         resolvedIPs = [];
       }
     }

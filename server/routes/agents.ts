@@ -34,9 +34,14 @@ const delegateSchema = z.object({
 
 export function createAgentsRouter(
   registryService: AgentRegistryService,
-  delegationService?: AgentDelegationService
+  delegationService?: AgentDelegationService,
+  authAdminMiddleware?: any
 ): Router {
   const router = Router();
+
+  if (authAdminMiddleware) {
+    router.use(authAdminMiddleware);
+  }
 
   router.post("/register", validateBody(registerSchema), (req, res) => {
     try {

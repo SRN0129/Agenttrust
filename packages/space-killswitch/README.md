@@ -1,9 +1,12 @@
 # @srn0129/agenttrust-space-killswitch
 
-> **Unjammable Space-Based Direct-to-Satellite Dead Man's Switch and Emergency Quarantine Engine for Autonomous AI Agents**
+> **Direct-to-Satellite Emergency Quarantine & Dead Man's Switch Engine: Asymmetric Cryptographic Protocol for Autonomous AI Agents**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Uplink: Direct-to-Orbit](https://img.shields.io/badge/Uplink-Iridium%20SBD%20%2F%20Direct--to--Cell-orange.svg)](#)
+[![Protocol Spec](https://img.shields.io/badge/Protocol-Broadcast%20Kill%20Directive-orange.svg)](#)
+
+> [!NOTE]
+> **Implementation Scope**: This package implements the asymmetric cryptographic protocol, replay defense nonces, and runtime quarantine callbacks modeled for out-of-band broadcast satellite carriers (such as Iridium SBD or UHF beacons). It validates and parses cryptographic kill directives on ground runtimes without requiring physical satellite transceivers in software test environments.
 
 ---
 

@@ -54,18 +54,20 @@ export class IsolatedSandboxRunner {
         }
       });
 
+      let timer: NodeJS.Timeout;
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => {
+        timer = setTimeout(() => {
           reject(new Error(`Sandbox execution timed out after ${timeoutMs}ms (Anti-DDoS containment).`));
         }, timeoutMs);
       });
 
       const outcome = await Promise.race([executionPromise, timeoutPromise]);
+      clearTimeout(timer!);
       const duration = Date.now() - startTime;
 
       return {
         success: true,
-        output: outcome.result,
+        output: outcome.result !== undefined ? outcome.result : (outcome as any),
         executionTimeMs: duration,
         sandboxed: true,
         isolationTier: "IN_PROCESS_ISOLATED",

@@ -18,8 +18,15 @@ const listPolicyQuerySchema = z.object({
   agentId: z.string().optional(),
 });
 
-export function createPoliciesRouter(policyService: PolicyEngineService): Router {
+export function createPoliciesRouter(
+  policyService: PolicyEngineService,
+  authAdminMiddleware?: any
+): Router {
   const router = Router();
+
+  if (authAdminMiddleware) {
+    router.use(authAdminMiddleware);
+  }
 
   router.post("/", validateBody(policySchema), (req, res) => {
     try {

@@ -1,10 +1,13 @@
 # @srn0129/agenttrust-orbital-notary
 
-> **Space-Airgapped LEO Satellite Hardware Notary & Post-Quantum Orbital Attestation Receipt (OAR) Engine for Autonomous AI Agents**
+> **Orbital Mechanics & Relativistic Notary Engine: Mathematical Physics Models and Post-Quantum Orbital Attestation Receipts (OAR) for Autonomous AI Agents**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![NIST FIPS 204](https://img.shields.io/badge/Post--Quantum-NIST%20FIPS%20204%20(ML--DSA)-8B5CF6.svg)](https://csrc.nist.gov/pubs/fips/204/final)
-[![Orbit](https://img.shields.io/badge/Orbit-LEO%20550km-10B981.svg)](#)
+[![Physics Model](https://img.shields.io/badge/Physics%20Model-LEO%20Keplerian%20%2B%20Lorentz-10B981.svg)](#)
+
+> [!NOTE]
+> **Implementation Scope**: This package provides mathematical models of Keplerian orbital propagation, relativistic Lorentz time dilation, Line-of-Sight spherical trigonometry, and NIST FIPS 204 (ML-DSA) receipt verification. It serves as an analytical reference engine and ground-station integration layer for space-ground protocols; it does not claim direct physical satellite hardware uplinks.
 
 ---
 

@@ -197,4 +197,73 @@ describe("Bug Fixes, Hardening & Autonomous Self-Healing Suite", () => {
       expect(result.statusAfterHealing).toBe("OPTIMAL");
     });
   });
+
+  // ------------------------------------------------------------------
+  // 6. Control Plane Authentication Enforcement
+  // ------------------------------------------------------------------
+  describe("6. Control Plane Security & Admin Auth Boundary", () => {
+    it("should strictly reject unauthenticated agent registration when ADMIN_KEY is configured", async () => {
+      const originalAdminKey = process.env.ADMIN_KEY;
+      process.env.ADMIN_KEY = "test_admin_secret_998811";
+      try {
+        const unauthRes = await request(app)
+          .post("/api/v1/agents/register")
+          .send({
+            name: "Rogue-Agent",
+            operatorEmail: "attacker@bad.actor",
+            allowedCapabilities: ["*"],
+          });
+        expect(unauthRes.status).toBe(401);
+        expect(unauthRes.body.error).toContain("UNAUTHORIZED_ADMIN");
+
+        // Authenticated request should succeed
+        const authRes = await request(app)
+          .post("/api/v1/agents/register")
+          .set("x-admin-key", "test_admin_secret_998811")
+          .send({
+            name: "Authorized-Agent",
+            operatorEmail: "admin@enterprise.com",
+            allowedCapabilities: ["read"],
+          });
+        expect(authRes.status).toBe(201);
+        expect(authRes.body.success).toBe(true);
+      } finally {
+        process.env.ADMIN_KEY = originalAdminKey;
+      }
+    });
+
+    it("should strictly reject unauthenticated policy creation and deletion when ADMIN_KEY is configured", async () => {
+      const originalAdminKey = process.env.ADMIN_KEY;
+      process.env.ADMIN_KEY = "test_admin_secret_998811";
+      try {
+        const unauthCreate = await request(app)
+          .post("/api/v1/policies")
+          .send({
+            name: "Attacker Policy",
+            actionPattern: "*",
+            resourcePattern: "*",
+            effect: "ALLOW",
+          });
+        expect(unauthCreate.status).toBe(401);
+
+        const unauthDelete = await request(app).delete("/api/v1/policies/pol_test_123");
+        expect(unauthDelete.status).toBe(401);
+
+        // Authenticated create should succeed
+        const authCreate = await request(app)
+          .post("/api/v1/policies")
+          .set("Authorization", "Bearer test_admin_secret_998811")
+          .send({
+            name: "Legit Policy",
+            actionPattern: "test:action",
+            resourcePattern: "test:res",
+            effect: "ALLOW",
+          });
+        expect(authCreate.status).toBe(201);
+        expect(authCreate.body.success).toBe(true);
+      } finally {
+        process.env.ADMIN_KEY = originalAdminKey;
+      }
+    });
+  });
 });

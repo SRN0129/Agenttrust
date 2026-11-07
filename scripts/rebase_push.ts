@@ -39,7 +39,7 @@ async function main() {
   await stageAllFiles(projectDir);
 
   // Create commit with remoteRef as parent (clean fast-forward!)
-  const commitMsg = "feat(demo): enable live interactive GitHub Pages SOC dashboard with mock fallback & automated deployment";
+  const commitMsg = "feat(security): implement real NIST FIPS 204 ML-DSA lattice cryptography, control plane auth, and verified physics models";
   
   const commitSha = await git.commit({
     fs,

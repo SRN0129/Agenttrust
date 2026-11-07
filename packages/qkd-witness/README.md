@@ -6,6 +6,9 @@
 [![Quantum](https://img.shields.io/badge/Quantum-Bell%20CHSH%20S%20%3E%202.0-purple.svg)](#)
 [![Q-Day Immune](https://img.shields.io/badge/Q--Day-Immune%20(ML--KEM%20%2B%20ML--DSA%20%2B%20QKD)-emerald.svg)](#)
 
+> [!NOTE]
+> **Implementation Scope**: This package implements mathematical models for BB84 photon error rates (QBER), Tsirelson quantum bound testing ($S \le 2\sqrt{2}$ vs classical $S \le 2.0$), and hybrid NIST FIPS 203/204 post-quantum key encapsulation. It models optical satellite-to-ground quantum communications for security validation and research; it does not contain physical optical lasers or single-photon detectors.
+
 ---
 
 ## The "Q-Day" Threat (Quantum Day)

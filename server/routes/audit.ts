@@ -4,11 +4,6 @@ import { AuditLedgerService } from "../services/audit.js";
 import { AgentRow } from "../services/registry.js";
 import { validateBody } from "../middleware/validation.js";
 
-const tamperTestSchema = z.object({
-  index: z.number().int().positive(),
-  maliciousAction: z.string().optional(),
-});
-
 const outcomeSchema = z.object({
   action: z.string().min(1),
   resource: z.string().min(1),
@@ -70,18 +65,6 @@ export function createAuditRouter(
       tamperResistantStatus: result.valid ? "CHAIN_VERIFIED_INTACT" : "CHAIN_TAMPERED",
       verifiedAt: Date.now(),
       disclaimer: "Cryptographic hash chaining ensures detection of row modifications or deletions within the sequential ledger. It does not replace independent multi-party notarization.",
-    });
-  });
-
-  router.post("/tamper-test", validateBody(tamperTestSchema), (req, res) => {
-    const index = Number(req.body.index);
-    const maliciousAction = req.body.maliciousAction || "malicious:tampered_action";
-    auditService.tamperRecordForTesting(index, maliciousAction);
-    const check = auditService.verifyIntegrity();
-    res.json({
-      success: true,
-      message: `Directly altered row #${index} in SQLite DB to demonstrate tamper detection.`,
-      verificationResult: check,
     });
   });
 

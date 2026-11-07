@@ -1,8 +1,17 @@
 import { createApp } from "./app.js";
 import { seedDatabase } from "./db/seed.js";
 import dotenv from "dotenv";
+import crypto from "node:crypto";
 
 dotenv.config();
+
+// Ensure an explicit, secure administrative key is established
+if (!process.env.ADMIN_KEY) {
+  process.env.ADMIN_KEY = `at_admin_${crypto.randomBytes(24).toString("hex")}`;
+  console.log(`🔐 [SECURITY] No ADMIN_KEY provided in environment.`);
+  console.log(`🔑 [SECURITY] Ephemeral ADMIN_KEY generated: ${process.env.ADMIN_KEY}`);
+  console.log(`ℹ️  [SECURITY] Export ADMIN_KEY in your .env file to persist static credentials.\n`);
+}
 
 const PORT = Number(process.env.PORT) || 4000;
 

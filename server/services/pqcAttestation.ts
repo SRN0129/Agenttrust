@@ -1,4 +1,7 @@
 import crypto from "node:crypto";
+import { ml_dsa44 } from "@noble/post-quantum/ml-dsa.js";
+import { ml_dsa65 } from "@noble/post-quantum/ml-dsa.js";
+import { ml_dsa87 } from "@noble/post-quantum/ml-dsa.js";
 
 /**
  * NIST FIPS 204 ML-DSA (Module-Lattice Digital Signature Algorithm) Parameter Sets
@@ -11,6 +14,7 @@ export type NistMlDsaParameterSet = "ML-DSA-44" | "ML-DSA-65" | "ML-DSA-87";
 export interface PqcKeyPair {
   parameterSet: NistMlDsaParameterSet;
   publicKeyHex: string;
+  secretKeyHex: string;
   privateKeyFingerprint: string;
   hardwareBacked: boolean;
   hsmSlotId?: string;
@@ -20,7 +24,7 @@ export interface PqcKeyPair {
 export interface PqcSignatureEnvelope {
   schemaVersion: "FIPS-204-ML-DSA-v1.0";
   parameterSet: NistMlDsaParameterSet;
-  hardwareRoot: "NITRO_TPM2" | "CONFIDENTIAL_SPACE" | "EMULATED_LATTICE";
+  hardwareRoot: "NITRO_TPM2" | "CONFIDENTIAL_SPACE" | "SOFTWARE_LATTICE";
   digestAlgorithm: "SHAKE256" | "SHA3-512";
   preHashDigest: string;
   signatureBytesHex: string;
@@ -41,36 +45,39 @@ export interface PqcVerificationResult {
 }
 
 /**
- * Production-ready NIST FIPS 204 (ML-DSA) Post-Quantum Cryptographic Attestation Pipeline.
- * Bridges software lattice verification with hardware security modules (HSM / TPM 2.0 / Nitro Enclave).
+ * Rigorous NIST FIPS 204 (ML-DSA) Post-Quantum Cryptographic Attestation Pipeline.
+ * Powered by genuine Module-Lattice polynomial NTT operations (@noble/post-quantum).
  */
 export class NistFips204AttestationPipeline {
   private static PARAMETER_SPECS: Record<
     NistMlDsaParameterSet,
-    { securityCategory: 2 | 3 | 5; bitSecurity: number; sigLen: number; pkLen: number }
+    { engine: typeof ml_dsa44; securityCategory: 2 | 3 | 5; bitSecurity: number; sigLen: number; pkLen: number }
   > = {
-    "ML-DSA-44": { securityCategory: 2, bitSecurity: 128, sigLen: 2420, pkLen: 1312 },
-    "ML-DSA-65": { securityCategory: 3, bitSecurity: 192, sigLen: 3309, pkLen: 1952 },
-    "ML-DSA-87": { securityCategory: 5, bitSecurity: 256, sigLen: 4627, pkLen: 2592 },
+    "ML-DSA-44": { engine: ml_dsa44, securityCategory: 2, bitSecurity: 128, sigLen: 2420, pkLen: 1312 },
+    "ML-DSA-65": { engine: ml_dsa65, securityCategory: 3, bitSecurity: 192, sigLen: 3309, pkLen: 1952 },
+    "ML-DSA-87": { engine: ml_dsa87, securityCategory: 5, bitSecurity: 256, sigLen: 4627, pkLen: 2592 },
   };
 
   /**
-   * Generates a deterministic or HSM-bound post-quantum key pair specification.
+   * Generates a genuine NIST FIPS 204 ML-DSA post-quantum key pair using module-lattice polynomial matrices.
    */
   public static generateKeyPair(
-    parameterSet: NistMlDsaParameterSet = "ML-DSA-87",
-    hardwareBacked = true,
+    parameterSet: NistMlDsaParameterSet = "ML-DSA-65",
+    hardwareBacked = false,
     hsmSlotId?: string
   ): PqcKeyPair {
     const spec = this.PARAMETER_SPECS[parameterSet];
-    const entropy = crypto.randomBytes(32);
-    const pubSeed = crypto.createHash("sha3-512").update(entropy).digest();
-    const pkBuffer = Buffer.concat([pubSeed, crypto.randomBytes(spec.pkLen - pubSeed.length)]);
+    const keys = spec.engine.keygen();
+
+    const publicKeyHex = Buffer.from(keys.publicKey).toString("hex");
+    const secretKeyHex = Buffer.from(keys.secretKey).toString("hex");
+    const privateKeyFingerprint = crypto.createHash("sha256").update(keys.secretKey).digest("hex");
 
     return {
       parameterSet,
-      publicKeyHex: pkBuffer.toString("hex"),
-      privateKeyFingerprint: crypto.createHash("sha256").update(entropy).digest("hex"),
+      publicKeyHex,
+      secretKeyHex,
+      privateKeyFingerprint,
       hardwareBacked,
       hsmSlotId: hardwareBacked ? hsmSlotId || "TPM2_PCR_11_LATTICE_NOTARY" : undefined,
       createdAt: Date.now(),
@@ -78,7 +85,7 @@ export class NistFips204AttestationPipeline {
   }
 
   /**
-   * Computes a NIST FIPS 204 ML-DSA compliant attestation signature over an arbitrary ledger payload.
+   * Computes a genuine NIST FIPS 204 ML-DSA lattice signature over the payload bytes.
    */
   public static signPayload(
     payload: Buffer | string,
@@ -88,7 +95,7 @@ export class NistFips204AttestationPipeline {
     const buffer = typeof payload === "string" ? Buffer.from(payload, "utf-8") : payload;
     const spec = this.PARAMETER_SPECS[keyPair.parameterSet];
 
-    // NIST FIPS 204 requires randomized SHAKE-256 pre-hashing
+    // Compute SHAKE256 / SHA3-512 pre-hash digest
     const preHash = crypto.createHash("sha3-512").update(buffer).digest("hex");
     const commitmentSalt = crypto.randomBytes(32);
     const commitment = crypto
@@ -96,14 +103,15 @@ export class NistFips204AttestationPipeline {
       .update(Buffer.concat([Buffer.from(preHash, "hex"), commitmentSalt]))
       .digest("hex");
 
-    // Synthesize lattice signature polynomial evaluation representation
-    const sigBody = crypto.randomBytes(spec.sigLen);
-    const signatureBytesHex = sigBody.toString("hex");
+    // Genuine ML-DSA Module-Lattice Signature via NTT polynomial arithmetic
+    const secretKeyBytes = Buffer.from(keyPair.secretKeyHex, "hex");
+    const signatureBytes = spec.engine.sign(buffer, secretKeyBytes);
+    const signatureBytesHex = Buffer.from(signatureBytes).toString("hex");
 
     return {
       schemaVersion: "FIPS-204-ML-DSA-v1.0",
       parameterSet: keyPair.parameterSet,
-      hardwareRoot: keyPair.hardwareBacked ? "NITRO_TPM2" : "EMULATED_LATTICE",
+      hardwareRoot: keyPair.hardwareBacked ? "NITRO_TPM2" : "SOFTWARE_LATTICE",
       digestAlgorithm: "SHA3-512",
       preHashDigest: preHash,
       signatureBytesHex,
@@ -119,6 +127,7 @@ export class NistFips204AttestationPipeline {
 
   /**
    * Verifies an ML-DSA attestation envelope against the provided public key and expected payload.
+   * Performs mathematical lattice equation verification: A*z - c*t1*2^d = w1 mod q.
    */
   public static verifySignature(
     payload: Buffer | string,
@@ -151,48 +160,53 @@ export class NistFips204AttestationPipeline {
         valid: false,
         parameterSet: envelope.parameterSet,
         securityCategory: spec.securityCategory,
-        hardwareBacked: envelope.hardwareRoot !== "EMULATED_LATTICE",
+        hardwareBacked: envelope.hardwareRoot !== "SOFTWARE_LATTICE",
         quantumBitSecurity: spec.bitSecurity,
         tamperResistant: false,
         error: "Signer public key fingerprint mismatch",
       };
     }
 
-    // Recompute and verify payload pre-hash digest
+    // Verify pre-hash integrity
     const expectedPreHash = crypto.createHash("sha3-512").update(buffer).digest("hex");
     if (expectedPreHash !== envelope.preHashDigest) {
       return {
         valid: false,
         parameterSet: envelope.parameterSet,
         securityCategory: spec.securityCategory,
-        hardwareBacked: envelope.hardwareRoot !== "EMULATED_LATTICE",
+        hardwareBacked: envelope.hardwareRoot !== "SOFTWARE_LATTICE",
         quantumBitSecurity: spec.bitSecurity,
         tamperResistant: false,
         error: "Pre-hash digest mismatch: payload has been modified or corrupted",
       };
     }
 
-    // Verify lattice signature length conforms to FIPS 204
-    const signatureBuffer = Buffer.from(envelope.signatureBytesHex, "hex");
-    if (signatureBuffer.length !== spec.sigLen) {
+    // Genuine mathematical verification of the ML-DSA signature
+    try {
+      const publicKeyBytes = Buffer.from(publicKeyHex, "hex");
+      const signatureBytes = Buffer.from(envelope.signatureBytesHex, "hex");
+
+      const isValid = spec.engine.verify(signatureBytes, buffer, publicKeyBytes);
+
+      return {
+        valid: isValid,
+        parameterSet: envelope.parameterSet,
+        securityCategory: spec.securityCategory,
+        hardwareBacked: envelope.hardwareRoot !== "SOFTWARE_LATTICE",
+        quantumBitSecurity: spec.bitSecurity,
+        tamperResistant: isValid,
+        error: isValid ? undefined : "Mathematical ML-DSA lattice signature verification failed",
+      };
+    } catch (err: any) {
       return {
         valid: false,
         parameterSet: envelope.parameterSet,
         securityCategory: spec.securityCategory,
-        hardwareBacked: envelope.hardwareRoot !== "EMULATED_LATTICE",
+        hardwareBacked: envelope.hardwareRoot !== "SOFTWARE_LATTICE",
         quantumBitSecurity: spec.bitSecurity,
         tamperResistant: false,
-        error: `Invalid signature length: expected ${spec.sigLen} bytes, got ${signatureBuffer.length}`,
+        error: `ML-DSA verification exception: ${err.message}`,
       };
     }
-
-    return {
-      valid: true,
-      parameterSet: envelope.parameterSet,
-      securityCategory: spec.securityCategory,
-      hardwareBacked: envelope.hardwareRoot !== "EMULATED_LATTICE",
-      quantumBitSecurity: spec.bitSecurity,
-      tamperResistant: true,
-    };
   }
 }
