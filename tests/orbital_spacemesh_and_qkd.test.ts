@@ -56,6 +56,15 @@ describe("Frontier DefTech: Orbital Space-Airgap Notary, Doppler Ephemeris, Kill
       expect(gamma).toBeLessThan(1.000001); // Realistic sub-microsecond relativistic orbital offset
     });
 
+    it("should compute general relativistic gravitational time dilation via Schwarzschild metric", () => {
+      // Satellite at 550 km altitude in LEO
+      const grav = OrbitalNotaryEngine.calculateSchwarzschildGravitationalDilation(550);
+      expect(grav.gravitationalRatio).toBeGreaterThan(1.0);
+      // Gravitational advance in LEO is approximately +4.7 microseconds per day
+      expect(grav.clockAdvanceMicrosecondsPerDay).toBeGreaterThan(4.0);
+      expect(grav.clockAdvanceMicrosecondsPerDay).toBeLessThan(6.0);
+    });
+
     it("should propagate LEO satellite position within geographic coordinates", () => {
       const notary = new OrbitalNotaryEngine();
       const pos = notary.propagateSatellitePosition("SAT-AGENTTRUST-01", Date.now());
@@ -238,6 +247,25 @@ describe("Frontier DefTech: Orbital Space-Airgap Notary, Doppler Ephemeris, Kill
       expect(safety.permitted).toBe(true);
       expect(safety.qDayImmunityActive).toBe(true);
       expect(receipt.hybridPqcCapsule.mlKemEncapsulation).toMatch(/^mlkem768_/);
+    });
+
+    it("should accurately evaluate Bell CHSH inequality S parameter against classical and Tsirelson bounds", () => {
+      // 1. Quantum maximal entanglement (approaching Tsirelson limit 2*sqrt(2) ≈ 2.8284)
+      const cosPiOver4 = Math.SQRT1_2; // cos(pi/4) ≈ 0.7071
+      const quantumS = QkdWitnessEngine.computeBellChshParameter(
+        cosPiOver4,
+        -cosPiOver4,
+        cosPiOver4,
+        cosPiOver4
+      );
+      expect(quantumS.chshParameterS).toBeCloseTo(2.8284, 2);
+      expect(quantumS.violatesClassicalBound).toBe(true);
+      expect(quantumS.satisfiesTsirelsonBound).toBe(true);
+
+      // 2. Classical local hidden variable state (bounded by S <= 2.0)
+      const classicalS = QkdWitnessEngine.computeBellChshParameter(0.5, 0.5, 0.5, -0.5);
+      expect(classicalS.chshParameterS).toBeLessThanOrEqual(2.0);
+      expect(classicalS.violatesClassicalBound).toBe(false);
     });
 
     it("should instantly detect optical eavesdropping when Eve measures photon polarizations", () => {

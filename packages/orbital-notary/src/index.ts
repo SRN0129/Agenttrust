@@ -136,6 +136,33 @@ export class OrbitalNotaryEngine {
   }
 
   /**
+   * Calculates gravitational time dilation using the Schwarzschild metric:
+   * dt_grav / dt_0 = sqrt(1 - 2*G*M / (r * c^2))
+   * For Earth: r_s = 2*G*M / c^2 ≈ 8.870056e-6 km (Schwarzschild radius)
+   * r = R_earth (6371 km) + altitudeKm
+   */
+  public static calculateSchwarzschildGravitationalDilation(altitudeKm: number): {
+    gravitationalRatio: number;
+    clockAdvanceMicrosecondsPerDay: number;
+  } {
+    const R_earth = 6371; // Earth radius in km
+    const r_s = 8.870056e-6; // Schwarzschild radius in km
+    const r_ground = R_earth;
+    const r_sat = R_earth + altitudeKm;
+
+    const factorGround = Math.sqrt(1 - r_s / r_ground);
+    const factorSat = Math.sqrt(1 - r_s / r_sat);
+    const relativeFactor = factorSat / factorGround;
+
+    const clockAdvance = (relativeFactor - 1) * 86400 * 1e6;
+
+    return {
+      gravitationalRatio: Number(relativeFactor.toFixed(12)),
+      clockAdvanceMicrosecondsPerDay: Number(clockAdvance.toFixed(3)),
+    };
+  }
+
+  /**
    * Propagates satellite position at given timestamp using Keplerian approximation
    */
   public propagateSatellitePosition(satId: string, timestamp: number = Date.now()): {

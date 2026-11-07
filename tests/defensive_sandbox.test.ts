@@ -94,4 +94,27 @@ describe("Defensive Sandboxing & Runtime Hardening (Anti-RCE / Anti-DDoS)", () =
     const auditRes = await request(app).get("/api/v1/audit?eventType=TOOL_EXECUTION");
     expect(auditRes.body.events[0].payload.sandboxed).toBe(true);
   });
+
+  describe("Subprocess Containment & Hardened Process Isolation", () => {
+    it("should execute code in an isolated subprocess with zero ambient environment credentials", async () => {
+      // Script tries to inspect process.env for sensitive tokens
+      const script = "return { capturedSecret: process.env.ADMIN_KEY || process.env.DATABASE_URL || 'NONE', sum: input.a + input.b };";
+      const outcome = await IsolatedSandboxRunner.executeInSubprocess(script, { a: 40, b: 2 });
+
+      expect(outcome.success).toBe(true);
+      expect(outcome.isolationTier).toBe("SUBPROCESS_HARDENED");
+      expect(outcome.output.sum).toBe(42);
+      expect(outcome.output.capturedSecret).toBe("NONE"); // Empty env verified!
+    });
+
+    it("should terminate runaway subprocesses with hard timeout containment", async () => {
+      // Infinite busy loop
+      const runawayScript = "const start = Date.now(); while (true) {}";
+      const outcome = await IsolatedSandboxRunner.executeInSubprocess(runawayScript, {}, { timeoutMs: 100 });
+
+      expect(outcome.success).toBe(false);
+      expect(outcome.isolationTier).toBe("SUBPROCESS_HARDENED");
+      expect(outcome.error).toContain("timed out after 100ms");
+    });
+  });
 });

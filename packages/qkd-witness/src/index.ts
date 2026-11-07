@@ -49,6 +49,31 @@ export class QkdWitnessEngine {
   }
 
   /**
+   * Computes the Bell-CHSH correlation parameter S from measurement correlation expectations:
+   * S = |E(a, b) - E(a, b') + E(a', b) + E(a', b')|
+   * - Classical Local Hidden Variable bound: S <= 2.0
+   * - Quantum Mechanical Tsirelson bound: S <= 2*sqrt(2) ≈ 2.8284
+   */
+  public static computeBellChshParameter(
+    E_ab: number,
+    E_ab_prime: number,
+    E_a_prime_b: number,
+    E_a_prime_b_prime: number
+  ): {
+    chshParameterS: number;
+    violatesClassicalBound: boolean;
+    satisfiesTsirelsonBound: boolean;
+  } {
+    const rawS = Math.abs(E_ab - E_ab_prime + E_a_prime_b + E_a_prime_b_prime);
+    const S = Number(rawS.toFixed(4));
+    return {
+      chshParameterS: S,
+      violatesClassicalBound: S > QkdWitnessEngine.CHSH_CLASSICAL_BOUND,
+      satisfiesTsirelsonBound: S <= QkdWitnessEngine.CHSH_TSIRELSON_QUANTUM_BOUND + 0.001,
+    };
+  }
+
+  /**
    * Simulates/evaluates an optical satellite QKD pass between satellite node and ground optical telescope
    */
   public evaluateQkdTransmission(params: {
