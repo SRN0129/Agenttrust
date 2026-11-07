@@ -153,9 +153,14 @@ export class IsolatedSandboxRunner {
 
         try {
           const parsed = JSON.parse(stdout);
+          const unwrapped =
+            parsed.result && typeof parsed.result === "object" && "result" in parsed.result
+              ? parsed.result.result
+              : parsed.result;
+
           resolve({
             success: true,
-            output: parsed.result,
+            output: unwrapped,
             executionTimeMs: duration,
             sandboxed: true,
             isolationTier: "SUBPROCESS_HARDENED",

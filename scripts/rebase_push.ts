@@ -39,7 +39,7 @@ async function main() {
   await stageAllFiles(projectDir);
 
   // Create commit with remoteRef as parent (clean fast-forward!)
-  const commitMsg = "feat(security): implement real NIST FIPS 204 ML-DSA lattice cryptography, control plane auth, and verified physics models";
+  const commitMsg = "feat(sandbox-pqc): route protected tools to hardened subprocess sandbox and integrate FIPS 204 ML-DSA in QuantumTrustService";
   
   const commitSha = await git.commit({
     fs,

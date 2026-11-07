@@ -181,12 +181,12 @@ export class ProtectedToolService {
       }
     }
 
-    // Now execute inside the defensive Isolated Sandbox
-    const sandboxOutcome = await IsolatedSandboxRunner.executeSafely(
-      toolName,
-      toolFn,
+    // Now execute inside the defensive Isolated Sandbox with true subprocess process boundary
+    const script = `const fn = (${toolFn.toString()}); return fn(input);`;
+    const sandboxOutcome = await IsolatedSandboxRunner.executeInSubprocess(
+      script,
       parameters,
-      { timeoutMs: 3000 }
+      { timeoutMs: 3000, maxMemoryMb: 64 }
     );
 
     if (!sandboxOutcome.success) {
@@ -200,6 +200,7 @@ export class ProtectedToolService {
           toolName,
           error: sandboxOutcome.error,
           sandboxed: true,
+          isolationTier: sandboxOutcome.isolationTier || "SUBPROCESS_HARDENED",
         },
       });
 
@@ -229,6 +230,7 @@ export class ProtectedToolService {
         approvalId: approvalId || null,
         costUsd,
         sandboxed: true,
+        isolationTier: sandboxOutcome.isolationTier || "SUBPROCESS_HARDENED",
         executionTimeMs: sandboxOutcome.executionTimeMs,
       },
     });

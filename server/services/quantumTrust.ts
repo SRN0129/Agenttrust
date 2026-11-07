@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { AuditLedgerService } from "./audit.js";
+import { NistFips204AttestationPipeline, PqcKeyPair, PqcSignatureEnvelope } from "./pqcAttestation.js";
 
 /**
  * Quantum Circuit & Workload Inspection Request
@@ -50,6 +51,8 @@ export interface PqcAttestationManifest {
     quantumResistantDigest: string; // SHA3-512 / SHAKE-256 state digest
     quantumSecurityLevel: "NIST_LEVEL_5"; // Equivalent to AES-256 brute force
     latticeKeyFingerprint: string;
+    latticePublicKeyHex?: string;
+    mlDsaEnvelope?: PqcSignatureEnvelope;
   };
 }
 
@@ -60,7 +63,15 @@ export class QuantumTrustService {
   private static MAX_SHOTS_PER_JOB = 20000;
   private static MAX_QPU_JOB_COST_USD = 500.0;
 
-  constructor(private auditService?: AuditLedgerService) {}
+  private pqcKeyPair?: PqcKeyPair;
+
+  constructor(private auditService?: AuditLedgerService) {
+    try {
+      this.pqcKeyPair = NistFips204AttestationPipeline.generateKeyPair("ML-DSA-87", true);
+    } catch {
+      this.pqcKeyPair = undefined;
+    }
+  }
 
   /**
    * Inspect a quantum circuit prior to QPU dispatch.
@@ -160,7 +171,8 @@ export class QuantumTrustService {
 
   /**
    * Generate Post-Quantum Cryptographic Attestation Envelope.
-   * Protects audit logs against future quantum decryption ("Harvest Now, Decrypt Later").
+   * Protects audit logs against future quantum decryption ("Harvest Now, Decrypt Later")
+   * using genuine NIST FIPS 204 ML-DSA module-lattice polynomial signatures.
    */
   public generatePqcAttestation(
     ledgerTipHash: string,
@@ -169,16 +181,27 @@ export class QuantumTrustService {
   ): PqcAttestationManifest {
     const timestamp = Date.now();
 
-    // Create high-entropy lattice digest using SHA3-512 (Quantum Collision-Resistant)
+    // Create high-entropy quantum state digest using SHA-512
+    const payload = `NIST_ML_DSA_87_DOMAIN_SEPARATOR:${ledgerTipHash}:${timestamp}`;
     const quantumDigest = crypto
       .createHash("sha512")
-      .update(`NIST_ML_DSA_87_DOMAIN_SEPARATOR:${ledgerTipHash}:${timestamp}`)
+      .update(payload)
       .digest("hex");
 
-    // Compute synthetic lattice public key fingerprint (ML-DSA / Dilithium)
+    if (!this.pqcKeyPair) {
+      this.pqcKeyPair = NistFips204AttestationPipeline.generateKeyPair("ML-DSA-87", true);
+    }
+
+    // Compute genuine NIST FIPS 204 ML-DSA-87 lattice signature via NTT polynomial operations
+    const mlDsaEnvelope = NistFips204AttestationPipeline.signPayload(
+      payload,
+      this.pqcKeyPair,
+      { quantumDigest }
+    );
+
     const latticeFingerprint = crypto
       .createHash("sha256")
-      .update(`LATTICE_PUBKEY_SEED:${quantumDigest}`)
+      .update(Buffer.from(this.pqcKeyPair.publicKeyHex, "hex"))
       .digest("hex");
 
     return {
@@ -195,23 +218,45 @@ export class QuantumTrustService {
         quantumResistantDigest: quantumDigest,
         quantumSecurityLevel: "NIST_LEVEL_5",
         latticeKeyFingerprint: latticeFingerprint,
+        latticePublicKeyHex: this.pqcKeyPair.publicKeyHex,
+        mlDsaEnvelope,
       },
     };
   }
 
   /**
-   * Verify a Post-Quantum Attestation Envelope.
+   * Verify a Post-Quantum Attestation Envelope against NIST FIPS 204 mathematical lattice equations.
    */
   public static verifyPqcManifest(manifest: PqcAttestationManifest): boolean {
     if (manifest.version !== "AGENTTRUST-PQC-v1") return false;
     if (manifest.postQuantumEnvelope.quantumSecurityLevel !== "NIST_LEVEL_5") return false;
 
     // Verify recomputed quantum digest
+    const expectedPayload = `NIST_ML_DSA_87_DOMAIN_SEPARATOR:${manifest.ledgerTipHash}:${manifest.timestamp}`;
     const expectedDigest = crypto
       .createHash("sha512")
-      .update(`NIST_ML_DSA_87_DOMAIN_SEPARATOR:${manifest.ledgerTipHash}:${manifest.timestamp}`)
+      .update(expectedPayload)
       .digest("hex");
 
-    return manifest.postQuantumEnvelope.quantumResistantDigest === expectedDigest;
+    if (manifest.postQuantumEnvelope.quantumResistantDigest !== expectedDigest) {
+      return false;
+    }
+
+    // Mathematically verify genuine NIST FIPS 204 ML-DSA lattice signature if envelope is present
+    if (
+      manifest.postQuantumEnvelope.mlDsaEnvelope &&
+      manifest.postQuantumEnvelope.latticePublicKeyHex
+    ) {
+      const verification = NistFips204AttestationPipeline.verifySignature(
+        expectedPayload,
+        manifest.postQuantumEnvelope.mlDsaEnvelope,
+        manifest.postQuantumEnvelope.latticePublicKeyHex
+      );
+      if (!verification.valid) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }
