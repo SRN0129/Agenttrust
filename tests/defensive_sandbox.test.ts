@@ -20,7 +20,7 @@ describe("Defensive Sandboxing & Runtime Hardening (Anti-RCE / Anti-DDoS)", () =
     const reg = services.registryService.registerAgent({
       name: "Hardened-Tester-Bot",
       operatorEmail: "sec-ops@defense.test",
-      allowedCapabilities: ["read_customer_notes"],
+      allowedCapabilities: ["read_customer_notes", "calculate_risk_index"],
     });
     agentId = reg.agent.id;
     agentKey = reg.apiKey;
@@ -115,6 +115,51 @@ describe("Defensive Sandboxing & Runtime Hardening (Anti-RCE / Anti-DDoS)", () =
       expect(outcome.success).toBe(false);
       expect(outcome.isolationTier).toBe("SUBPROCESS_HARDENED");
       expect(outcome.error).toContain("timed out after 100ms");
+    });
+
+    it("should register dynamic custom tools and execute them inside hardened subprocess sandbox", async () => {
+      // 1. List tools
+      const listRes = await request(app).get("/api/v1/tools");
+      expect(listRes.status).toBe(200);
+      expect(listRes.body.tools).toContain("read_customer_notes");
+
+      // 2. Register dynamic custom tool
+      const regRes = await request(app)
+        .post("/api/v1/tools/register")
+        .send({
+          name: "calculate_risk_index",
+          scriptCode: "return { riskIndex: input.score * 1.5, verified: true };",
+        });
+      expect(regRes.status).toBe(200);
+      expect(regRes.body.availableTools).toContain("calculate_risk_index");
+
+      // 3. Allow capability & policy
+      services.policyService.createPolicy({
+        name: "Allow Risk Calculation",
+        actionPattern: "calculate_risk_index",
+        resourcePattern: "*",
+        effect: "ALLOW",
+      });
+
+      // 4. Execute custom tool through gateway
+      const execRes = await request(app)
+        .post("/api/v1/tools/execute")
+        .set("Authorization", `Bearer ${agentKey}`)
+        .send({
+          toolName: "calculate_risk_index",
+          action: "calculate_risk_index",
+          resource: "analytics:portfolio",
+          parameters: { score: 20 },
+        });
+
+      expect(execRes.status).toBe(200);
+      expect(execRes.body.success).toBe(true);
+      expect(execRes.body.output.riskIndex).toBe(30);
+
+      // Verify audit trail logged SUBPROCESS_HARDENED tier
+      const auditRes = await request(app).get("/api/v1/audit?eventType=TOOL_EXECUTION");
+      const latest = auditRes.body.events[0];
+      expect(latest.payload.isolationTier).toBe("SUBPROCESS_HARDENED");
     });
   });
 });

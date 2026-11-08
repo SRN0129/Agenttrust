@@ -39,7 +39,7 @@ async function main() {
   await stageAllFiles(projectDir);
 
   // Create commit with remoteRef as parent (clean fast-forward!)
-  const commitMsg = "feat(sandbox-pqc): route protected tools to hardened subprocess sandbox and integrate FIPS 204 ML-DSA in QuantumTrustService";
+  const commitMsg = "feat(real-tools-proxy): replace mock tools with persistent SQLite tables and real outbound proxy forwarder";
   
   const commitSha = await git.commit({
     fs,

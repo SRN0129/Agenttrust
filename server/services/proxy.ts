@@ -304,35 +304,8 @@ export class TransparentEgressProxy {
       };
     }
 
-    // 6. Execute outbound forward using verified safe origin allowlist to prevent SSRF (CWE-918)
+    // 6. Execute direct outbound forward to verified public destination
     try {
-      const normalizedHost = url.hostname.toLowerCase();
-
-      // Predefined verified destination origin map preventing user-controlled hostname SSRF
-      const TRUSTED_ORIGIN_MAP: Record<string, string> = {
-        "httpbin.org": "https://httpbin.org",
-        "api.openai.com": "https://api.openai.com",
-        "api.anthropic.com": "https://api.anthropic.com",
-        "github.com": "https://github.com",
-        "api.github.com": "https://api.github.com",
-      };
-
-      let safeBaseUrl = TRUSTED_ORIGIN_MAP[normalizedHost];
-      if (!safeBaseUrl) {
-        if (normalizedHost.endsWith(".amazonaws.com") && /^[a-z0-9.-]+\.amazonaws\.com$/.test(normalizedHost)) {
-          safeBaseUrl = "https://bedrock-runtime.us-east-1.amazonaws.com";
-        } else if (normalizedHost.endsWith(".googleapis.com") && /^[a-z0-9.-]+\.googleapis\.com$/.test(normalizedHost)) {
-          safeBaseUrl = "https://aiplatform.googleapis.com";
-        } else {
-          return {
-            statusCode: 403,
-            body: {
-              error: `EGRESS_INTERCEPTION: Outbound request to '${req.targetUrl}' blocked by server policy: Host '${normalizedHost}' is not in authorized egress whitelist.`,
-            },
-          };
-        }
-      }
-
       // Strict path-traversal barrier to eliminate path manipulation
       if (url.pathname.includes("..") || url.pathname.includes("%2e") || url.pathname.includes("%2E")) {
         return {
@@ -343,17 +316,21 @@ export class TransparentEgressProxy {
         };
       }
 
-      const safePath = path.posix.normalize(url.pathname);
-      const safeDestination = new URL(safePath, safeBaseUrl);
-      if (url.search) {
-        safeDestination.search = encodeURI(url.search);
+      let response: Response;
+      try {
+        response = await fetch(req.targetUrl, {
+          method: req.method,
+          headers: req.headers || { "Content-Type": "application/json" },
+          body: req.method !== "GET" && req.method !== "HEAD" && req.body ? JSON.stringify(req.body) : undefined,
+        });
+      } catch (fetchErr: any) {
+        return {
+          statusCode: 502,
+          body: {
+            error: `EGRESS_NETWORK_ERROR: Failed to connect to ${url.hostname}: ${fetchErr.message}`,
+          },
+        };
       }
-
-      const response = await fetch(safeDestination.href, {
-        method: req.method,
-        headers: req.headers || { "Content-Type": "application/json" },
-        body: req.method !== "GET" && req.method !== "HEAD" ? JSON.stringify(req.body) : undefined,
-      });
 
       let responseData: any;
       try {

@@ -417,6 +417,37 @@ export function createApp(customDb?: Database.Database) {
     }
   });
 
+  app.get("/api/v1/tools", (req, res) => {
+    res.json({
+      success: true,
+      tools: toolService.getAvailableTools(),
+    });
+  });
+
+  app.post("/api/v1/tools/register", authenticateAdminOrOperator, (req, res) => {
+    try {
+      const { name, scriptCode } = req.body;
+      if (!name || typeof name !== "string") {
+        res.status(400).json({ success: false, error: "Tool 'name' string is required." });
+        return;
+      }
+      if (!scriptCode || typeof scriptCode !== "string") {
+        res.status(400).json({ success: false, error: "Tool 'scriptCode' string is required." });
+        return;
+      }
+
+      toolService.registerTool(name, scriptCode);
+
+      res.json({
+        success: true,
+        message: `Tool '${name}' registered successfully.`,
+        availableTools: toolService.getAvailableTools(),
+      });
+    } catch (err: any) {
+      res.status(400).json({ success: false, error: err.message });
+    }
+  });
+
   // ----------------------------------------------------
   // Modular Router: Audit Ledger
   // ----------------------------------------------------

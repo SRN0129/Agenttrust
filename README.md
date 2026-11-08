@@ -9,7 +9,7 @@
 [![AgentTrust Core v2.0.0](https://img.shields.io/badge/AgentTrust-v2.0.0-blue.svg)](https://github.com/SRN0129/Agenttrust/releases/tag/v2.0.0)
 [![Live Interactive Demo](https://img.shields.io/badge/Live%20Demo-Try%20Interactive%20SOC%20Dashboard-06B6D4?style=flat&logo=safari&logoColor=white)](https://srn0129.github.io/Agenttrust/)
 [![CI Build Status](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml/badge.svg)](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml)
-[![Automated Security Battery](https://img.shields.io/badge/Security%20Tests-133%2F133%20Passing%20(100%25)-brightgreen.svg)](tests)
+[![Automated Security Battery](https://img.shields.io/badge/Security%20Tests-134%2F134%20Passing%20(100%25)-brightgreen.svg)](tests)
 [![CodeQL Security Scan](https://github.com/SRN0129/Agenttrust/actions/workflows/codeql.yml/badge.svg)](https://github.com/SRN0129/Agenttrust/actions/workflows/codeql.yml)
 [![Post-Quantum FIPS 204](https://img.shields.io/badge/Post--Quantum-NIST%20FIPS%20204%20(ML--DSA)-8B5CF6.svg)](server/services/pqcAttestation.ts)
 [![Compliance: EU AI Act](https://img.shields.io/badge/Compliance-EU%20AI%20Act%20Art.%2012%20%26%2014-059669.svg)](server/services/compliance.ts)
@@ -245,7 +245,7 @@ Logs *why* the agent decided to act, not just the button it pressed:
 
 ## 🧪 Automated Test Verification
 
-AgentTrust enforces 100% automated regression defense with **133 passing enterprise security tests across 17 test suites**:
+AgentTrust enforces 100% automated regression defense with **134 passing enterprise security tests across 17 test suites**:
 
 ```text
  ✓ tests/quantum_trust.test.ts (8 tests)
@@ -263,12 +263,12 @@ AgentTrust enforces 100% automated regression defense with **133 passing enterpr
  ✓ tests/audit_integrity.test.ts (4 tests)
  ✓ tests/revocation.test.ts (4 tests)
  ✓ tests/rate_limits_spend.test.ts (2 tests)
- ✓ tests/defensive_sandbox.test.ts (6 tests)
+ ✓ tests/defensive_sandbox.test.ts (7 tests)
  ✓ tests/enterprise_defenses_v2.test.ts (7 tests)
 
  Test Files  17 passed (17)
-      Tests  133 passed (133)
-   Duration  4.03s
+      Tests  134 passed (134)
+   Duration  4.59s
 ```
 
 Run test battery locally:
