@@ -220,7 +220,7 @@ export class TransparentEgressProxy {
         clearTimeout(timer!);
         resolvedIPs = records.map(r => r.address);
       } catch {
-        // If domain is unresolvable, times out, or mock, proceed to policy check
+        // If domain is unresolvable or DNS lookup times out, proceed to policy check
         resolvedIPs = [];
       }
     }

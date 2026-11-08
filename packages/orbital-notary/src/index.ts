@@ -266,7 +266,7 @@ export class OrbitalNotaryEngine {
     const canonicalPayload = JSON.stringify(request.payload || {});
     const actionPayloadHash = crypto.createHash("sha256").update(canonicalPayload).digest("hex");
 
-    // Spaceborne quantum entropy generator simulation (cosmic diode)
+    // Cryptographic random entropy sample (hardware RNG / CSPRNG)
     const cosmicEntropy = crypto.randomBytes(32).toString("hex");
 
     const telemetry: SpaceAirgapTelemetry = {

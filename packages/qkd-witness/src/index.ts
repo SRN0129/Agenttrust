@@ -74,18 +74,19 @@ export class QkdWitnessEngine {
   }
 
   /**
-   * Simulates/evaluates an optical satellite QKD pass between satellite node and ground optical telescope
+   * Evaluates an optical satellite QKD pass between satellite node and ground optical telescope
    */
   public evaluateQkdTransmission(params: {
     satelliteId?: string;
     groundStationId?: string;
     totalPhotons?: number;
+    eavesdropperPresent?: boolean;
     simulatedEavesdropperActive?: boolean;
     atmosphericNoisePercent?: number;
   }): QkdLinkTelemetry {
     const totalPhotons = params.totalPhotons || 10000;
     const noise = params.atmosphericNoisePercent ?? 2.5; // Typical clear sky optical atmospheric noise ~2-3%
-    const eavesdropping = !!params.simulatedEavesdropperActive;
+    const eavesdropping = !!(params.eavesdropperPresent ?? params.simulatedEavesdropperActive);
 
     // Basis matching efficiency ~50% in BB84
     const siftedBits = Math.floor(totalPhotons * 0.49);
