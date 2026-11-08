@@ -142,5 +142,18 @@ describe("Enterprise Defenses V2: Prompt Injection, 1-Click Callback & Egress Pr
       expect(res.status).toBe(403);
       expect(res.body.error).toContain("EGRESS_INTERCEPTION");
     });
+
+    it("should strictly reject SSRF loopback and link-local destinations via egress proxy", async () => {
+      const res = await request(app)
+        .post("/api/v1/proxy")
+        .set("Authorization", `Bearer ${agentKey}`)
+        .send({
+          targetUrl: "http://127.0.0.1:8080/internal-admin",
+          method: "GET",
+        });
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toContain("SSRF_PROHIBITED");
+    });
   });
 });

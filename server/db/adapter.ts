@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import fs from "node:fs";
 import path from "node:path";
+import { SerializedWriteQueue } from "./connection.js";
 
 export type DatabaseDialect = "sqlite" | "postgres";
 
@@ -19,6 +20,7 @@ export interface IDatabaseAdapter {
   dialect: DatabaseDialect;
   exec(sql: string): void;
   prepare(sql: string): any;
+  write?<T>(fn: () => T | Promise<T>): Promise<T>;
   close(): void;
   getTelemetry(): { dialect: DatabaseDialect; activeConnections: number; status: string };
 }
@@ -49,6 +51,10 @@ export class SqliteDatabaseAdapter implements IDatabaseAdapter {
       activeConnections: 1,
       status: "CONNECTED_WAL",
     };
+  }
+
+  async write<T>(fn: () => T | Promise<T>): Promise<T> {
+    return SerializedWriteQueue.enqueue(fn);
   }
 
   getRawInstance(): Database.Database {
@@ -83,6 +89,10 @@ export class BuiltinNodeSqliteDatabaseAdapter implements IDatabaseAdapter {
       activeConnections: 1,
       status: "CONNECTED_NODE_BUILTIN_SQLITE",
     };
+  }
+
+  async write<T>(fn: () => T | Promise<T>): Promise<T> {
+    return SerializedWriteQueue.enqueue(fn);
   }
 
   getRawInstance(): any {
@@ -127,6 +137,10 @@ export class PostgresDatabaseAdapter implements IDatabaseAdapter {
       activeConnections: this.config.maxPoolSize || 10,
       status: this.isConnected ? "CONNECTED_POOL" : "DISCONNECTED",
     };
+  }
+
+  async write<T>(fn: () => T | Promise<T>): Promise<T> {
+    return Promise.resolve(fn());
   }
 }
 

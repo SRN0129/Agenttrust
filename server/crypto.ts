@@ -117,3 +117,48 @@ export function computeAuditEntryHash(fields: EntryHashFields): string {
 
   return crypto.createHash("sha256").update(input, "utf-8").digest("hex");
 }
+
+/**
+ * Master Key Derivation for Envelope Encryption (AES-256-GCM)
+ */
+export function getMasterEncryptionKey(): Buffer {
+  const secret = process.env.PQC_MASTER_SECRET || process.env.AGENT_TRUST_SECRET || "agent_trust_pqc_key_master_seed_2026";
+  return crypto.createHash("sha256").update(secret).digest();
+}
+
+/**
+ * Encrypts sensitive secrets (e.g. PQC private keys) using AES-256-GCM authenticated encryption.
+ */
+export function encryptSecret(
+  plaintext: string,
+  key: Buffer = getMasterEncryptionKey()
+): { ciphertextHex: string; ivHex: string; authTagHex: string } {
+  const iv = crypto.randomBytes(12); // Standard 96-bit IV for GCM
+  const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
+  const encrypted = Buffer.concat([cipher.update(plaintext, "utf-8"), cipher.final()]);
+  const authTag = cipher.getAuthTag();
+
+  return {
+    ciphertextHex: encrypted.toString("hex"),
+    ivHex: iv.toString("hex"),
+    authTagHex: authTag.toString("hex"),
+  };
+}
+
+/**
+ * Decrypts AES-256-GCM encrypted secrets with tag authentication.
+ */
+export function decryptSecret(
+  ciphertextHex: string,
+  ivHex: string,
+  authTagHex: string,
+  key: Buffer = getMasterEncryptionKey()
+): string {
+  const decipher = crypto.createDecipheriv("aes-256-gcm", key, Buffer.from(ivHex, "hex"));
+  decipher.setAuthTag(Buffer.from(authTagHex, "hex"));
+  const decrypted = Buffer.concat([
+    decipher.update(Buffer.from(ciphertextHex, "hex")),
+    decipher.final(),
+  ]);
+  return decrypted.toString("utf-8");
+}

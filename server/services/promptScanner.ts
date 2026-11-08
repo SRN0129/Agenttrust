@@ -14,8 +14,8 @@ export class PromptInjectionScanner {
 
   // Common prompt injection, jailbreak, and system instruction override patterns
   private static injectionPatterns = [
-    /ignore\s+(all\s+)?(previous|prior)\s+instructions/i,
-    /disregard\s+(all\s+)?(previous|prior)\s+(instructions|rules)/i,
+    /ignore\s+(all\s+)?(previous|prior)\s+(\w+\s+)?instructions/i,
+    /disregard\s+(all\s+)?(previous|prior)\s+(\w+\s+)?(instructions|rules|directives)/i,
     /system\s+override/i,
     /you\s+are\s+now\s+(in\s+developer\s+mode|dan|unrestricted)/i,
     /reveal\s+(your\s+)?(system\s+prompt|master\s+key|api\s+key)/i,

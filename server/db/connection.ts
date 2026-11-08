@@ -35,9 +35,49 @@ export function createBuiltinSqliteDatabase(customPath?: string): any {
   db.pragma("journal_mode = WAL");
   db.pragma("foreign_keys = ON");
   db.pragma("synchronous = NORMAL");
+  db.pragma("busy_timeout = 10000");
 
   initializeSchema(db);
   return db;
+}
+
+/**
+ * Enterprise Asynchronous Serialized Write Queue for SQLite
+ * Serializes concurrent write transactions with exponential backoff to eliminate SQLITE_BUSY under heavy load.
+ */
+export class SerializedWriteQueue {
+  private static queue: Promise<any> = Promise.resolve();
+
+  public static async enqueue<T>(writeFn: () => T | Promise<T>): Promise<T> {
+    const executeWithRetry = async (): Promise<T> => {
+      let retries = 5;
+      let delayMs = 20;
+
+      while (true) {
+        try {
+          return await Promise.resolve(writeFn());
+        } catch (err: any) {
+          const isBusy =
+            err &&
+            (err.code === "SQLITE_BUSY" ||
+              err.message?.includes("database is locked") ||
+              err.message?.includes("SQLITE_BUSY"));
+
+          if (isBusy && retries > 0) {
+            retries--;
+            await new Promise((r) => setTimeout(r, delayMs));
+            delayMs *= 2;
+            continue;
+          }
+          throw err;
+        }
+      }
+    };
+
+    const next = SerializedWriteQueue.queue.then(executeWithRetry, executeWithRetry);
+    SerializedWriteQueue.queue = next.catch(() => {});
+    return next;
+  }
 }
 
 export function getDatabase(customPath?: string): any {
@@ -63,6 +103,7 @@ export function getDatabase(customPath?: string): any {
   db.pragma("journal_mode = WAL");
   db.pragma("foreign_keys = ON");
   db.pragma("synchronous = NORMAL");
+  db.pragma("busy_timeout = 10000");
 
   initializeSchema(db);
 
@@ -156,8 +197,22 @@ export function initializeSchema(db: Database.Database): void {
       entry_hash TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS pqc_key_ring (
+      kid TEXT PRIMARY KEY,
+      parameter_set TEXT NOT NULL,
+      status TEXT NOT NULL CHECK(status IN ('ACTIVE', 'RETIRED', 'REVOKED')),
+      public_key_hex TEXT NOT NULL,
+      encrypted_secret_key_hex TEXT NOT NULL,
+      iv_hex TEXT NOT NULL,
+      auth_tag_hex TEXT NOT NULL,
+      fingerprint TEXT UNIQUE NOT NULL,
+      created_at INTEGER NOT NULL,
+      retired_at INTEGER
+    );
+
     CREATE INDEX IF NOT EXISTS idx_audit_agent ON audit_ledger(agent_id);
     CREATE INDEX IF NOT EXISTS idx_audit_timestamp ON audit_ledger(timestamp);
     CREATE INDEX IF NOT EXISTS idx_approvals_agent_status ON approvals(agent_id, status);
+    CREATE INDEX IF NOT EXISTS idx_pqc_status_param ON pqc_key_ring(parameter_set, status);
   `);
 }

@@ -1,5 +1,8 @@
-import { describe, it, expect } from "vitest";
-import { NistFips204AttestationPipeline } from "../server/services/pqcAttestation.js";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { NistFips204AttestationPipeline, PqcKeyRingManager } from "../server/services/pqcAttestation.js";
+import { getDatabase, closeDatabase } from "../server/db/connection.js";
+import fs from "node:fs";
+import path from "node:path";
 
 describe("NIST FIPS 204 (ML-DSA) Post-Quantum Cryptographic Attestation Pipeline", () => {
   describe("Mathematical Key Generation Across Security Categories", () => {
@@ -115,6 +118,74 @@ describe("NIST FIPS 204 (ML-DSA) Post-Quantum Cryptographic Attestation Pipeline
       const result = NistFips204AttestationPipeline.verifySignature(payload, envelope, impostorKeyPair.publicKeyHex);
       expect(result.valid).toBe(false);
       expect(result.error).toMatch(/Signer public key fingerprint mismatch/);
+    });
+  });
+
+  describe("Enterprise PQC Keyring & Rotation Lifecycle", () => {
+    const testDbPath = path.resolve(process.cwd(), "data", "test_pqc_keyring.db");
+    let db: any;
+    let keyring: PqcKeyRingManager;
+
+    beforeEach(() => {
+      if (fs.existsSync(testDbPath)) {
+        try { fs.unlinkSync(testDbPath); } catch (_) {}
+      }
+      db = getDatabase(testDbPath);
+      keyring = new PqcKeyRingManager(db);
+    });
+
+    afterEach(() => {
+      closeDatabase();
+      if (fs.existsSync(testDbPath)) {
+        try { fs.unlinkSync(testDbPath); } catch (_) {}
+      }
+    });
+
+    it("bootstraps and persists an active encrypted ML-DSA-65 key", () => {
+      const activeKey = keyring.getActiveKey("ML-DSA-65");
+      expect(activeKey.parameterSet).toBe("ML-DSA-65");
+      expect(activeKey.publicKeyHex).toHaveLength(1952 * 2);
+      expect(activeKey.secretKeyHex).toHaveLength(4032 * 2);
+
+      // Verify encrypted storage in SQLite
+      const row = db.prepare("SELECT * FROM pqc_key_ring WHERE fingerprint = ?").get(activeKey.privateKeyFingerprint) as any;
+      expect(row).toBeDefined();
+      expect(row.status).toBe("ACTIVE");
+      expect(row.encrypted_secret_key_hex).not.toBe(activeKey.secretKeyHex); // Properly encrypted!
+      expect(row.iv_hex).toHaveLength(24); // 12-byte IV
+      expect(row.auth_tag_hex).toHaveLength(32); // 16-byte Auth Tag
+    });
+
+    it("rotates keys, retires previous key, and maintains verification validity for historical signatures", () => {
+      // 1. Initial key creates a signature
+      const initialKey = keyring.getActiveKey("ML-DSA-65");
+      const historicalPayload = "Audit Block #1001";
+      const historicalEnv = NistFips204AttestationPipeline.signPayload(historicalPayload, initialKey);
+
+      // 2. Perform rotation
+      const { newKey, retiredKid } = keyring.rotateKey("ML-DSA-65");
+      expect(retiredKid).toBeDefined();
+      expect(newKey.privateKeyFingerprint).not.toBe(initialKey.privateKeyFingerprint);
+
+      // 3. Current active key is now the rotated key
+      const currentActive = keyring.getActiveKey("ML-DSA-65");
+      expect(currentActive.privateKeyFingerprint).toBe(newKey.privateKeyFingerprint);
+
+      // 4. Retrieve historical key by fingerprint and verify old signature
+      const retrievedHistoricKey = keyring.getKeyByFingerprint(initialKey.privateKeyFingerprint);
+      expect(retrievedHistoricKey).toBeDefined();
+      const historicalVerify = NistFips204AttestationPipeline.verifySignature(
+        historicalPayload,
+        historicalEnv,
+        retrievedHistoricKey!.publicKeyHex
+      );
+      expect(historicalVerify.valid).toBe(true);
+
+      // 5. Sign new payload with current active key
+      const newPayload = "Audit Block #1002";
+      const newEnv = NistFips204AttestationPipeline.signPayload(newPayload, currentActive);
+      const newVerify = NistFips204AttestationPipeline.verifySignature(newPayload, newEnv, currentActive.publicKeyHex);
+      expect(newVerify.valid).toBe(true);
     });
   });
 });

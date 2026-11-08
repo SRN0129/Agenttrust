@@ -6,7 +6,7 @@ export interface SandboxExecutionOptions {
   maxMemoryMb?: number;
 }
 
-export interface SandboxResult<T = any> {
+export interface SandboxResult<T = Record<string, any>> {
   success: boolean;
   output?: T;
   error?: string;
@@ -25,7 +25,7 @@ export class IsolatedSandboxRunner {
    * Executes a tool function inside a sanitized, isolated context.
    * Strips all master credentials, blocks prototype pollution, and enforces strict time boundaries.
    */
-  static async executeSafely<T = any>(
+  static async executeSafely<T = Record<string, any>>(
     toolName: string,
     toolFn: (params: Record<string, unknown>) => any,
     parameters: Record<string, unknown>,
@@ -88,7 +88,7 @@ export class IsolatedSandboxRunner {
    * Executes arbitrary untrusted code in an unprivileged, stripped subprocess
    * with zero ambient credentials, no network access, and strict memory ceilings.
    */
-  static async executeInSubprocess<T = any>(
+  static async executeInSubprocess<T = Record<string, any>>(
     scriptCode: string,
     inputPayload: Record<string, unknown> = {},
     options: SandboxExecutionOptions = {}
@@ -100,12 +100,27 @@ export class IsolatedSandboxRunner {
     return new Promise((resolve) => {
       const runnerCode = `
         const input = ${JSON.stringify(inputPayload)};
+        
+        // Deep freeze core prototypes to prevent prototype pollution within the child process
         try {
-          const fn = new Function('input', ${JSON.stringify(scriptCode)});
-          const res = fn(input);
+          Object.freeze(Object.prototype);
+          Object.freeze(Array.prototype);
+          Object.freeze(Function.prototype);
+        } catch (_) {}
+
+        // Supply sterile process proxy with frozen empty env and no system-exit handles
+        const safeProcess = Object.freeze({
+          env: Object.freeze({}),
+          version: process.version,
+          platform: process.platform,
+        });
+
+        try {
+          const fn = new Function('input', 'params', 'process', ${JSON.stringify(scriptCode)});
+          const res = fn(input, input, safeProcess);
           process.stdout.write(JSON.stringify({ success: true, result: res }));
         } catch (err) {
-          process.stderr.write(String(err.message || err));
+          process.stderr.write(String(err && err.message ? err.message : err));
           process.exit(1);
         }
       `;
@@ -122,9 +137,23 @@ export class IsolatedSandboxRunner {
 
       let stdout = "";
       let stderr = "";
+      const MAX_OUTPUT_BYTES = 1024 * 1024; // 1MB buffer cap to prevent memory exhaustion
 
-      child.stdout.on("data", (chunk) => { stdout += chunk.toString(); });
-      child.stderr.on("data", (chunk) => { stderr += chunk.toString(); });
+      child.stdout.on("data", (chunk) => {
+        if (stdout.length < MAX_OUTPUT_BYTES) {
+          stdout += chunk.toString();
+        } else {
+          child.kill("SIGKILL");
+        }
+      });
+
+      child.stderr.on("data", (chunk) => {
+        if (stderr.length < MAX_OUTPUT_BYTES) {
+          stderr += chunk.toString();
+        } else {
+          child.kill("SIGKILL");
+        }
+      });
 
       const killTimer = setTimeout(() => {
         child.kill("SIGKILL");

@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { ml_dsa44 } from "@noble/post-quantum/ml-dsa.js";
 import { ml_dsa65 } from "@noble/post-quantum/ml-dsa.js";
 import { ml_dsa87 } from "@noble/post-quantum/ml-dsa.js";
+import { encryptSecret, decryptSecret } from "../crypto.js";
 
 /**
  * NIST FIPS 204 ML-DSA (Module-Lattice Digital Signature Algorithm) Parameter Sets
@@ -208,5 +209,99 @@ export class NistFips204AttestationPipeline {
         error: `ML-DSA verification exception: ${err.message}`,
       };
     }
+  }
+}
+
+export interface PqcKeyMetadata {
+  kid: string;
+  parameterSet: NistMlDsaParameterSet;
+  status: "ACTIVE" | "RETIRED" | "REVOKED";
+  fingerprint: string;
+  createdAt: number;
+  retiredAt?: number;
+}
+
+/**
+ * Enterprise PQC Keyring Manager with Envelope Encryption & Automated Key Rotation
+ */
+export class PqcKeyRingManager {
+  constructor(private db: any) {}
+
+  public getActiveKey(parameterSet: NistMlDsaParameterSet = "ML-DSA-65"): PqcKeyPair {
+    const row = this.db.prepare(
+      "SELECT * FROM pqc_key_ring WHERE parameter_set = ? AND status = 'ACTIVE' ORDER BY created_at DESC LIMIT 1"
+    ).get(parameterSet) as any;
+
+    if (row) {
+      const secretKeyHex = decryptSecret(row.encrypted_secret_key_hex, row.iv_hex, row.auth_tag_hex);
+      return {
+        parameterSet: row.parameter_set as NistMlDsaParameterSet,
+        publicKeyHex: row.public_key_hex,
+        secretKeyHex,
+        privateKeyFingerprint: row.fingerprint,
+        hardwareBacked: false,
+        createdAt: row.created_at,
+      };
+    }
+
+    // Auto-bootstrap active key on first invocation
+    return this.rotateKey(parameterSet).newKey;
+  }
+
+  public rotateKey(parameterSet: NistMlDsaParameterSet = "ML-DSA-65"): { newKey: PqcKeyPair; retiredKid?: string } {
+    const freshPair = NistFips204AttestationPipeline.generateKeyPair(parameterSet);
+    const kid = `pqc_${parameterSet.toLowerCase().replace(/-/g, "_")}_${crypto.randomBytes(8).toString("hex")}`;
+    const enc = encryptSecret(freshPair.secretKeyHex);
+    const now = Date.now();
+
+    let retiredKid: string | undefined;
+
+    // Retire existing active key
+    const activeRow = this.db.prepare(
+      "SELECT kid FROM pqc_key_ring WHERE parameter_set = ? AND status = 'ACTIVE'"
+    ).get(parameterSet) as any;
+
+    if (activeRow) {
+      retiredKid = activeRow.kid;
+      this.db.prepare("UPDATE pqc_key_ring SET status = 'RETIRED', retired_at = ? WHERE kid = ?").run(now, activeRow.kid);
+    }
+
+    this.db.prepare(`
+      INSERT INTO pqc_key_ring (
+        kid, parameter_set, status, public_key_hex, encrypted_secret_key_hex, iv_hex, auth_tag_hex, fingerprint, created_at
+      ) VALUES (?, ?, 'ACTIVE', ?, ?, ?, ?, ?, ?)
+    `).run(kid, parameterSet, freshPair.publicKeyHex, enc.ciphertextHex, enc.ivHex, enc.authTagHex, freshPair.privateKeyFingerprint, now);
+
+    return { newKey: freshPair, retiredKid };
+  }
+
+  public getKeyByFingerprint(fingerprint: string): PqcKeyPair | null {
+    const row = this.db.prepare("SELECT * FROM pqc_key_ring WHERE fingerprint = ?").get(fingerprint) as any;
+    if (!row) return null;
+
+    const secretKeyHex = decryptSecret(row.encrypted_secret_key_hex, row.iv_hex, row.auth_tag_hex);
+    return {
+      parameterSet: row.parameter_set as NistMlDsaParameterSet,
+      publicKeyHex: row.public_key_hex,
+      secretKeyHex,
+      privateKeyFingerprint: row.fingerprint,
+      hardwareBacked: false,
+      createdAt: row.created_at,
+    };
+  }
+
+  public listKeys(): PqcKeyMetadata[] {
+    const rows = this.db.prepare(
+      "SELECT kid, parameter_set, status, fingerprint, created_at, retired_at FROM pqc_key_ring ORDER BY created_at DESC"
+    ).all() as any[];
+
+    return rows.map(r => ({
+      kid: r.kid,
+      parameterSet: r.parameter_set,
+      status: r.status,
+      fingerprint: r.fingerprint,
+      createdAt: r.created_at,
+      retiredAt: r.retired_at || undefined,
+    }));
   }
 }

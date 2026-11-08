@@ -1,6 +1,8 @@
 import dns from "node:dns/promises";
 import net from "node:net";
 import path from "node:path";
+import http from "node:http";
+import https from "node:https";
 import { PolicyEngineService } from "./policy.js";
 import { AgentRow } from "./registry.js";
 import { PromptInjectionScanner } from "./promptScanner.js";
@@ -223,6 +225,8 @@ export class TransparentEgressProxy {
       }
     }
 
+    const verifiedIp = resolvedIPs.length > 0 ? resolvedIPs[0] : null;
+
     for (const ip of resolvedIPs) {
       if (isProhibitedOrPrivateIP(ip)) {
         this.auditService.append({
@@ -316,13 +320,24 @@ export class TransparentEgressProxy {
         };
       }
 
-      let response: Response;
+      let responseStatus = 200;
+      let responseData: any;
       try {
-        response = await fetch(req.targetUrl, {
-          method: req.method,
-          headers: req.headers || { "Content-Type": "application/json" },
-          body: req.method !== "GET" && req.method !== "HEAD" && req.body ? JSON.stringify(req.body) : undefined,
-        });
+        const bodyStr = req.method !== "GET" && req.method !== "HEAD" && req.body ? JSON.stringify(req.body) : undefined;
+        const res = await this.executePinnedRequest(
+          url,
+          verifiedIp,
+          req.method,
+          req.headers || { "Content-Type": "application/json" },
+          bodyStr,
+          5000
+        );
+        responseStatus = res.statusCode;
+        try {
+          responseData = JSON.parse(res.bodyText);
+        } catch {
+          responseData = res.bodyText;
+        }
       } catch (fetchErr: any) {
         return {
           statusCode: 502,
@@ -330,13 +345,6 @@ export class TransparentEgressProxy {
             error: `EGRESS_NETWORK_ERROR: Failed to connect to ${url.hostname}: ${fetchErr.message}`,
           },
         };
-      }
-
-      let responseData: any;
-      try {
-        responseData = await response.json();
-      } catch {
-        responseData = await response.text();
       }
 
       this.auditService.append({
@@ -347,12 +355,13 @@ export class TransparentEgressProxy {
         decision: "ALLOWED",
         payload: {
           targetUrl: req.targetUrl,
-          httpStatus: response.status,
+          httpStatus: responseStatus,
+          pinnedIp: verifiedIp,
         },
       });
 
       return {
-        statusCode: response.status,
+        statusCode: responseStatus,
         body: responseData,
       };
     } catch (err: any) {
@@ -363,5 +372,67 @@ export class TransparentEgressProxy {
         },
       };
     }
+  }
+
+  /**
+   * Executes outbound HTTP/HTTPS request with socket pinned directly to the pre-verified IP address.
+   * Completely defeats Time-of-Check to Time-of-Use (TOCTOU) DNS Rebinding attacks.
+   */
+  private async executePinnedRequest(
+    targetUrl: URL,
+    pinnedIp: string | null,
+    method: string,
+    headers: Record<string, string>,
+    body: string | undefined,
+    timeoutMs = 5000
+  ): Promise<{ statusCode: number; headers: http.IncomingHttpHeaders; bodyText: string }> {
+    return new Promise((resolve, reject) => {
+      const isHttps = targetUrl.protocol === "https:";
+      const transport = isHttps ? https : http;
+      const defaultPort = isHttps ? 443 : 80;
+      const port = targetUrl.port ? parseInt(targetUrl.port, 10) : defaultPort;
+
+      const reqOptions: https.RequestOptions = {
+        protocol: targetUrl.protocol,
+        hostname: pinnedIp || targetUrl.hostname,
+        port,
+        path: targetUrl.pathname + targetUrl.search,
+        method,
+        headers: {
+          ...headers,
+          host: targetUrl.host,
+        },
+        timeout: timeoutMs,
+      };
+
+      if (isHttps) {
+        reqOptions.servername = targetUrl.hostname;
+      }
+
+      const clientReq = transport.request(reqOptions, (res) => {
+        const chunks: Buffer[] = [];
+        res.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
+        res.on("end", () => {
+          resolve({
+            statusCode: res.statusCode || 200,
+            headers: res.headers,
+            bodyText: Buffer.concat(chunks).toString("utf-8"),
+          });
+        });
+      });
+
+      clientReq.on("timeout", () => {
+        clientReq.destroy(new Error(`Egress connection timed out after ${timeoutMs}ms`));
+      });
+
+      clientReq.on("error", (err) => {
+        reject(err);
+      });
+
+      if (body) {
+        clientReq.write(body);
+      }
+      clientReq.end();
+    });
   }
 }

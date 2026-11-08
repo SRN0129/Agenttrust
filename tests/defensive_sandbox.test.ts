@@ -103,8 +103,8 @@ describe("Defensive Sandboxing & Runtime Hardening (Anti-RCE / Anti-DDoS)", () =
 
       expect(outcome.success).toBe(true);
       expect(outcome.isolationTier).toBe("SUBPROCESS_HARDENED");
-      expect(outcome.output.sum).toBe(42);
-      expect(outcome.output.capturedSecret).toBe("NONE"); // Empty env verified!
+      expect(outcome.output!.sum).toBe(42);
+      expect(outcome.output!.capturedSecret).toBe("NONE"); // Empty env verified!
     });
 
     it("should terminate runaway subprocesses with hard timeout containment", async () => {
@@ -160,6 +160,18 @@ describe("Defensive Sandboxing & Runtime Hardening (Anti-RCE / Anti-DDoS)", () =
       const auditRes = await request(app).get("/api/v1/audit?eventType=TOOL_EXECUTION");
       const latest = auditRes.body.events[0];
       expect(latest.payload.isolationTier).toBe("SUBPROCESS_HARDENED");
+    });
+
+    it("should prevent prototype pollution inside subprocess execution context", async () => {
+      const attackScript = `
+        try {
+          Object.prototype.polluted = true;
+        } catch (_) {}
+        return { polluted: ({}).polluted || false };
+      `;
+      const outcome = await IsolatedSandboxRunner.executeInSubprocess(attackScript, {});
+      expect(outcome.success).toBe(true);
+      expect(outcome.output!.polluted).toBe(false);
     });
   });
 });

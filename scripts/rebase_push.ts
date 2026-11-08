@@ -39,7 +39,7 @@ async function main() {
   await stageAllFiles(projectDir);
 
   // Create commit with remoteRef as parent (clean fast-forward!)
-  const commitMsg = "feat(real-tools-proxy): replace mock tools with persistent SQLite tables and real outbound proxy forwarder";
+  const commitMsg = "feat(enterprise-hardening): resolve TOCTOU DNS rebinding, sterile sandbox, serialized write queue, PQC keyring, and adversarial fuzzing";
   
   const commitSha = await git.commit({
     fs,
