@@ -6,7 +6,7 @@
 
 ### **Enterprise Zero-Trust AI Security & Governance Gateway: Real-Time Prompt Injection Defense, Action Scoping, Human-in-the-Loop Gate, Post-Quantum Merkle Audit & EU AI Act Compliance for Autonomous Agent Swarms.**
 
-[![AgentTrust Core v2.0.0](https://img.shields.io/badge/AgentTrust-v2.0.0-blue.svg)](https://github.com/SRN0129/Agenttrust/releases/tag/v2.0.0)
+[![AgentTrust Core v2.1.0](https://img.shields.io/badge/AgentTrust-v2.1.0-blue.svg)](https://github.com/SRN0129/Agenttrust/releases/tag/v2.1.0)
 [![Live Interactive Demo](https://img.shields.io/badge/Live%20Demo-Try%20Interactive%20SOC%20Dashboard-06B6D4?style=flat&logo=safari&logoColor=white)](https://srn0129.github.io/Agenttrust/)
 [![CI Build Status](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml/badge.svg)](https://github.com/SRN0129/Agenttrust/actions/workflows/ci.yml)
 [![Automated Security Battery](https://img.shields.io/badge/Security%20Tests-148%2F148%20Passing%20(100%25)-brightgreen.svg)](tests)
@@ -158,11 +158,11 @@ AgentTrust is architected as an **open, modular ecosystem**. You can consume any
 
 | Package | Version | Scope & Defense Mechanism | Install Command | Links |
 | :--- | :--- | :--- | :--- | :--- |
-| **`@srn0129/agenttrust-orbital-notary`** | `v1.0.0` | Keplerian orbit propagation, relativistic time dilation ($\gamma$), and NIST FIPS 204 (ML-DSA) receipt verification engine | `npm i @srn0129/agenttrust-orbital-notary` | [Code](packages/orbital-notary) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/orbital-notary-v1.0.0) |
-| **`@srn0129/agenttrust-space-killswitch`** | `v1.0.0` | Asymmetric cryptographic dead man's switch & emergency quarantine freeze modeled for out-of-band broadcast channels | `npm i @srn0129/agenttrust-space-killswitch` | [Code](packages/space-killswitch) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/space-killswitch-v1.0.0) |
-| **`@srn0129/agenttrust-doppler-ephemeris`** | `v1.0.0` | Relativistic time dilation ($\gamma = 1 / \sqrt{1 - v^2/c^2}$) & RF carrier Doppler S-curve Proof-of-Space engine | `npm i @srn0129/agenttrust-doppler-ephemeris` | [Code](packages/doppler-ephemeris) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/doppler-ephemeris-v1.0.0) |
-| **`@srn0129/agenttrust-qkd-witness`** | `v1.0.0` | Quantum Key Distribution (QKD) physics model, Bell CHSH inequality ($S > 2.0$), and QBER eavesdropping detection | `npm i @srn0129/agenttrust-qkd-witness` | [Code](packages/qkd-witness) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/qkd-witness-v1.0.0) |
-| **`@srn0129/agenttrust` (Core Gateway)** | `v2.0.0` | Unified zero-trust control plane, cognitive CoT black box, and post-quantum policy gateway | `npm i @srn0129/agenttrust` | [Code](.) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/v2.0.0) |
+| **`@srn0129/agenttrust-orbital-notary`** | `v2.1.0` | Keplerian orbit propagation, relativistic time dilation ($\gamma$), and NIST FIPS 204 (ML-DSA) receipt verification engine | `npm i @srn0129/agenttrust-orbital-notary` | [Code](packages/orbital-notary) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/orbital-notary-v2.1.0) |
+| **`@srn0129/agenttrust-space-killswitch`** | `v2.1.0` | Asymmetric cryptographic dead man's switch & emergency quarantine freeze modeled for out-of-band broadcast channels | `npm i @srn0129/agenttrust-space-killswitch` | [Code](packages/space-killswitch) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/space-killswitch-v2.1.0) |
+| **`@srn0129/agenttrust-doppler-ephemeris`** | `v2.1.0` | Relativistic time dilation ($\gamma = 1 / \sqrt{1 - v^2/c^2}$) & RF carrier Doppler S-curve Proof-of-Space engine | `npm i @srn0129/agenttrust-doppler-ephemeris` | [Code](packages/doppler-ephemeris) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/doppler-ephemeris-v2.1.0) |
+| **`@srn0129/agenttrust-qkd-witness`** | `v2.1.0` | Quantum Key Distribution (QKD) physics model, Bell CHSH inequality ($S > 2.0$), and QBER eavesdropping detection | `npm i @srn0129/agenttrust-qkd-witness` | [Code](packages/qkd-witness) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/qkd-witness-v2.1.0) |
+| **`@srn0129/agenttrust` (Core Gateway)** | `v2.1.0` | Unified zero-trust control plane, cognitive CoT black box, and post-quantum policy gateway | `npm i @srn0129/agenttrust` | [Code](.) • [Release](https://github.com/SRN0129/Agenttrust/releases/tag/v2.1.0) |
 
 ---
 

@@ -10,12 +10,12 @@ This document outlines the delivery milestones, security enhancements, and archi
 +-------------------------------------------------------------------------------------------------+
 |                                    DELIVERY TIMELINE                                            |
 |                                                                                                 |
-| [v1.0.0 Foundation] ----> [v1.1.0 Ecosystem SDKs] ----> [v1.2.0 Hardware Enclaves] ----> [v2.0] |
-|   DELIVERED (Oct 2026)      Target: Nov 30, 2026          Target: Dec 31, 2026        Target: Q1|
+| [v1.0.0 Foundation] ----> [v2.0.0 SpaceMesh & QKD] ----> [v2.1.0 Enterprise Hardening] ------> |
+|   DELIVERED (Oct 2026)      DELIVERED (Oct 2026)           DELIVERED (Nov 2026)                 |
 +-------------------------------------------------------------------------------------------------+
 ```
 
-### [Milestone 1: v1.0.0 - Foundation: Zero-Trust Gateway, Merkle Proofs & PQC](https://github.com/SRN0129/Agenttrust/milestone/1)
+### [Milestone 1: v1.0.0 - Foundation: Zero-Trust Gateway, Merkle Proofs & PQC](https://github.com/SRN0129/Agenttrust/releases/tag/v1.0.0)
 - **Status**: Completed / Delivered
 - **Release**: [`v1.0.0`](https://github.com/SRN0129/Agenttrust/releases/tag/v1.0.0)
 - **Deliverables**:
@@ -33,6 +33,33 @@ This document outlines the delivery milestones, security enhancements, and archi
   - Quantum circuit pre-flight gate depth & qubit boundary inspection.
   - NIST FIPS 204 (ML-DSA / Dilithium) Level-5 post-quantum attestation envelope.
   - 70 automated verification tests passing in CI.
+
+---
+
+### [Milestone 2: v2.0.0 - Frontier SpaceMesh, Orbital Notary & Quantum Day Immunity](https://github.com/SRN0129/Agenttrust/releases/tag/v2.0.0)
+- **Status**: Completed / Delivered
+- **Release**: [`v2.0.0`](https://github.com/SRN0129/Agenttrust/releases/tag/v2.0.0)
+- **Deliverables**:
+  - Modular workspace packages published under `@srn0129/` namespace.
+  - Orbital Doppler frequency shift and relativistic time dilation physics models.
+  - Space-airgapped LEO satellite hardware notary receipts.
+  - Optical satellite QKD and Bell CHSH entanglement verification ($S > 2.0$).
+  - Space-based direct-to-satellite emergency quarantine broadcast engine.
+  - 134 automated verification tests passing in CI.
+
+---
+
+### [Milestone 3: v2.1.0 - Enterprise Zero-Trust Hardening, Subprocess Isolation & PQC Keyring](https://github.com/SRN0129/Agenttrust/releases/tag/v2.1.0)
+- **Status**: Completed / Delivered
+- **Release**: [`v2.1.0`](https://github.com/SRN0129/Agenttrust/releases/tag/v2.1.0)
+- **Deliverables**:
+  - Socket-pinned outbound egress proxy eliminating Time-of-Check to Time-of-Use (TOCTOU) DNS rebinding attacks.
+  - Dual-containment isolated subprocess sandbox with frozen prototypes and 1MB buffer exhaustion shields.
+  - Asynchronous FIFO serialized write queue with exponential backoff for SQLite WAL mode, eliminating `SQLITE_BUSY` contention.
+  - Enterprise NIST FIPS 204 ML-DSA post-quantum key ring with AES-256-GCM envelope encryption and automated key rotation.
+  - Zero-mock production architecture with real SQLite tables for built-in tools.
+  - 19 test files with 148 automated security tests passing (100% green).
+  - Adversarial fuzzing test suite verifying Unicode zero-width normalization and SQL AST verb parsing.
 
 ---
 

@@ -1,8 +1,8 @@
 {
   "name": "@srn0129/agenttrust",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "type": "module",
-  "description": "Zero-trust policy enforcement, cryptographic audit ledger, orbital space-airgap attestation, and human-in-the-loop governance for autonomous agent runtimes",
+  "description": "Enterprise zero-trust policy gateway, cryptographic Merkle audit ledger, post-quantum FIPS 204 attestation, orbital verification, and HITL governance for autonomous AI agents",
   "repository": {
     "type": "git",
     "url": "https://github.com/SRN0129/Agenttrust.git"

@@ -30,10 +30,10 @@ import { QkdWitnessEngine } from "@srn0129/agenttrust-qkd-witness";
 
 const qkd = new QkdWitnessEngine();
 
-// Simulate an optical satellite QKD pass
+// Evaluate an optical satellite QKD pass
 const telemetry = qkd.evaluateQkdTransmission({
   satelliteId: "SAT-AGENTTRUST-03-QKD",
-  simulatedEavesdropperActive: false
+  eavesdropperPresent: false
 });
 
 console.log("QBER:", telemetry.quantumBitErrorRatePercent + "%", "CHSH S:", telemetry.chshParameterS);

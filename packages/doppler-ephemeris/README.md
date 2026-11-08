@@ -6,7 +6,7 @@
 [![Physics](https://img.shields.io/badge/Physics-Relativistic%20Doppler%20S--Curve-brightgreen.svg)](#)
 
 > [!NOTE]
-> **Implementation Scope**: This package implements genuine mathematical equations for orbital ECEF/ENU coordinate transformations, radial velocity dot products, carrier Doppler frequency shifts ($\Delta f = -f_0 \frac{\vec{v} \cdot \hat{u}}{c}$), and Lorentz time dilation. It evaluates telemetry inputs from software-defined radio (SDR) receivers or simulated orbital passes.
+> **Implementation Scope**: This package implements genuine mathematical equations for orbital ECEF/ENU coordinate transformations, radial velocity dot products, carrier Doppler frequency shifts ($\Delta f = -f_0 \frac{\vec{v} \cdot \hat{u}}{c}$), and Lorentz time dilation. It evaluates telemetry inputs from software-defined radio (SDR) receivers or verified orbital passes.
 
 ---
 

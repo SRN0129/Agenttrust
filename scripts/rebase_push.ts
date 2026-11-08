@@ -39,7 +39,7 @@ async function main() {
   await stageAllFiles(projectDir);
 
   // Create commit with remoteRef as parent (clean fast-forward!)
-  const commitMsg = "docs & chore: synchronize automated verification badges, package parameters, and clean architectural comments";
+  const commitMsg = "chore(release): bump AgentTrust ecosystem to v2.1.0, audit all packages, docs, and JSON manifests";
   
   const commitSha = await git.commit({
     fs,

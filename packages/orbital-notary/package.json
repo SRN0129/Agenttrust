@@ -1,6 +1,6 @@
 {
   "name": "@srn0129/agenttrust-orbital-notary",
-  "version": "1.0.0",
+  "version": "2.1.0",
   "description": "Space-airgapped LEO satellite hardware notary and Post-Quantum Orbital Attestation Receipt (OAR) engine for autonomous AI agents",
   "main": "src/index.ts",
   "types": "src/index.ts",

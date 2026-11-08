@@ -1,0 +1,78 @@
+{
+  "project": "AgentTrust",
+  "branchName": "main",
+  "description": "Enterprise zero-trust AI security control plane, post-quantum FIPS 204 attestation, socket-pinned egress proxy, and resilient multi-mode architecture",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "NIST FIPS 204 ML-DSA Lattice Cryptography & PQC Keyring",
+      "description": "As a security engineer, I want genuine module-lattice digital signatures and envelope-encrypted key rotation so that the audit ledger has verified quantum resistance.",
+      "acceptanceCriteria": [
+        "ML-DSA-44, 65, and 87 parameter sets implemented with NTT polynomial arithmetic",
+        "PqcKeyRingManager stores encrypted secret keys using AES-256-GCM in SQLite",
+        "rotateKey() successfully rotates active keys while preserving historical signature verification",
+        "Typecheck and tests pass"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": "Verified with tests/pqc_mldsa_fips204.test.ts (10/10 passing)"
+    },
+    {
+      "id": "US-002",
+      "title": "Anti-TOCTOU Egress Proxy Socket Pinning",
+      "description": "As a cloud administrator, I want outbound network traffic to bind directly to pre-verified IPs so that DNS rebinding attacks against cloud metadata are prevented.",
+      "acceptanceCriteria": [
+        "Egress proxy resolves and checks destination IP against RFC 1918 and AWS IMDS blacklists",
+        "Socket connects directly to verified IP address with Host header and SNI preservation",
+        "Zero secondary DNS lookups during request dispatch",
+        "Typecheck and tests pass"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": "Verified with tests/enterprise_defenses_v2.test.ts"
+    },
+    {
+      "id": "US-003",
+      "title": "Dual-Containment Hardened Subprocess Sandbox",
+      "description": "As a DevOps architect, I want untrusted scripts to run in isolated child processes with sealed prototypes and memory ceilings so that host processes are safe.",
+      "acceptanceCriteria": [
+        "Unprivileged child process executes with empty environment (env: {})",
+        "Core prototypes (Object, Array, Function) frozen inside child process",
+        "Hard 1MB output buffer ceiling to prevent memory exhaustion",
+        "SIGKILL timeout watchdog enforcement",
+        "Typecheck and tests pass"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": "Verified with tests/defensive_sandbox.test.ts (8/8 passing)"
+    },
+    {
+      "id": "US-004",
+      "title": "Asynchronous FIFO Serialized Transaction Queue for SQLite",
+      "description": "As a backend developer, I want high-throughput concurrent agent writes to be ordered cleanly so that SQLITE_BUSY lock errors are eliminated.",
+      "acceptanceCriteria": [
+        "SerializedWriteQueue queues write operations with exponential backoff retry",
+        "Database enabled with PRAGMA busy_timeout = 10000 in WAL mode",
+        "50 simultaneous parallel writes execute with zero errors",
+        "Typecheck and tests pass"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": "Verified with tests/concurrency_write_queue.test.ts"
+    },
+    {
+      "id": "US-005",
+      "title": "Comprehensive Adversarial Fuzzing & Semilattice Verification",
+      "description": "As a red-team auditor, I want automated property-based fuzzing so that novel Unicode evasion and AST injections are detected.",
+      "acceptanceCriteria": [
+        "Prompt injection scanner detects zero-width characters and obfuscated instructions",
+        "ActionScoper extracts verbs and flags destructive operations",
+        "Capability semilattice satisfies idempotence, commutativity, and monotonicity axioms",
+        "Typecheck and tests pass"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": "Verified with tests/adversarial_fuzzing.test.ts (9/9 passing)"
+    }
+  ]
+}

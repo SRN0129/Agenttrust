@@ -34,7 +34,7 @@ Instead of relying on probabilistic in-context alignment, AgentTrust sits outsid
 4. Outbound proxy with socket-level IP pinning to block SSRF and DNS rebinding attacks.
 5. All actions are logged to an append-only SHA-256 hash-chained audit ledger with Merkle inclusion proofs.
 
-It is completely open-source (MIT License) with native SDKs in TypeScript, Python, Go, and Rust, plus drop-in callbacks for LangChain and CrewAI. We include 70 automated security tests and an academic whitepaper outlining the formal threat model.
+It is completely open-source (MIT License) with native SDKs in TypeScript, Python, Go, and Rust, plus drop-in callbacks for LangChain and CrewAI. We include 148 automated security tests across 19 test suites and an academic whitepaper outlining the formal threat model.
 
 Check out the code, run the test suite locally (`npm test`), and let us know what you think!
 ```
