@@ -226,17 +226,15 @@ async function runSimulator() {
 
     // Intentionally alter a record in the database directly to test tamper detection
     console.log(`\n💥 SIMULATING DIRECT DATABASE TAMPERING: Modifying row #2 in database...`);
-    const tamperRes = await fetch(`${baseUrl}/api/v1/audit/tamper-test`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ index: 2, maliciousAction: "tampered:unauthorized_grant" }),
-    });
+    services.auditService.tamperRecordForTesting(2, "tampered:unauthorized_grant");
+
+    const tamperRes = await fetch(`${baseUrl}/api/v1/audit/verify`);
     const tamperData = await tamperRes.json();
 
     console.log(`🔍 Chain Verification After Row Tampering:`);
-    console.log(`   - Valid: ${tamperData.verificationResult.valid}`);
-    console.log(`   - Broken At Index: #${tamperData.verificationResult.brokenAt}`);
-    console.log(`   - Reason: ${tamperData.verificationResult.reason}`);
+    console.log(`   - Valid: ${tamperData.integrity.valid}`);
+    console.log(`   - Broken At Index: #${tamperData.integrity.brokenAt}`);
+    console.log(`   - Reason: ${tamperData.integrity.reason}`);
     console.log(`🛡️ Tampering was instantly and deterministically flagged!`);
 
     console.log(`\n===============================================================`);

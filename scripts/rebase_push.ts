@@ -39,7 +39,7 @@ async function main() {
   await stageAllFiles(projectDir);
 
   // Create commit with remoteRef as parent (clean fast-forward!)
-  const commitMsg = "chore(release): bump AgentTrust ecosystem to v2.1.0, audit all packages, docs, and JSON manifests";
+  const commitMsg = "fix(ci): update cryptographic benchmark and chaos fuzzing to verify ledger tamper-detection without deprecated endpoint";
   
   const commitSha = await git.commit({
     fs,

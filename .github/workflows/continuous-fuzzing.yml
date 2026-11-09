@@ -31,7 +31,7 @@ jobs:
           npm ci
           npm --prefix client ci
 
-      - name: Run Full Security Test Battery (119 Tests)
+      - name: Run Full Security Test Battery (148 Tests)
         run: npm test
 
       - name: Run Chaos Red-Team Benchmark
@@ -39,7 +39,7 @@ jobs:
 
       - name: Record Continuous Hardening Log
         run: |
-          echo "Automated continuous fuzzing verified zero regressions on $(date -u +"%Y-%m-%d %H:%M:%S UTC") across 119 tests." > .fuzzing.log
+          echo "Automated continuous fuzzing verified zero regressions on $(date -u +"%Y-%m-%d %H:%M:%S UTC") across 148 tests." > .fuzzing.log
 
       - name: Commit Hardening Audit Log
         run: |
